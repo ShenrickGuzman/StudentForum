@@ -1,22 +1,29 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx,html}"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: {
-        sky: {
-          light: '#a6e1ff',
-          DEFAULT: '#7dd3fc'
-        },
-        lemon: '#fff59e',
-        mint: '#b9fbc0',
-        pinky: '#ffcad4'
+        primary: '#FFB347', // playful orange
+        secondary: '#6EC6FF', // sky blue
+        accent: '#FF6F91', // pink
+        background: '#FFF8E7', // soft cream
+        surface: '#FFFFFF',
+        success: '#7ED957',
+        warning: '#FFD966',
+        error: '#FF6F61',
+        info: '#6EC6FF',
+        dark: '#3A3A3A',
       },
       borderRadius: {
-        bubble: '1.25rem'
+        cartoon: '1.5rem',
+        xl: '1.25rem',
       },
       fontFamily: {
-        playful: ['"Fredoka"', '"Baloo 2"', '"Comic Neue"', 'cursive']
+        cartoon: ["'Comic Neue'", "'Quicksand'", "'Baloo'", "cursive", "sans-serif"],
       },
       animation: {
         wiggle: 'wiggle 0.3s ease-in-out',
@@ -31,7 +38,11 @@ module.exports = {
           '0%, 100%': { transform: 'translateX(0)' },
           '50%': { transform: 'translateX(4px)' }
         }
-      }
+  }
+      boxShadow: {
+        cartoon: '0 4px 16px 0 rgba(255,179,71,0.15)',
+        fun: '0 2px 8px 0 rgba(110,198,255,0.15)',
+      },
     }
   },
   plugins: []
