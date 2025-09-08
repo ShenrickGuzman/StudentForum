@@ -4,15 +4,42 @@
 @tailwind utilities;
 
 body {
-  @apply bg-sky-light font-playful text-slate-800;
+  font-family: 'Comic Neue', 'Quicksand', 'Baloo', cursive, sans-serif;
+  background: theme('colors.background');
+  min-height: 100vh;
+  color: theme('colors.dark');
 }
 
-.card-bubble {
-  @apply bg-white rounded-bubble shadow-lg border-4 border-pinky hover:shadow-2xl transition-all duration-200;
+/* Fun background shapes */
+.bg-fun {
+  background: linear-gradient(135deg, #FFB347 0%, #6EC6FF 100%);
+  min-height: 100vh;
+  position: relative;
 }
 
-.btn-fun {
-  @apply rounded-full px-5 py-2 font-bold bg-mint hover:bg-lemon active:animate-wiggle;
+/* Cartoonish card */
+.cartoon-card {
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 16px 0 rgba(255,179,71,0.15);
+  background: #fff;
+  padding: 2rem;
 }
+
+/* Fun button */
+.fun-btn {
+  background: linear-gradient(90deg, #FFB347 60%, #FF6F91 100%);
+  color: #fff;
+  border-radius: 1.5rem;
+  font-weight: bold;
+  box-shadow: 0 2px 8px 0 rgba(110,198,255,0.15);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.fun-btn:hover {
+  transform: scale(1.05) rotate(-2deg);
+  box-shadow: 0 6px 24px 0 rgba(255,111,145,0.15);
+}
+
+
+/* Removed invalid Tailwind @apply classes. Use only custom CSS or valid Tailwind classes. */
 
 
