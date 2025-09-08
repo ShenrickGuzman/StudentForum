@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Comic+Neue:wght@700&family=Fredoka:wght@500;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-sky-light font-playful text-slate-800;
+}
+
+.card-bubble {
+  @apply bg-white rounded-bubble shadow-lg border-4 border-pinky hover:shadow-2xl transition-all duration-200;
+}
+
+.btn-fun {
+  @apply rounded-full px-5 py-2 font-bold bg-mint hover:bg-lemon active:animate-wiggle;
+}
+
+
