@@ -38,7 +38,7 @@ module.exports = {
           '0%, 100%': { transform: 'translateX(0)' },
           '50%': { transform: 'translateX(4px)' }
         }
-  }
+  },
       boxShadow: {
         cartoon: '0 4px 16px 0 rgba(255,179,71,0.15)',
         fun: '0 2px 8px 0 rgba(110,198,255,0.15)',
