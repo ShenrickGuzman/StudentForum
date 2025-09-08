@@ -12,19 +12,30 @@ function NavBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   return (
-    <div className="sticky top-0 z-10 bg-sky p-3 shadow">
-      <div className="max-w-5xl mx-auto flex items-center gap-4">
-        <Link to="/" className="text-2xl font-extrabold text-pink-700">🎈 Class Forum</Link>
+    <header className="sticky top-0 z-20 bg-gradient-to-r from-primary/80 to-secondary/80 shadow-cartoon border-b-4 border-accent/40">
+      <div className="max-w-5xl mx-auto flex items-center gap-4 py-2 px-2 md:px-4">
+        <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold text-accent drop-shadow hover:scale-105 transition-transform">
+          <span className="text-3xl">🦉</span>
+          <span className="hidden sm:inline">Class Forum</span>
+        </Link>
         <nav className="ml-auto flex items-center gap-2">
-          <Link className="btn-fun" to="/new">+ New Post</Link>
-          {user?.role === 'admin' && <Link className="btn-fun" to="/admin">Admin</Link>}
-          {!user && <Link className="btn-fun" to="/auth">Login</Link>}
+          <Link className="fun-btn px-4 py-2 text-base" to="/new">✏️ New Post</Link>
+          {user?.role === 'admin' && <Link className="fun-btn px-4 py-2 text-base" to="/admin">🛠️ Admin</Link>}
+          {!user && <Link className="fun-btn px-4 py-2 text-base" to="/auth">Sign In</Link>}
           {user && (
-            <button className="btn-fun" onClick={() => { logout(); navigate('/'); }}>Logout</button>
+            <>
+              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun">
+                <span className="text-lg">👤</span> {user.name}
+              </span>
+              <button
+                className="fun-btn px-4 py-2 text-base"
+                onClick={() => { logout(); navigate('/'); }}
+              >Logout</button>
+            </>
           )}
         </nav>
       </div>
-    </div>
+    </header>
   );
 }
 
