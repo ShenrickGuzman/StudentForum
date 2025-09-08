@@ -5,8 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
 
+
 export default function AuthPage() {
-  // Only login mode for this design
+  const [mode, setMode] = useState('login'); // 'login' or 'signup'
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -17,8 +18,13 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
     try {
-      const r = await api.post('/auth/login', { name, password });
-      login(r.data.token, r.data.user); navigate('/');
+      if (mode === 'signup') {
+        const r = await api.post('/auth/signup', { name, password });
+        login(r.data.token, r.data.user); navigate('/');
+      } else {
+        const r = await api.post('/auth/login', { name, password });
+        login(r.data.token, r.data.user); navigate('/');
+      }
     } catch (e) {
       const msg = e?.response?.data?.error || 'Something went wrong';
       setError(msg);
@@ -71,8 +77,29 @@ export default function AuthPage() {
           onChange={e => setPassword(e.target.value)}
         />
         <button className="fun-btn w-full text-lg py-3 mt-2 shadow-fun bg-gradient-to-r from-green-400 to-green-600 hover:from-green-500 hover:to-green-700 border-none" type="submit">
-          Sign In
+          {mode === 'signup' ? 'Sign Up' : 'Sign In'}
         </button>
+        <div className="w-full flex flex-col items-center mt-2 gap-1">
+          {mode === 'login' ? (
+            <>
+              <span className="text-xs text-dark/50">Don't have an account?</span>
+              <button
+                type="button"
+                className="text-green-700 underline text-sm hover:font-bold transition-all"
+                onClick={() => setMode('signup')}
+              >Sign up</button>
+            </>
+          ) : (
+            <>
+              <span className="text-xs text-dark/50">Already have an account?</span>
+              <button
+                type="button"
+                className="text-green-700 underline text-sm hover:font-bold transition-all"
+                onClick={() => setMode('login')}
+              >Sign in</button>
+            </>
+          )}
+        </div>
       </form>
     </div>
   );
