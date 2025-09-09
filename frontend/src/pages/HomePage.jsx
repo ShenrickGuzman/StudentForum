@@ -10,7 +10,7 @@ const categories = [
   { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-success/30' },
 ];
 
-export default function HomePage() {
+function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
@@ -23,31 +23,57 @@ export default function HomePage() {
   }, [q, cat]);
 
   return (
-    <div className="bg-fun min-h-screen py-8 px-2 font-cartoon">
+    <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Floating pastel circles */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none">
+        <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
+        <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
+        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
+        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
+        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
+        <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
+      </div>
       {/* Hero Section */}
-      <div className="flex flex-col items-center mb-8">
-        <div className="text-7xl animate-bouncex mb-2">🦉</div>
-        <h1 className="text-4xl font-extrabold text-primary drop-shadow mb-2 text-center">Welcome to the Class Forum!</h1>
-        <p className="text-lg text-dark/70 text-center max-w-xl mb-4">
-          A playful place to share ideas, ask questions, and connect with your classmates. Jump in and join the conversation!
-        </p>
-        <div className="flex gap-2 flex-wrap justify-center">
+      <div className="flex flex-col items-center mb-10 z-10 relative">
+        <div className="w-full flex justify-center">
+          <div className="bg-white/90 rounded-3xl shadow-2xl px-10 py-8 max-w-2xl flex flex-col items-center border-2 border-white/60">
+            <div className="text-5xl mb-2">🎓</div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-2 text-center" style={{WebkitTextStroke: '1px #b388ff'}}>Welcome to Students Forum!</h1>
+            <p className="text-lg text-white/90 text-center max-w-xl mb-2 drop-shadow">
+              A playful place to share ideas, ask questions, and connect with your classmates. Jump in and join the conversation!
+            </p>
+            <div className="flex gap-2 text-2xl mb-2">
+              <span>📚</span><span>✨</span><span>🎯</span><span>🧩</span>
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-4 flex-wrap justify-center mt-6">
           {categories.map(c => (
-            <span key={c.key} className={`px-4 py-2 rounded-cartoon font-bold text-dark/80 shadow-fun ${c.color} text-base`}>{c.label}</span>
+            <span key={c.key} className={`px-6 py-2 rounded-full font-bold text-white shadow-lg text-base ${
+              c.key === 'Academics' ? 'bg-blue-500' :
+              c.key === 'Class Life' ? 'bg-green-500' :
+              c.key === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
+              'bg-purple-600'
+            }`}>
+              {c.label}
+            </span>
           ))}
         </div>
       </div>
 
       {/* Search & Filter */}
-      <div className="cartoon-card flex flex-col md:flex-row gap-3 items-center mb-6 shadow-fun border-4 border-primary/30 bg-white/80">
-        <input
-          className="flex-1 rounded-cartoon px-4 py-3 border-4 border-secondary text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-          placeholder="Search posts..."
-          value={q}
-          onChange={e => setQ(e.target.value)}
-        />
+      <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
+        <div className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60">
+          <span className="text-xl text-gray-400 mr-2">🔍</span>
+          <input
+            className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
+            placeholder="Search posts, topics, or ask anything..."
+            value={q}
+            onChange={e => setQ(e.target.value)}
+          />
+        </div>
         <select
-          className="rounded-cartoon px-4 py-3 border-4 border-secondary text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
+          className="rounded-2xl px-4 py-3 border-2 border-white/60 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white/80 shadow-lg"
           value={cat}
           onChange={e => setCat(e.target.value)}
         >
@@ -56,12 +82,13 @@ export default function HomePage() {
             <option key={c.key} value={c.key}>{c.label}</option>
           ))}
         </select>
+        <button className="rounded-2xl px-6 py-3 font-bold bg-purple-500 text-white shadow-lg hover:bg-purple-600 transition-all">Filter</button>
       </div>
 
       {/* Posts */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 z-10 relative">
         {posts.length === 0 && (
-          <div className="cartoon-card text-center text-xl text-dark/60 col-span-full">
+          <div className="bg-white/90 rounded-2xl shadow-lg text-center text-xl text-gray-400 col-span-full py-8">
             No posts yet. Be the first to start a conversation!
           </div>
         )}
@@ -69,18 +96,31 @@ export default function HomePage() {
           <Link
             to={`/post/${p.id}`}
             key={p.id}
-            className={`cartoon-card hover:scale-105 transition-transform duration-150 border-4 border-accent/30 bg-white/90 shadow-cartoon flex flex-col gap-2 relative`}
+            className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col gap-2 relative p-6"
           >
             <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-            <div className="text-sm opacity-70 mb-1">{categories.find(c => c.key === p.category)?.label || p.category}</div>
-            <div className="text-2xl font-extrabold text-primary drop-shadow mb-1">{p.title}</div>
-            <div className="opacity-80 line-clamp-2 flex-1">{p.content}</div>
-            <div className="mt-2 text-sm text-dark/60">by {p.author_name}</div>
+            <div className="text-sm font-bold mb-1">
+              <span className={`px-3 py-1 rounded-full text-white text-xs shadow ${
+                p.category === 'Academics' ? 'bg-blue-500' :
+                p.category === 'Class Life' ? 'bg-green-500' :
+                p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
+                'bg-purple-600'
+              }`}>
+                {categories.find(c => c.key === p.category)?.label || p.category}
+              </span>
+            </div>
+            <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
+            <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
+            <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
+              <span>👤</span> {p.author_name}
+            </div>
           </Link>
         ))}
       </div>
     </div>
   );
 }
+
+export default HomePage;
 
 
