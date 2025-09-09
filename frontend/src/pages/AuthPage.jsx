@@ -129,6 +129,15 @@ export default function AuthPage() {
           )}
         </div>
       </form>
+      {/* Custom footer below card */}
+      <div className="mt-6 w-full max-w-md px-2">
+        <div className="rounded-2xl bg-gradient-to-r from-purple-400 to-pink-300 p-4 text-center shadow-lg border border-white/30 text-white font-bold text-lg flex flex-col items-center gap-2">
+          Made with <span className="inline-block animate-pulse">💖</span> by shen!
+          <div className="mt-1 text-2xl flex gap-2 justify-center">
+            <span>🎓</span><span>📖</span><span>🧩</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
