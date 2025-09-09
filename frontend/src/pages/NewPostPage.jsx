@@ -17,49 +17,66 @@ export default function NewPostPage() {
   };
 
   return (
-    <form onSubmit={submit} className="cartoon-card max-w-2xl mx-auto mt-6 p-6 flex flex-col gap-4 border-4 border-primary/30 shadow-cartoon bg-white/90 font-cartoon">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-3xl">✏️</span>
-        <h1 className="text-3xl font-extrabold text-primary drop-shadow">Create a Post</h1>
+    <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Floating pastel circles */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none">
+        <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
+        <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
+        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
+        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
+        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
+        <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-      <input
-        className="rounded-cartoon px-4 py-3 border-4 border-secondary w-full text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-        placeholder="Title"
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-      />
-      <select
-        className="rounded-cartoon px-4 py-3 border-4 border-secondary w-full text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-        value={category}
-        onChange={e => setCategory(e.target.value)}
+      <form
+        onSubmit={submit}
+        className="relative z-10 max-w-2xl mx-auto mt-16 p-10 flex flex-col gap-6 bg-white/90 rounded-3xl shadow-2xl border-4 border-purple-200"
+        style={{ backdropFilter: 'blur(4px)' }}
       >
-        <option>Academics</option>
-        <option>Class Life</option>
-        <option>Ideas</option>
-        <option>Random</option>
-      </select>
-      <textarea
-        className="rounded-cartoon px-4 py-3 border-4 border-secondary w-full min-h-[140px] text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-        placeholder="Content"
-        value={content}
-        onChange={e => setContent(e.target.value)}
-        required
-      />
-      <input
-        className="rounded-cartoon px-4 py-3 border-4 border-secondary w-full text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-        placeholder="Image URL (optional)"
-        value={imageUrl}
-        onChange={e => setImageUrl(e.target.value)}
-      />
-      <input
-        className="rounded-cartoon px-4 py-3 border-4 border-secondary w-full text-lg focus:ring-4 focus:ring-primary outline-none transition-all"
-        placeholder="Link URL (optional)"
-        value={linkUrl}
-        onChange={e => setLinkUrl(e.target.value)}
-      />
-      <button className="fun-btn w-full text-lg py-3 mt-2 shadow-fun" type="submit">Post 🎉</button>
-    </form>
+        <div className="flex items-center gap-3 mb-2 justify-center">
+          <span className="text-4xl">✏️</span>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-purple-700 drop-shadow-lg text-center">Create a Post</h1>
+        </div>
+        <input
+          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+          placeholder="Title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          required
+        />
+        <select
+          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+        >
+          <option>Academics</option>
+          <option>Class Life</option>
+          <option>Ideas</option>
+          <option>Random</option>
+        </select>
+        <textarea
+          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full min-h-[140px] text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+          placeholder="Content"
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          required
+        />
+        <input
+          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+          placeholder="Image URL (optional)"
+          value={imageUrl}
+          onChange={e => setImageUrl(e.target.value)}
+        />
+        <input
+          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+          placeholder="Link URL (optional)"
+          value={linkUrl}
+          onChange={e => setLinkUrl(e.target.value)}
+        />
+        <button className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all" type="submit">
+          <span>🎉</span> Post
+        </button>
+      </form>
+    </div>
   );
 }
 
