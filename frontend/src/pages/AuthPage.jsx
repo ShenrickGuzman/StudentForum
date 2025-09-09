@@ -54,7 +54,7 @@ export default function AuthPage() {
               type="button"
               className="text-green-700 underline text-sm hover:font-bold transition-all"
               onClick={() => navigate('/')}
-            >Click here to see posted forums 📚</button>
+            >Must have an account to see posted forums 📚</button>
           </div>
         </div>
         {error && (
@@ -104,5 +104,6 @@ export default function AuthPage() {
     </div>
   );
 }
+
 
 
