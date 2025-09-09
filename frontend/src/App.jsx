@@ -42,17 +42,14 @@ function NavBar() {
 function AppShell() {
   return (
     <div>
-      <NavBar />
-      <div className="max-w-5xl mx-auto p-4">
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
-          <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
-          <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
-          <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
+        <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
+        <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </div>
   );
 }
