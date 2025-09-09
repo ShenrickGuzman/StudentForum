@@ -80,7 +80,7 @@ export default function AuthPage() {
           <label className="block text-sm font-bold text-gray-500 mb-1 flex items-center gap-1"><span className="text-base">👤</span> Username</label>
           <input
             className="w-full rounded-xl px-4 py-3 border-2 border-gray-200 bg-pink-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none transition-all"
-            placeholder="Enter your cool username"
+            placeholder="Enter your username"
             value={name}
             onChange={e => setName(e.target.value)}
             autoFocus
@@ -92,7 +92,7 @@ export default function AuthPage() {
           <input
             type={showPassword ? 'text' : 'password'}
             className="w-full rounded-xl px-4 py-3 border-2 border-gray-200 bg-pink-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none transition-all pr-10"
-            placeholder="Your secret password"
+            placeholder="Your password"
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
@@ -112,7 +112,7 @@ export default function AuthPage() {
         )}
         {/* Submit */}
         <button className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all">
-          {mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Let's Learn!<span>💬</span></>}
+          {mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Sign in<span>💬</span></>}
         </button>
         {/* Welcome message */}
         <div className="w-full bg-white/80 rounded-xl p-4 text-center shadow border-2 border-yellow-100 mt-2">
