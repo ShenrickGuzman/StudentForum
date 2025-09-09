@@ -118,8 +118,8 @@ export default function AuthPage() {
         <div className="w-full bg-white/80 rounded-xl p-4 text-center shadow border-2 border-yellow-100 mt-2">
           {mode === 'login' ? (
             <>
-              <span className="text-lg">👋 <b>Welcome back, superstar student!</b> <span className="text-yellow-400">⭐</span></span>
-              <div className="text-pink-500 mt-1">Your study buddies are excited to see you! <span className="text-lg">🤗📚</span></div>
+              <span className="text-lg">👋 <b>Welcome back, student!</b> <span className="text-yellow-400">⭐</span></span>
+              <div className="text-pink-500 mt-1">Don't have an account yet? Sign up now<span className="text-lg">🤗</span></div>
             </>
           ) : (
             <>
