@@ -1,7 +1,9 @@
 
+
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
+import { useAuth } from '../state/auth';
 
 const categories = [
   { key: 'Academics', label: '📚 Academics', color: 'bg-primary/30' },
@@ -14,6 +16,8 @@ function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = {};
@@ -33,6 +37,24 @@ function HomePage() {
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
+      {/* Top right action buttons */}
+      {user && (
+        <div className="absolute right-0 top-0 mt-6 mr-8 z-20 flex gap-4">
+          <button
+            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
+            onClick={() => navigate('/new')}
+          >
+            ✨ New Post
+          </button>
+          <button
+            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
+            onClick={logout}
+          >
+            🔓 Logout
+          </button>
+        </div>
+      )}
+
       {/* Hero Section */}
       <div className="flex flex-col items-center mb-10 z-10 relative">
         <div className="w-full flex justify-center">
