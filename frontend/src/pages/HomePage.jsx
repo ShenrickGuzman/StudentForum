@@ -36,10 +36,12 @@ function HomePage() {
       {/* Hero Section */}
       <div className="flex flex-col items-center mb-10 z-10 relative">
         <div className="w-full flex justify-center">
-          <div className="bg-white/90 rounded-3xl shadow-2xl px-10 py-8 max-w-2xl flex flex-col items-center border-2 border-white/60">
+          <div className="bg-white rounded-3xl shadow-2xl px-10 py-8 max-w-2xl flex flex-col items-center border-4 border-purple-200">
             <div className="text-5xl mb-2">🎓</div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-2 text-center" style={{WebkitTextStroke: '1px #b388ff'}}>Welcome to Students Forum!</h1>
-            <p className="text-lg text-white/90 text-center max-w-xl mb-2 drop-shadow">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-2 text-center drop-shadow-lg" style={{letterSpacing: '0.03em'}}>
+              Welcome to Students Forum!
+            </h1>
+            <p className="text-lg md:text-xl font-semibold text-gray-700 text-center max-w-xl mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>
               A playful place to share ideas, ask questions, and connect with your classmates. Jump in and join the conversation!
             </p>
             <div className="flex gap-2 text-2xl mb-2">
