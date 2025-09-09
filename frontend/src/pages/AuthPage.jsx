@@ -48,7 +48,7 @@ export default function AuthPage() {
         style={{ backdropFilter: 'blur(4px)' }}
       >
         <div className="flex flex-col items-center gap-2 w-full">
-          <h1 className="text-4xl font-extrabold text-green-600 drop-shadow text-center mb-2">Welcome to the Class Forum 🎉</h1>
+          <h1 className="text-4xl font-extrabold text-green-600 drop-shadow text-center mb-2">Welcome to the Students Forum 🎉</h1>
           <div className="w-full flex justify-center mb-1">
             <button
               type="button"
@@ -104,6 +104,7 @@ export default function AuthPage() {
     </div>
   );
 }
+
 
 
 
