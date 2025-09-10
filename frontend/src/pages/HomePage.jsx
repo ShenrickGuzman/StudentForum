@@ -12,19 +12,33 @@ const categories = [
   { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-success/30' },
 ];
 
+
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
+  const [loading, setLoading] = useState(true);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
+    setLoading(true);
     const params = {};
     if (q) params.q = q;
     if (cat) params.category = cat;
-    api.get('/posts', { params }).then(r => setPosts(r.data));
+    api.get('/posts', { params }).then(r => {
+      setPosts(r.data);
+      setLoading(false);
+    });
   }, [q, cat]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
+        <div className="cartoon-card text-2xl font-bold text-primary bg-white/90 p-8 shadow-fun">Loading Forums...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
