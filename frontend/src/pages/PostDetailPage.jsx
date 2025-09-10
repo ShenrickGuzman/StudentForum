@@ -1,3 +1,8 @@
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import api from '../lib/api';
+import { useAuth } from '../state/auth';
+
 export default function PostDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
