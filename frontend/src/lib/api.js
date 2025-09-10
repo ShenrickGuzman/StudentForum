@@ -23,7 +23,8 @@ api.interceptors.request.use((config) => {
 // Function to get full URL for static assets like images
 export function getAssetUrl(path) {
   if (!path) return '';
-  const base = rawBase || '';
+  // Use the base URL without /api suffix for static assets
+  const base = rawBase ? rawBase.replace(/\/api$/, '') : '';
   if (path.startsWith('/')) {
     return `${base}${path}`;
   }
