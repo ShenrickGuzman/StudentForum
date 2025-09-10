@@ -1,8 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import api from '../lib/api';
-import { useAuth } from '../state/auth';
-
+export default function PostDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -104,6 +100,6 @@ import { useAuth } from '../state/auth';
       </div>
     </div>
   );
-// ...existing code...
+}
 
 
