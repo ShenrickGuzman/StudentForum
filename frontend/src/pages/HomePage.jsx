@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../lib/api';
+import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 const categories = [
@@ -167,6 +167,18 @@ function HomePage() {
                 {categories.find(c => c.key === p.category)?.label || p.category}
               </span>
             </div>
+            {p.image_url && (
+              <div className="mb-2">
+                <img
+                  src={getAssetUrl(p.image_url)}
+                  alt="Post image"
+                  className="w-full h-32 object-cover rounded-xl shadow-md"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
             <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
             <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
             <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
