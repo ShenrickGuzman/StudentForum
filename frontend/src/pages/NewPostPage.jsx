@@ -6,7 +6,6 @@ export default function NewPostPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Academics');
-  const [imageUrl, setImageUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
@@ -22,7 +21,7 @@ export default function NewPostPage() {
 
   const submit = async (e) => {
     e.preventDefault();
-    let finalImageUrl = imageUrl;
+    let finalImageUrl = '';
     if (imageFile) {
       setUploading(true);
       const formData = new FormData();
@@ -94,13 +93,6 @@ export default function NewPostPage() {
             accept="image/*"
             className="block w-full text-lg border-2 border-purple-100 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-pink-200 outline-none transition-all"
             onChange={handleFileChange}
-          />
-          <div className="text-xs text-gray-400 mt-1">Or paste an image URL below</div>
-          <input
-            className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white mt-1"
-            placeholder="Image URL (optional)"
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
             disabled={uploading}
           />
         </div>
