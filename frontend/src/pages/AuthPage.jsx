@@ -11,12 +11,14 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const submit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
     try {
       if (mode === 'signup') {
         const r = await api.post('/auth/signup', { name, password });
@@ -28,6 +30,8 @@ export default function AuthPage() {
     } catch (e) {
       const msg = e?.response?.data?.error || 'Something went wrong';
       setError(msg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -111,8 +115,13 @@ export default function AuthPage() {
           </div>
         )}
         {/* Submit */}
-        <button className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all">
-          {mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Sign in<span>💬</span></>}
+        <button
+          className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+          disabled={loading}
+        >
+          {loading
+            ? (<span>Logging in, please wait a moment...</span>)
+            : (mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Sign in<span>💬</span></>)}
         </button>
         {/* Welcome message */}
         <div className="w-full bg-white/80 rounded-xl p-4 text-center shadow border-2 border-yellow-100 mt-2">
