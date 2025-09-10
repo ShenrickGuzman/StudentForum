@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -45,9 +46,15 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-// Auth and feature routes (to be implemented)
+
+// Serve uploaded files statically
+const uploadsPath = path.join(process.cwd(), 'uploads');
+app.use('/uploads', express.static(uploadsPath));
+
+// Auth and feature routes
 app.use('/api/auth', (await import('./src/routes/auth.js')).default(pool));
 app.use('/api/posts', (await import('./src/routes/posts.js')).default(pool));
+app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
 ensureSchema().then(() => {
