@@ -95,6 +95,15 @@ export default function NewPostPage() {
             onChange={handleFileChange}
             disabled={uploading}
           />
+          {imageFile && (
+            <div className="mt-2 border-2 border-red-500 rounded-lg p-1 max-w-xs">
+              <img
+                src={URL.createObjectURL(imageFile)}
+                alt="Preview"
+                className="max-w-full max-h-48 object-contain rounded-md"
+              />
+            </div>
+          )}
         </div>
         <input
           className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
