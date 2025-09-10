@@ -74,11 +74,13 @@ const createPostsRouter = (pool) => {
     }
   });
 
-  // Comment
+  // Comment (prevent if locked)
   router.post('/:id/comments', requireAuth, async (req, res) => {
     const { content } = req.body || {};
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
+      const postRes = await pool.query('SELECT locked FROM posts WHERE id = $1', [req.params.id]);
+      if (postRes.rows[0]?.locked) return res.status(403).json({ error: 'Post is locked. Comments are disabled.' });
       const result = await pool.query(
         `INSERT INTO comments (post_id, user_id, content) VALUES ($1, $2, $3) RETURNING *`,
         [req.params.id, req.user.id, content]
@@ -86,6 +88,23 @@ const createPostsRouter = (pool) => {
       res.json(result.rows[0]);
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
+    }
+  });
+  // Lock/unlock post (admin only)
+  router.post('/:id/lock', requireAuth, isAdmin, async (req, res) => {
+    try {
+      await pool.query('UPDATE posts SET locked = TRUE WHERE id = $1', [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to lock post' });
+    }
+  });
+  router.post('/:id/unlock', requireAuth, isAdmin, async (req, res) => {
+    try {
+      await pool.query('UPDATE posts SET locked = FALSE WHERE id = $1', [req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to unlock post' });
     }
   });
 
