@@ -7,12 +7,39 @@ export default function NewPostPage() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Academics');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [linkUrl, setLinkUrl] = useState('');
   const navigate = useNavigate();
 
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      setImageFile(e.target.files[0]);
+    } else {
+      setImageFile(null);
+    }
+  };
+
   const submit = async (e) => {
     e.preventDefault();
-    await api.post('/posts', { title, content, category, imageUrl, linkUrl });
+    let finalImageUrl = imageUrl;
+    if (imageFile) {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      try {
+        const res = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        finalImageUrl = res.data.url;
+      } catch (err) {
+        alert('Image upload failed.');
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+    await api.post('/posts', { title, content, category, imageUrl: finalImageUrl, linkUrl });
     navigate('/');
   };
 
@@ -60,20 +87,31 @@ export default function NewPostPage() {
           onChange={e => setContent(e.target.value)}
           required
         />
-        <input
-          className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
-          placeholder="Image URL (optional)"
-          value={imageUrl}
-          onChange={e => setImageUrl(e.target.value)}
-        />
+        <div>
+          <label className="block mb-1 font-bold text-purple-700">Upload a Photo/File (optional)</label>
+          <input
+            type="file"
+            accept="image/*"
+            className="block w-full text-lg border-2 border-purple-100 rounded-xl px-4 py-2 bg-white focus:ring-2 focus:ring-pink-200 outline-none transition-all"
+            onChange={handleFileChange}
+          />
+          <div className="text-xs text-gray-400 mt-1">Or paste an image URL below</div>
+          <input
+            className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white mt-1"
+            placeholder="Image URL (optional)"
+            value={imageUrl}
+            onChange={e => setImageUrl(e.target.value)}
+            disabled={uploading}
+          />
+        </div>
         <input
           className="rounded-xl px-4 py-3 border-2 border-purple-100 w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
           placeholder="Link URL (optional)"
           value={linkUrl}
           onChange={e => setLinkUrl(e.target.value)}
         />
-        <button className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all" type="submit">
-          <span>🎉</span> Post
+        <button className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60" type="submit" disabled={uploading}>
+          {uploading ? <span className="animate-spin">🖼️</span> : <span>🎉</span>} {uploading ? 'Uploading...' : 'Post'}
         </button>
       </form>
     </div>
