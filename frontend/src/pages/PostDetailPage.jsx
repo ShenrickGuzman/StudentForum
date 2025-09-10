@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import api from '../lib/api';
+import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function PostDetailPage() {
@@ -70,7 +70,7 @@ export default function PostDetailPage() {
             {post.title}
             {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
           </h1>
-          {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={post.image_url} />}
+          {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
           <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{post.content}</p>
           {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
         </div>
