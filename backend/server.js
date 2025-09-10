@@ -8,10 +8,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import authRoute from './src/routes/auth.js';
-import postsRoute from './src/routes/posts.js';
-import uploadRoute from './src/routes/upload.js';
-
 dotenv.config();
 
 const { Pool } = pkg;
@@ -56,9 +52,9 @@ const uploadsPath = path.join(process.cwd(), 'uploads');
 app.use('/uploads', express.static(uploadsPath));
 
 // Auth and feature routes
-app.use('/api/auth', authRoute(pool));
-app.use('/api/posts', postsRoute(pool));
-app.use('/api/upload', uploadRoute);
+app.use('/api/auth', (await import('./src/routes/auth.js')).default(pool));
+app.use('/api/posts', (await import('./src/routes/posts.js')).default(pool));
+app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
 ensureSchema().then(() => {
