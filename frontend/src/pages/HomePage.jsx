@@ -168,11 +168,11 @@ function HomePage() {
               </span>
             </div>
             {p.image_url && (
-              <div className="mb-2">
+              <div className="mb-2 flex justify-center">
                 <img
                   src={getAssetUrl(p.image_url)}
                   alt="Post image"
-                  className="w-full h-32 object-cover rounded-xl shadow-md"
+                  className="max-w-[150px] max-h-[150px] object-cover rounded-xl shadow-md"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
