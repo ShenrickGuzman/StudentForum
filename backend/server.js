@@ -18,7 +18,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "https:"],
+    },
+  },
+}));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 
@@ -47,9 +56,25 @@ app.get('/api/health', async (req, res) => {
 });
 
 
-// Serve uploaded files statically
+// Serve uploaded files statically with CORS headers
 const uploadsPath = path.join(process.cwd(), 'uploads');
-app.use('/uploads', express.static(uploadsPath));
+
+// Handle OPTIONS requests for CORS preflight
+app.options('/uploads/*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.sendStatus(200);
+});
+
+// Serve static files with CORS headers
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(uploadsPath));
 
 // Auth and feature routes
 app.use('/api/auth', (await import('./src/routes/auth.js')).default(pool));
