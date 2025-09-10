@@ -1,3 +1,34 @@
+// Middleware to require authentication and admin role
+import jwt from 'jsonwebtoken';
+
+const requireAuth = (req, res, next) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+const isAdmin = (req, res, next) => {
+  if (req.user?.role === 'admin' || req.user?.role === 'teacher') return next();
+  return res.status(403).json({ error: 'Forbidden' });
+};
+  // Grant admin role (admin only)
+  router.post('/make-admin', requireAuth, isAdmin, async (req, res) => {
+    const { name } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'Username required' });
+    try {
+      const result = await pool.query('UPDATE users SET role = $1 WHERE lower(name) = lower($2) RETURNING id, name, role', ['admin', name]);
+      if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
+      res.json({ ok: true, user: result.rows[0] });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to grant admin role' });
+    }
+  });
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
