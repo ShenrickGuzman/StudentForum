@@ -3,11 +3,14 @@ import { useEffect, useState } from 'react';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
 
+
 export default function AdminPage() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [makeAdminName, setMakeAdminName] = useState('');
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
+  const [actionMsg, setActionMsg] = useState('');
   const load = () => api.get('/posts').then(r => setPosts(r.data));
   useEffect(() => { load(); }, []);
 
@@ -80,37 +83,84 @@ export default function AdminPage() {
                 <button
                   className="fun-btn px-4 py-2 text-base"
                   title="Pin post"
-                  onClick={async () => { await api.post(`/posts/${p.id}/pin`); load(); }}
+                  onClick={async () => {
+                    setActionMsg('');
+                    try {
+                      await api.post(`/posts/${p.id}/pin`);
+                      load();
+                    } catch (e) {
+                      setActionMsg(e?.response?.data?.error || 'Failed to pin post');
+                    }
+                  }}
                 >📌 Pin</button>
               ) : (
                 <button
                   className="fun-btn px-4 py-2 text-base bg-accent/80 hover:bg-accent"
                   title="Unpin post"
-                  onClick={async () => { await api.post(`/posts/${p.id}/unpin`); load(); }}
+                  onClick={async () => {
+                    setActionMsg('');
+                    try {
+                      await api.post(`/posts/${p.id}/unpin`);
+                      load();
+                    } catch (e) {
+                      setActionMsg(e?.response?.data?.error || 'Failed to unpin post');
+                    }
+                  }}
                 >❌ Unpin</button>
               )}
               {!p.locked ? (
                 <button
                   className="fun-btn px-4 py-2 text-base bg-yellow-200 hover:bg-yellow-300"
                   title="Lock post (disable comments)"
-                  onClick={async () => { await api.post(`/posts/${p.id}/lock`); load(); }}
+                  onClick={async () => {
+                    setActionMsg('');
+                    try {
+                      await api.post(`/posts/${p.id}/lock`);
+                      load();
+                    } catch (e) {
+                      setActionMsg(e?.response?.data?.error || 'Failed to lock post');
+                    }
+                  }}
                 >🔒 Lock</button>
               ) : (
                 <button
                   className="fun-btn px-4 py-2 text-base bg-green-200 hover:bg-green-300"
                   title="Unlock post"
-                  onClick={async () => { await api.post(`/posts/${p.id}/unlock`); load(); }}
+                  onClick={async () => {
+                    setActionMsg('');
+                    try {
+                      await api.post(`/posts/${p.id}/unlock`);
+                      load();
+                    } catch (e) {
+                      setActionMsg(e?.response?.data?.error || 'Failed to unlock post');
+                    }
+                  }}
                 >🔓 Unlock</button>
               )}
               <button
-                className="fun-btn px-4 py-2 text-base bg-error/80 hover:bg-error"
+                className={`fun-btn px-4 py-2 text-base bg-error/80 hover:bg-error ${deletingId === p.id ? 'opacity-60 cursor-not-allowed' : ''}`}
                 title="Delete post"
-                onClick={async () => { await api.delete(`/posts/${p.id}`); load(); }}
-              >🗑️ Delete</button>
+                disabled={deletingId === p.id}
+                onClick={async () => {
+                  if (!window.confirm('Are you sure you want to delete this forum?')) return;
+                  setDeletingId(p.id);
+                  setActionMsg('Deleting Forum...');
+                  try {
+                    await api.delete(`/posts/${p.id}`);
+                    setActionMsg('');
+                    setDeletingId(null);
+                    load();
+                  } catch (e) {
+                    setActionMsg(e?.response?.data?.error || 'Failed to delete post');
+                    setDeletingId(null);
+                  }
+                }}
+              >{deletingId === p.id ? 'Deleting Forum...' : '🗑️ Delete'}</button>
             </div>
           </div>
         </div>
       ))}
+  {actionMsg && <div className="text-center text-error font-bold mt-4">{actionMsg}</div>}
     </div>
   );
 }
