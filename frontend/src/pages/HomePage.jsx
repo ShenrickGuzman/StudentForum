@@ -154,36 +154,38 @@ function HomePage() {
           <Link
             to={`/post/${p.id}`}
             key={p.id}
-            className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col gap-2 relative p-6"
+            className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-row gap-4 relative p-6"
           >
             <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-            <div className="text-sm font-bold mb-1">
-              <span className={`px-3 py-1 rounded-full text-white text-xs shadow ${
-                p.category === 'Academics' ? 'bg-blue-500' :
-                p.category === 'Class Life' ? 'bg-green-500' :
-                p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
-                'bg-purple-600'
-              }`}>
-                {categories.find(c => c.key === p.category)?.label || p.category}
-              </span>
+            <div className="flex flex-col flex-1">
+              <div className="text-sm font-bold mb-1">
+                <span className={`px-3 py-1 rounded-full text-white text-xs shadow ${
+                  p.category === 'Academics' ? 'bg-blue-500' :
+                  p.category === 'Class Life' ? 'bg-green-500' :
+                  p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
+                  'bg-purple-600'
+                }`}>
+                  {categories.find(c => c.key === p.category)?.label || p.category}
+                </span>
+              </div>
+              <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
+              <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
+              <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
+                <span>👤</span> {p.author_name}
+              </div>
             </div>
             {p.image_url && (
-              <div className="mb-2 flex justify-center">
+              <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden">
                 <img
                   src={getAssetUrl(p.image_url)}
                   alt="Post image"
-                  className="max-w-[150px] max-h-[150px] object-cover rounded-xl shadow-md"
+                  className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
                 />
               </div>
             )}
-            <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
-            <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
-            <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-              <span>👤</span> {p.author_name}
-            </div>
           </Link>
         ))}
       </div>
