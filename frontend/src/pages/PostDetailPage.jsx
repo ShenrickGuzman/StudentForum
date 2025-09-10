@@ -3,14 +3,17 @@ import { useParams } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
 
-export default function PostDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
   const { token } = useAuth();
 
-  const load = () => api.get(`/posts/${id}`).then(r => setData(r.data));
-  useEffect(() => { load(); }, [id]);
+  const load = () => api.get(`/posts/${id}`).then(r => {
+    setData(r.data);
+    setLoading(false);
+  });
+  useEffect(() => { setLoading(true); load(); }, [id]);
 
   const sendComment = async () => {
     if (!comment.trim()) return;
@@ -19,6 +22,16 @@ export default function PostDetailPage() {
     load();
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
+        <div className="cartoon-card text-2xl font-bold text-primary bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
+          <span className="text-4xl animate-spin">💬</span>
+          Loading Forum...
+        </div>
+      </div>
+    );
+  }
   if (!data) return null;
   const { post, comments } = data;
 
@@ -36,6 +49,11 @@ export default function PostDetailPage() {
       <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
         {/* Post Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-purple-200 flex flex-col gap-4">
+          {/* Forum status indicators */}
+          <div className="flex gap-2 items-center mb-1 justify-center">
+            {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
+            {post.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
+          </div>
           <div className="flex items-center gap-2 mb-2">
             <span className="text-2xl">{post.pinned ? '📌' : ''}</span>
             <span className={`px-3 py-1 rounded-full text-white text-xs shadow font-bold ${
@@ -86,6 +104,6 @@ export default function PostDetailPage() {
       </div>
     </div>
   );
-}
+// ...existing code...
 
 
