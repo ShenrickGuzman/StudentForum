@@ -47,14 +47,17 @@ export default function PostDetailPage() {
               {post.category}
             </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-purple-700 mb-2 text-center drop-shadow-lg">{post.title}</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-purple-700 mb-2 text-center drop-shadow-lg flex items-center justify-center gap-3">
+            {post.title}
+            {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
+          </h1>
           {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={post.image_url} />}
           <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{post.content}</p>
           {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
         </div>
         {/* Comments Card */}
         <div className="bg-white rounded-3xl shadow-2xl p-8 border-4 border-pink-200">
-          <h2 className="text-2xl font-bold mb-3 text-pink-500 drop-shadow flex items-center gap-2">💬 Comments</h2>
+          <h2 className="text-2xl font-bold mb-3 text-pink-500 drop-shadow flex items-center gap-2">💬 Comments {post.locked && <span className="text-error text-lg">(Locked)</span>}</h2>
           <div className="space-y-3">
             {comments.length === 0 && <div className="text-gray-400 text-base">No comments yet. Be the first!</div>}
             {comments.map(c => (
@@ -65,7 +68,7 @@ export default function PostDetailPage() {
               </div>
             ))}
           </div>
-          {token && (
+          {token && !post.locked && (
             <div className="mt-6 flex gap-2">
               <input
                 className="flex-1 rounded-xl px-4 py-3 border-2 border-pink-200 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
@@ -75,6 +78,9 @@ export default function PostDetailPage() {
               />
               <button className="rounded-xl px-6 py-3 text-lg font-bold bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white shadow-lg transition-all" onClick={sendComment}>Send 💬</button>
             </div>
+          )}
+          {token && post.locked && (
+            <div className="mt-6 text-center text-error font-bold">Comments are locked for this post.</div>
           )}
         </div>
       </div>
