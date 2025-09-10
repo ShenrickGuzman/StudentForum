@@ -56,8 +56,14 @@ app.get('/api/health', async (req, res) => {
 });
 
 
-// Serve uploaded files statically with CORS headers
+// Ensure uploads directory exists
 const uploadsPath = path.join(process.cwd(), 'uploads');
+try {
+  await fs.access(uploadsPath);
+} catch {
+  await fs.mkdir(uploadsPath, { recursive: true });
+  console.log('Created uploads directory');
+}
 
 // Handle OPTIONS requests for CORS preflight
 app.options('/uploads/*', (req, res) => {
