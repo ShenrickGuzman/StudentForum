@@ -7,17 +7,35 @@ import { useAuth } from '../state/auth';
 export default function AdminPage() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [makeAdminName, setMakeAdminName] = useState('');
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [deletingId, setDeletingId] = useState(null);
   const [actionMsg, setActionMsg] = useState('');
-  const load = () => api.get('/posts').then(r => setPosts(r.data));
+  const load = () => {
+    setLoading(true);
+    api.get('/posts').then(r => {
+      setPosts(r.data);
+      setLoading(false);
+    });
+  };
   useEffect(() => { load(); }, []);
 
   // Only allow SHEN (case-insensitive, trimmed) or admin role
   const isShen = user?.name && user.name.trim().toLowerCase() === 'shen';
   if (!user || !(user.role === 'admin' || isShen)) {
     return <div className="cartoon-card mt-10 mx-auto max-w-lg text-center text-xl text-error font-bold">Access denied. Admins only.</div>;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
+        <div className="cartoon-card text-2xl font-bold text-primary bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
+          <span className="text-4xl animate-spin">🛠️</span>
+          Loading Forums for Admin...
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -60,6 +78,11 @@ export default function AdminPage() {
       )}
       {posts.map(p => (
         <div key={p.id} className="cartoon-card flex flex-col gap-2 border-4 border-primary/30 shadow-fun bg-white/90">
+          {/* Forum status indicators */}
+          <div className="flex gap-2 items-center mb-1">
+            {p.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
+            {p.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
+          </div>
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
             <div className="flex-1 text-lg font-bold text-primary">
               <div className="flex items-center gap-2">
