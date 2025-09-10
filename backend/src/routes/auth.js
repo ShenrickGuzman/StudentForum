@@ -1,22 +1,30 @@
-// Middleware to require authentication and admin role
+// ...existing code...
+import express from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
-const requireAuth = (req, res, next) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-};
 
-const isAdmin = (req, res, next) => {
-  if (req.user?.role === 'admin' || req.user?.role === 'teacher') return next();
-  return res.status(403).json({ error: 'Forbidden' });
-};
+const createAuthRouter = (pool) => {
+  const router = express.Router();
+
+  // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
+  const requireAuth = (req, res, next) => {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      next();
+    } catch {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  };
+
+  const isAdmin = (req, res, next) => {
+    if (req.user?.role === 'admin' || req.user?.role === 'teacher') return next();
+    return res.status(403).json({ error: 'Forbidden' });
+  };
+
   // Grant admin role (admin only)
   router.post('/make-admin', requireAuth, isAdmin, async (req, res) => {
     const { name } = req.body || {};
@@ -29,12 +37,6 @@ const isAdmin = (req, res, next) => {
       res.status(500).json({ error: 'Failed to grant admin role' });
     }
   });
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-
-const createAuthRouter = (pool) => {
-  const router = express.Router();
 
   router.post('/signup', async (req, res) => {
     const { name, password } = req.body || {};
