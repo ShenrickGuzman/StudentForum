@@ -1,8 +1,8 @@
 services:
   - type: web
-    name: margaretforum-backend
+    name: studentforum-backend
     env: node
-    rootDir: backend
+    rootDir: studentforum-backend
     plan: free
     buildCommand: npm install
     startCommand: node server.js
@@ -11,11 +11,17 @@ services:
         sync: false
       - key: JWT_SECRET
         sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
 
   - type: web
-    name: margaretforum-frontend
+    name: studentforum
     env: static
-    rootDir: frontend
+    rootDir: studentforum-frontend
     buildCommand: npm install && npm run build
     staticPublishPath: build
     routes:
@@ -26,7 +32,7 @@ services:
       - key: REACT_APP_API_URL
         fromService:
           type: web
-          name: margaretforum-backend
+          name: studentforum-backend
           envVarKey: RENDER_EXTERNAL_URL
 
 
