@@ -28,7 +28,23 @@ app.use(helmet({
     },
   },
 }));
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = [
+  'https://studentforum.onrender.com',
+  'https://studentforum-uk42.onrender.com',
+  'https://studentforum-backend.onrender.com',
+];
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json({ limit: '1mb' }));
 
 // Database
