@@ -2,7 +2,7 @@ services:
   - type: web
     name: studentforum-backend
     env: node
-    rootDir: studentforum-backend
+    rootDir: backend
     plan: free
     buildCommand: npm install
     startCommand: node server.js
@@ -21,7 +21,7 @@ services:
   - type: web
     name: studentforum
     env: static
-    rootDir: studentforum-frontend
+    rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: build
     routes:
