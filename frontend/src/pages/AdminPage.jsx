@@ -4,22 +4,19 @@ import api from '../lib/api';
 import { useAuth } from '../state/auth';
 
 
+
 export default function AdminPage() {
   const { user } = useAuth();
-  const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [makeAdminName, setMakeAdminName] = useState('');
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
-  const [deletingId, setDeletingId] = useState(null);
-  const [actionMsg, setActionMsg] = useState('');
-  // Signup requests state
   const [showRequests, setShowRequests] = useState(false);
   const [requests, setRequests] = useState([]);
   const [reqLoading, setReqLoading] = useState(false);
   const [reqError, setReqError] = useState('');
-  // Modal state for delete confirmation
+  const [actionMsg, setActionMsg] = useState('');
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: '', email: '' });
 
+  // Load signup requests
   const loadRequests = async () => {
     setReqLoading(true); setReqError('');
     try {
@@ -27,269 +24,141 @@ export default function AdminPage() {
       setRequests(r.data);
     } catch (e) {
       setReqError(e?.response?.data?.error || 'Failed to load requests');
-    } finally { setReqLoading(false); }
+    } finally {
+      setReqLoading(false);
+    }
   };
-  const load = () => {
-    setLoading(true);
-    api.get('/posts').then(r => {
-      setPosts(r.data);
-      setLoading(false);
-    });
+
+  // Approve/Decline/Delete actions
+  const handleApprove = async (id) => {
+    setActionMsg('');
+    try {
+      await api.post(`/auth/signup-requests/${id}/approve`);
+      setActionMsg('✅ Approved!');
+      loadRequests();
+    } catch (e) {
+      setActionMsg(e?.response?.data?.error || 'Failed to approve');
+    }
   };
-  useEffect(() => { load(); }, []);
+  const handleDecline = async (id) => {
+    setActionMsg('');
+    try {
+      await api.post(`/auth/signup-requests/${id}/decline`);
+      setActionMsg('❌ Declined!');
+      loadRequests();
+    } catch (e) {
+      setActionMsg(e?.response?.data?.error || 'Failed to decline');
+    }
+  };
+  const handleDelete = async (id) => {
+    setActionMsg('');
+    try {
+      await api.delete(`/auth/signup-requests/${id}`);
+      setActionMsg('🗑️ Deleted!');
+      setDeleteModal({ open: false, id: null, name: '', email: '' });
+      loadRequests();
+    } catch (e) {
+      setActionMsg(e?.response?.data?.error || 'Failed to delete');
+    }
+  };
 
-  // Only allow SHEN (case-insensitive, trimmed) or admin role
-  const isShen = user?.name && user.name.trim().toLowerCase() === 'shen';
-  if (!user || !(user.role === 'admin' || isShen)) {
-    return <div className="cartoon-card mt-10 mx-auto max-w-lg text-center text-xl text-error font-bold">Access denied. Admins only.</div>;
-  }
+  // Grant admin
+  const handleMakeAdmin = async (e) => {
+    e.preventDefault();
+    setMakeAdminMsg('');
+    try {
+      await api.post('/auth/make-admin', { name: makeAdminName });
+      setMakeAdminMsg('🎉 User promoted to admin!');
+      setMakeAdminName('');
+    } catch (e) {
+      setMakeAdminMsg(e?.response?.data?.error || 'Failed to promote');
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
-        <div className="cartoon-card text-2xl font-bold text-primary bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
-          <span className="text-4xl animate-spin">🛠️</span>
-          Loading Forums for Admin...
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (showRequests) loadRequests();
+  }, [showRequests]);
 
+  // --- UI ---
   return (
-    <div className="space-y-7 font-cartoon max-w-3xl mx-auto py-8">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="text-4xl">🛠️</span>
-        <h1 className="text-3xl font-extrabold text-accent drop-shadow">Admin Panel</h1>
+    <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Floating pastel circles */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none">
+        <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
+        <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
+        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
+        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
+        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
+        <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-
-      {/* Signup Requests Toggle */}
-      <div className="cartoon-card flex flex-col gap-3 border-4 border-purple-300 bg-white/90 shadow-fun">
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            className="fun-btn px-4 py-2 text-base"
-            onClick={() => { if (!showRequests) { setShowRequests(true); loadRequests(); } else setShowRequests(false); }}
-          >{showRequests ? '⬅️ Back' : '📥 Show Sign Up Requests'}</button>
-          {showRequests && (
-            <button
-              className="fun-btn px-4 py-2 text-base bg-green-200 hover:bg-green-300"
-              onClick={loadRequests}
-              disabled={reqLoading}
-            >🔄 Refresh</button>
-          )}
-          {reqLoading && <span className="text-purple-600 font-bold flex items-center gap-1"><span className="animate-spin">⏳</span> Loading...</span>}
-          {reqError && <span className="text-error font-bold">{reqError}</span>}
-        </div>
-        {showRequests && (
-          <div className="space-y-3">
-            {requests.length === 0 && !reqLoading && <div className="text-center text-dark/60 font-semibold">No signup requests.</div>}
-            {requests.map(rq => (
-              <div key={rq.id} className="flex flex-col md:flex-row md:items-center gap-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50">
-                <div className="flex-1">
-                  <div className="font-bold text-purple-700 text-lg flex items-center gap-2">👤 {rq.name} <span className="text-sm px-2 py-0.5 rounded-full bg-white border border-purple-200">{rq.email}</span></div>
-                  <div className="text-xs text-purple-500">Requested at {new Date(rq.created_at).toLocaleString()} · Status: <b>{rq.status}</b></div>
-                </div>
-                {rq.status === 'pending' && (
-                  <div className="flex gap-2">
-                    <button
-                      className="fun-btn px-4 py-2 text-base bg-green-300 hover:bg-green-400"
-                      onClick={async () => {
-                        try { await api.post(`/auth/signup-requests/${rq.id}/approve`); loadRequests(); }
-                        catch(e){ alert(e?.response?.data?.error || 'Approve failed'); }
-                      }}
-                    >✅ Approve</button>
-                    <button
-                      className="fun-btn px-4 py-2 text-base bg-error/80 hover:bg-error"
-                      onClick={async () => {
-                        try { await api.post(`/auth/signup-requests/${rq.id}/decline`); loadRequests(); }
-                        catch(e){ alert(e?.response?.data?.error || 'Decline failed'); }
-                      }}
-                    >❌ Decline</button>
-                  </div>
-                )}
-                {rq.status !== 'pending' && (
-                  <div className="flex gap-2 items-center">
-                    <span className="text-sm font-bold text-purple-600">{rq.status === 'approved' ? '✅ Approved' : '❌ Declined'}</span>
-                    <button
-                      className="fun-btn px-3 py-1 text-xs bg-error/80 hover:bg-error"
-                      onClick={() => setDeleteModal({ open: true, id: rq.id, name: rq.name, email: rq.email })}
-                    >🗑️ Delete</button>
-      {/* Cartoony Delete Modal */}
-      {deleteModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="cartoon-card bg-white/95 border-4 border-error/40 rounded-3xl shadow-2xl p-8 max-w-sm w-full flex flex-col items-center gap-5 animate-pop">
-            <div className="text-5xl mb-2">🗑️</div>
-            <h2 className="text-2xl font-extrabold text-error mb-1">Delete this log permanently?</h2>
-            <div className="text-lg text-dark/80 font-bold mb-2">User: <span className="text-error">{deleteModal.name}</span></div>
-            <div className="text-base text-dark/60 mb-2">Email: <span className="text-error">{deleteModal.email}</span></div>
-            <div className="flex gap-4 mt-2">
-              <button
-                className="fun-btn px-5 py-2 text-base bg-error/90 hover:bg-error text-white font-bold shadow"
-                onClick={async () => {
-                  try {
-                    await api.delete(`/auth/signup-requests/${deleteModal.id}`);
-                    setDeleteModal({ open: false, id: null, name: '', email: '' });
-                    loadRequests();
-                  } catch (e) {
-                    alert(e?.response?.data?.error || 'Delete failed');
-                  }
-                }}
-              >Yes, Delete</button>
-              <button
-                className="fun-btn px-5 py-2 text-base bg-gray-200 hover:bg-gray-300 text-dark font-bold shadow"
-                onClick={() => setDeleteModal({ open: false, id: null, name: '', email: '' })}
-              >Cancel</button>
-            </div>
-            <div className="text-xs text-error/70 mt-2">This cannot be undone!</div>
+      <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
+        <div className="cartoon-card border-4 border-accent shadow-cartoon flex flex-col items-center gap-4 bg-white/90">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">🛠️</span>
+            <h1 className="text-3xl md:text-4xl font-extrabold text-accent drop-shadow-lg text-center">Admin Panel</h1>
           </div>
+          <form onSubmit={handleMakeAdmin} className="flex flex-col md:flex-row gap-3 items-center w-full justify-center">
+            <input
+              className="rounded-xl px-4 py-3 border-2 border-accent w-full text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+              placeholder="Username to promote to admin"
+              value={makeAdminName}
+              onChange={e => setMakeAdminName(e.target.value)}
+            />
+            <button className="fun-btn px-6 py-3 text-lg" type="submit">Promote ✨</button>
+          </form>
+          {makeAdminMsg && <div className="text-success font-bold mt-1">{makeAdminMsg}</div>}
+          <button
+            className="fun-btn px-6 py-3 text-lg mt-4"
+            onClick={() => setShowRequests(v => !v)}
+          >{showRequests ? 'Hide Sign Up Requests' : 'Show Sign Up Requests'} <span className="ml-1">📨</span></button>
         </div>
-      )}
+
+        {showRequests && (
+          <div className="cartoon-card border-4 border-primary shadow-fun bg-white/90">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-2xl">📨</span>
+              <h2 className="text-2xl font-bold text-primary drop-shadow">Sign Up Requests</h2>
+              <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadRequests}>Refresh 🔄</button>
+            </div>
+            {reqLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading requests...</div>}
+            {reqError && <div className="text-error font-bold">{reqError}</div>}
+            {actionMsg && <div className="text-success font-bold animate-bouncex">{actionMsg}</div>}
+            <div className="flex flex-col gap-4 mt-4">
+              {requests.length === 0 && !reqLoading && <div className="text-gray-400 text-base">No pending requests.</div>}
+              {requests.map(r => (
+                <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-primary bg-yellow-50/60 shadow-fun">
+                  <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-2xl">👤</span>
+                    <span className="font-bold text-lg text-dark">{r.name}</span>
+                    <span className="text-base text-gray-500">{r.email}</span>
+                    <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
                   </div>
-                )}
+                  <div className="flex gap-2 mt-2 md:mt-0">
+                    <button className="fun-btn px-4 py-2 text-base" onClick={() => handleApprove(r.id)}>Approve ✅</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleDecline(r.id)}>Decline ❌</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteModal({ open: true, id: r.id, name: r.name, email: r.email })}>Delete 🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Delete Modal */}
+        {deleteModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+            <div className="cartoon-card border-4 border-error bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full animate-wiggle">
+              <div className="text-5xl">🗑️</div>
+              <div className="text-2xl font-extrabold text-error text-center">Delete this log permanently?</div>
+              <div className="text-lg text-dark text-center">{deleteModal.name} <span className="text-gray-400">({deleteModal.email})</span></div>
+              <div className="flex gap-4 mt-2">
+                <button className="fun-btn px-5 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteModal({ open: false, id: null, name: '', email: '' })}>Cancel</button>
+                <button className="fun-btn px-5 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleDelete(deleteModal.id)}>Delete</button>
               </div>
-            ))}
+            </div>
           </div>
         )}
       </div>
-
-      {/* Make Admin Section */}
-      <div className="cartoon-card flex flex-col md:flex-row items-center gap-3 border-4 border-accent/30 shadow-fun bg-white/90 p-4">
-        <div className="flex-1">
-          <label className="font-bold text-accent">Promote user to admin:</label>
-          <input
-            className="rounded-xl px-4 py-2 border-2 border-accent/30 ml-2"
-            placeholder="Enter username"
-            value={makeAdminName}
-            onChange={e => setMakeAdminName(e.target.value)}
-          />
-          <button
-            className="fun-btn ml-2 px-4 py-2 text-base"
-            onClick={async () => {
-              setMakeAdminMsg('');
-              try {
-                await api.post('/auth/make-admin', { name: makeAdminName });
-                setMakeAdminMsg(`User '${makeAdminName}' is now an admin!`);
-                setMakeAdminName('');
-              } catch (e) {
-                setMakeAdminMsg(e?.response?.data?.error || 'Failed to promote user');
-              }
-            }}
-          >Promote</button>
-        </div>
-        {makeAdminMsg && <div className="text-accent font-bold">{makeAdminMsg}</div>}
-      </div>
-
-      {/* Posts Management (hidden when viewing requests) */}
-      {!showRequests && posts.length === 0 && (
-        <div className="cartoon-card text-center text-lg text-dark/60">No posts to manage.</div>
-      )}
-      {!showRequests && posts.map(p => (
-        <div key={p.id} className="cartoon-card flex flex-col gap-2 border-4 border-primary/30 shadow-fun bg-white/90">
-          {/* Forum status indicators */}
-          <div className="flex gap-2 items-center mb-1">
-            {p.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
-            {p.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
-          </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-            <div className="flex-1 text-lg font-bold text-primary">
-              <div className="flex items-center gap-2">
-                <span className={`px-3 py-1 rounded-full text-white text-xs shadow font-bold ${
-                  p.category === 'Academics' ? 'bg-blue-500' :
-                  p.category === 'Class Life' ? 'bg-green-500' :
-                  p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
-                  'bg-purple-600'
-                }`}>
-                  {p.category}
-                </span>
-                <span className="text-gray-500 text-sm">by {p.author_name}</span>
-                {p.locked && <span className="ml-2 text-error text-base font-bold">🔒 Locked</span>}
-                {p.pinned && <span className="ml-2 text-accent text-base font-bold">📌 Pinned</span>}
-              </div>
-              <div className="text-xl font-extrabold text-primary mt-1">{p.title}</div>
-              <div className="text-base text-gray-700 mt-1 whitespace-pre-line bg-purple-50 rounded-xl px-3 py-2 border border-purple-100">{p.content}</div>
-            </div>
-            <div className="flex flex-wrap gap-2 md:ml-4 mt-2 md:mt-0">
-              {!p.pinned ? (
-                <button
-                  className="fun-btn px-4 py-2 text-base"
-                  title="Pin post"
-                  onClick={async () => {
-                    setActionMsg('');
-                    try {
-                      await api.post(`/posts/${p.id}/pin`);
-                      load();
-                    } catch (e) {
-                      setActionMsg(e?.response?.data?.error || 'Failed to pin post');
-                    }
-                  }}
-                >📌 Pin</button>
-              ) : (
-                <button
-                  className="fun-btn px-4 py-2 text-base bg-accent/80 hover:bg-accent"
-                  title="Unpin post"
-                  onClick={async () => {
-                    setActionMsg('');
-                    try {
-                      await api.post(`/posts/${p.id}/unpin`);
-                      load();
-                    } catch (e) {
-                      setActionMsg(e?.response?.data?.error || 'Failed to unpin post');
-                    }
-                  }}
-                >❌ Unpin</button>
-              )}
-              {!p.locked ? (
-                <button
-                  className="fun-btn px-4 py-2 text-base bg-yellow-200 hover:bg-yellow-300"
-                  title="Lock post (disable comments)"
-                  onClick={async () => {
-                    setActionMsg('');
-                    try {
-                      await api.post(`/posts/${p.id}/lock`);
-                      load();
-                    } catch (e) {
-                      setActionMsg(e?.response?.data?.error || 'Failed to lock post');
-                    }
-                  }}
-                >🔒 Lock</button>
-              ) : (
-                <button
-                  className="fun-btn px-4 py-2 text-base bg-green-200 hover:bg-green-300"
-                  title="Unlock post"
-                  onClick={async () => {
-                    setActionMsg('');
-                    try {
-                      await api.post(`/posts/${p.id}/unlock`);
-                      load();
-                    } catch (e) {
-                      setActionMsg(e?.response?.data?.error || 'Failed to unlock post');
-                    }
-                  }}
-                >🔓 Unlock</button>
-              )}
-              <button
-                className={`fun-btn px-4 py-2 text-base bg-error/80 hover:bg-error ${deletingId === p.id ? 'opacity-60 cursor-not-allowed' : ''}`}
-                title="Delete post"
-                disabled={deletingId === p.id}
-                onClick={async () => {
-                  if (!window.confirm('Are you sure you want to delete this forum?')) return;
-                  setDeletingId(p.id);
-                  setActionMsg('Deleting Forum...');
-                  try {
-                    await api.delete(`/posts/${p.id}`);
-                    setActionMsg('');
-                    setDeletingId(null);
-                    load();
-                  } catch (e) {
-                    setActionMsg(e?.response?.data?.error || 'Failed to delete post');
-                    setDeletingId(null);
-                  }
-                }}
-              >{deletingId === p.id ? 'Deleting Forum...' : '🗑️ Delete'}</button>
-            </div>
-          </div>
-        </div>
-  ))}
-  {actionMsg && <div className="text-center text-error font-bold mt-4">{actionMsg}</div>}
     </div>
   );
 }
