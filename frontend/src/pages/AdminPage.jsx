@@ -8,23 +8,49 @@ import { useAuth } from '../state/auth';
 
 
 export default function AdminPage() {
+  // For comments in post detail modal
+  const [detailComments, setDetailComments] = useState([]);
+  const [detailComment, setDetailComment] = useState('');
+  const [detailCommentsLoading, setDetailCommentsLoading] = useState(false);
+  const { token } = useAuth();
+
+  // (removed duplicate openPostDetail)
+
+  // Send comment in modal
+  const sendDetailComment = async () => {
+    if (!detailComment.trim() || !detailPostId) return;
+    try {
+      await api.post(`/posts/${detailPostId}/comments`, { content: detailComment });
+      setDetailComment('');
+      // Reload comments
+      setDetailCommentsLoading(true);
+      const r = await api.get(`/posts/${detailPostId}`);
+      setDetailComments(r.data.comments || []);
+    } finally {
+      setDetailCommentsLoading(false);
+    }
+  };
   // Post detail modal state
   const [detailPostId, setDetailPostId] = useState(null);
   const [detailData, setDetailData] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
-  // Load post detail for modal
+  // Load post detail and comments for modal (merged)
   const openPostDetail = async (id) => {
     setDetailPostId(id);
     setDetailLoading(true);
     setDetailData(null);
+    setDetailComments([]);
+    setDetailCommentsLoading(true);
     try {
       const r = await api.get(`/posts/${id}`);
       setDetailData(r.data.post);
+      setDetailComments(r.data.comments || []);
     } catch (e) {
       setDetailData({ error: e?.response?.data?.error || 'Failed to load post' });
     } finally {
       setDetailLoading(false);
+      setDetailCommentsLoading(false);
     }
   };
   const closePostDetail = () => {
@@ -299,6 +325,35 @@ export default function AdminPage() {
                 {detailData.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(detailData.image_url)} />}
                 <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{detailData.content}</p>
                 {detailData.link_url && <a className="text-pink-500 underline font-bold" href={detailData.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
+                {/* Comments Section */}
+                <div className="bg-white rounded-3xl shadow-2xl p-6 border-4 border-pink-200 w-full mt-4">
+                  <h2 className="text-2xl font-bold mb-3 text-pink-500 drop-shadow flex items-center gap-2">💬 Comments {detailData.locked && <span className="text-error text-lg">(Locked)</span>}</h2>
+                  <div className="space-y-3 max-h-48 overflow-y-auto">
+                    {detailCommentsLoading && <div className="text-gray-400 text-base">Loading comments...</div>}
+                    {!detailCommentsLoading && detailComments.length === 0 && <div className="text-gray-400 text-base">No comments yet. Be the first!</div>}
+                    {detailComments.map(c => (
+                      <div key={c.id} className="p-3 rounded-xl border-2 border-purple-100 bg-purple-50 flex items-center gap-2">
+                        <span className="text-lg">🗨️</span>
+                        <span className="flex-1 text-gray-700">{c.content}</span>
+                        <span className="opacity-70 text-sm text-gray-500">- {c.author_name}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {token && !detailData.locked && (
+                    <div className="mt-6 flex gap-2">
+                      <input
+                        className="flex-1 rounded-xl px-4 py-3 border-2 border-pink-200 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
+                        value={detailComment}
+                        onChange={e => setDetailComment(e.target.value)}
+                        placeholder="Write a comment"
+                      />
+                      <button className="rounded-xl px-6 py-3 text-lg font-bold bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white shadow-lg transition-all" onClick={sendDetailComment}>Send 💬</button>
+                    </div>
+                  )}
+                  {token && detailData.locked && (
+                    <div className="mt-6 text-center text-error font-bold">Comments are locked for this post.</div>
+                  )}
+                </div>
               </>
             )}
           </div>
