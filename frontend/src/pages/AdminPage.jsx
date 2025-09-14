@@ -105,7 +105,17 @@ export default function AdminPage() {
                   </div>
                 )}
                 {rq.status !== 'pending' && (
-                  <div className="text-sm font-bold text-purple-600">{rq.status === 'approved' ? '✅ Approved' : '❌ Declined'}</div>
+                  <div className="flex gap-2 items-center">
+                    <span className="text-sm font-bold text-purple-600">{rq.status === 'approved' ? '✅ Approved' : '❌ Declined'}</span>
+                    <button
+                      className="fun-btn px-3 py-1 text-xs bg-error/80 hover:bg-error"
+                      onClick={async () => {
+                        if (!window.confirm('Delete this request log permanently?')) return;
+                        try { await api.delete(`/auth/signup-requests/${rq.id}`); loadRequests(); }
+                        catch(e){ alert(e?.response?.data?.error || 'Delete failed'); }
+                      }}
+                    >🗑️ Delete</button>
+                  </div>
                 )}
               </div>
             ))}
