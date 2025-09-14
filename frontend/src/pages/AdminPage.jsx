@@ -6,6 +6,7 @@ import { useAuth } from '../state/auth';
 
 
 export default function AdminPage() {
+  const [showRequests, setShowRequests] = useState(false);
   // --- User Management state ---
   const [showUsers, setShowUsers] = useState(false);
   const [users, setUsers] = useState([]);
