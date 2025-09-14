@@ -70,11 +70,11 @@ export default function PostDetailPage() {
             {post.title}
             {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
           </h1>
-          {/* Author and date/time */}
-          <div className="text-center text-gray-500 text-base mb-2">
+          {/* Author and date/time (Philippines time) */}
+          <div className="text-center text-gray-500 text-base mb-4">
             By: <span className="font-bold">{post.author_name}</span>
             {post.created_at && (
-              <span> • {new Date(post.created_at).toLocaleString()}</span>
+              <span> • {new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
             )}
           </div>
           {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
