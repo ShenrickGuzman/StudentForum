@@ -223,7 +223,7 @@ export default function AdminPage() {
       <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
         <div className="cartoon-card border-4 border-accent shadow-cartoon flex flex-col items-center gap-4 bg-white/90">
           <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">�️</span>
+            <span className="text-4xl">🛠️</span>
             <h1 className="text-3xl md:text-4xl font-extrabold text-accent drop-shadow-lg text-center">Admin Panel</h1>
           </div>
           <form onSubmit={handleMakeAdmin} className="flex flex-col md:flex-row gap-3 items-center w-full justify-center">
@@ -245,7 +245,7 @@ export default function AdminPage() {
         {showRequests && (
           <div className="cartoon-card border-4 border-primary shadow-fun bg-white/90">
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">�</span>
+              <span className="text-2xl">📃</span>
               <h2 className="text-2xl font-bold text-primary drop-shadow">Sign Up Requests</h2>
               <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadRequests}>Refresh 🔄</button>
             </div>
@@ -322,6 +322,13 @@ export default function AdminPage() {
                   {detailData.title}
                   {detailData.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
                 </h1>
+                {/* Author and date/time */}
+                <div className="text-center text-gray-500 text-base mb-2">
+                  By: <span className="font-bold">{detailData.author_name}</span>
+                  {detailData.created_at && (
+                    <span> • {new Date(detailData.created_at).toLocaleString()}</span>
+                  )}
+                </div>
                 {detailData.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(detailData.image_url)} />}
                 <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{detailData.content}</p>
                 {detailData.link_url && <a className="text-pink-500 underline font-bold" href={detailData.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
