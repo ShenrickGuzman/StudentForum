@@ -1,7 +1,77 @@
 
 import { useEffect, useState } from 'react';
-import api from '../lib/api';
+import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
+  // Forum posts state
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [postsError, setPostsError] = useState('');
+  const [postActionMsg, setPostActionMsg] = useState('');
+
+  // Load all posts
+  const loadPosts = async () => {
+    setPostsLoading(true); setPostsError('');
+    try {
+      const r = await api.get('/posts');
+      setPosts(r.data);
+    } catch (e) {
+      setPostsError(e?.response?.data?.error || 'Failed to load posts');
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  // Admin post actions
+  const handleLock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/lock`);
+      setPostActionMsg('🔒 Forum locked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to lock');
+    }
+  };
+  const handleUnlock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unlock`);
+      setPostActionMsg('🔓 Forum unlocked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unlock');
+    }
+  };
+  const handlePin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/pin`);
+      setPostActionMsg('📌 Forum pinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to pin');
+    }
+  };
+  const handleUnpin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unpin`);
+      setPostActionMsg('📌 Forum unpinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unpin');
+    }
+  };
+  const handleDeletePost = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.delete(`/posts/${id}`);
+      setPostActionMsg('🗑️ Forum deleted!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to delete');
+    }
+  };
 
 
 
@@ -76,6 +146,10 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    loadPosts();
+  }, []);
+
+  useEffect(() => {
     if (showRequests) loadRequests();
   }, [showRequests]);
 
@@ -90,6 +164,64 @@ export default function AdminPage() {
         <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
+      </div>
+
+      {/* Forum Posts Section */}
+      <div className="cartoon-card border-4 border-secondary shadow-fun bg-white/90 mt-8">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">📝</span>
+          <h2 className="text-2xl font-bold text-secondary drop-shadow">All Forum Posts</h2>
+          <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadPosts}>Refresh 🔄</button>
+        </div>
+        {postsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading posts...</div>}
+        {postsError && <div className="text-error font-bold">{postsError}</div>}
+        {postActionMsg && <div className="text-success font-bold animate-bouncex">{postActionMsg}</div>}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-4">
+          {posts.length === 0 && !postsLoading && <div className="text-gray-400 text-base col-span-full">No posts yet.</div>}
+          {posts.map(p => (
+            <div key={p.id} className="bg-white/90 rounded-2xl shadow-xl border-2 border-white/60 flex flex-col gap-2 p-4 relative">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xl">{p.pinned ? '📌' : ''}</span>
+                <span className={`px-3 py-1 rounded-full text-white text-xs shadow font-bold ${
+                  p.category === 'Academics' ? 'bg-blue-500' :
+                  p.category === 'Class Life' ? 'bg-green-500' :
+                  p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
+                  'bg-purple-600'
+                }`}>
+                  {p.category}
+                </span>
+                {p.locked && <span className="ml-2 px-2 py-1 rounded-full bg-error/20 text-error font-bold text-xs flex items-center gap-1">Locked <span>🔒</span></span>}
+                {!p.locked && <span className="ml-2 px-2 py-1 rounded-full bg-success/20 text-success font-bold text-xs flex items-center gap-1">Open <span>💬</span></span>}
+              </div>
+              <div className="text-lg font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
+              <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
+              <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
+                <span>👤</span> {p.author_name}
+              </div>
+              {p.image_url && (
+                <div className="w-full h-32 rounded-xl shadow-md overflow-hidden mt-2">
+                  <img
+                    src={getAssetUrl(p.image_url)}
+                    alt="Post image"
+                    className="w-full h-full object-cover"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {p.locked
+                  ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600" onClick={() => handleUnlock(p.id)}>Unlock 🔓</button>
+                  : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleLock(p.id)}>Lock 🔒</button>
+                }
+                {p.pinned
+                  ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleUnpin(p.id)}>Unpin 📌</button>
+                  : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => handlePin(p.id)}>Pin 📌</button>
+                }
+                <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => handleDeletePost(p.id)}>Delete 🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
         <div className="cartoon-card border-4 border-accent shadow-cartoon flex flex-col items-center gap-4 bg-white/90">
