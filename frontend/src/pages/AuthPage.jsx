@@ -1,10 +1,13 @@
 
 
 import { useState } from 'react';
+import RulesPopup from '../components/RulesPopup';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
 
+
+const RULES_KEY = 'mf_rules_agreed';
 
 export default function AuthPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'signup'
@@ -16,6 +19,8 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [showRules, setShowRules] = useState(false);
+  const [pendingNav, setPendingNav] = useState(false);
 
   const validateEmail = (value) => {
     if (!value) return 'Email is required';
@@ -45,7 +50,14 @@ export default function AuthPage() {
         }
       } else {
         const r = await api.post('/auth/login', { name, password });
-        login(r.data.token, r.data.user); navigate('/');
+        login(r.data.token, r.data.user);
+        // Show rules popup if not agreed
+        if (!localStorage.getItem(RULES_KEY)) {
+          setShowRules(true);
+          setPendingNav(true);
+        } else {
+          navigate('/');
+        }
       }
     } catch (e) {
       const msg = e?.response?.data?.error || 'Something went wrong';
@@ -62,6 +74,12 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center font-cartoon relative overflow-hidden" style={{background: 'linear-gradient(135deg, #7fbcff 0%, #b388ff 50%, #ff7eb3 100%)'}}>
+      <RulesPopup
+        open={showRules}
+        onAgree={() => { setShowRules(false); if (pendingNav) { setPendingNav(false); navigate('/'); } }}
+        onClose={() => { setShowRules(false); }}
+        onDontShowAgain={() => { localStorage.setItem(RULES_KEY, '1'); }}
+      />
       {/* Floating pastel circles and stars */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         <span className="absolute left-8 top-8 w-16 h-16 rounded-full bg-blue-200 opacity-40"></span>
