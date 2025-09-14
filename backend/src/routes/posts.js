@@ -65,7 +65,13 @@ const createPostsRouter = (pool) => {
   // Get post detail with comments (auth required)
   router.get('/:id', requireAuth, async (req, res) => {
     try {
-      const post = await pool.query('SELECT * FROM posts WHERE id = $1', [req.params.id]);
+      const post = await pool.query(
+        `SELECT p.*, u.name as author_name
+         FROM posts p
+         JOIN users u ON u.id = p.user_id
+         WHERE p.id = $1`,
+        [req.params.id]
+      );
       const comments = await pool.query(
         `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
         [req.params.id]
