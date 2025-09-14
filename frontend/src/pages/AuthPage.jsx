@@ -53,17 +53,7 @@ export default function AuthPage() {
   // Show/hide password
   const [showPassword, setShowPassword] = useState(false);
 
-  // Theme toggle (signup only)
-  const palettes = [
-    { grad: 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400', name: 'Candy' },
-    { grad: 'from-violet-400 to-fuchsia-400 hover:from-violet-500 hover:to-fuchsia-500', name: 'Violet' },
-    { grad: 'from-emerald-400 to-lime-300 hover:from-emerald-500 hover:to-lime-400', name: 'Spring' },
-    { grad: 'from-sky-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500', name: 'Ocean' },
-    { grad: 'from-amber-400 to-rose-400 hover:from-amber-500 hover:to-rose-500', name: 'Sunset' },
-  ];
-  const [paletteIndex, setPaletteIndex] = useState(0);
-  const cyclePalette = () => setPaletteIndex(i => (i + 1) % palettes.length);
-  const signUpGradient = palettes[paletteIndex].grad;
+  // Removed palette toggle; fixed vibrant style for signup
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center font-cartoon relative overflow-hidden" style={{background: 'linear-gradient(135deg, #7fbcff 0%, #b388ff 50%, #ff7eb3 100%)'}}>
@@ -97,12 +87,12 @@ export default function AuthPage() {
         <div className="flex w-full mb-2 rounded-full bg-gray-100 p-1 shadow-inner">
           <button
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? 'bg-pink-500 text-white shadow' : 'text-gray-500'}`}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? 'bg-gradient-to-r from-pink-500 to-rose-400 text-white shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-pink-500'}`}
             onClick={() => setMode('login')}
           >🔑 Sign In</button>
           <button
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? 'bg-gray-200 text-pink-500 shadow' : 'text-gray-500'}`}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? 'bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-pink-400 text-white shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-fuchsia-500'}`}
             onClick={() => setMode('signup')}
           >✴️ Sign Up</button>
         </div>
@@ -138,15 +128,7 @@ export default function AuthPage() {
         {/* Gmail Email (signup only) */}
         {mode === 'signup' && (
           <div className="w-full">
-            <div className="flex justify-between items-end mb-1">
-              <label className="block text-sm font-bold text-gray-500 flex items-center gap-1"><span className="text-base">📧</span> Gmail</label>
-              <button
-                type="button"
-                onClick={cyclePalette}
-                className="text-xs font-semibold px-2 py-1 rounded-full bg-white/70 border border-gray-200 shadow hover:bg-white transition flex items-center gap-1"
-                title="Change sign up button colors"
-              >🎨 {palettes[paletteIndex].name}</button>
-            </div>
+            <label className="block text-sm font-bold text-gray-500 mb-1 flex items-center gap-1"><span className="text-base">📧</span> Gmail</label>
             <input
               type="email"
               className={`w-full rounded-xl px-4 py-3 border-2 bg-pink-50 text-lg focus:ring-2 outline-none transition-all ${emailError ? 'border-pink-400 focus:ring-pink-400' : 'border-gray-200 focus:ring-pink-300'}`}
@@ -166,7 +148,7 @@ export default function AuthPage() {
         )}
         {/* Submit */}
         <button
-          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70 bg-gradient-to-r ${mode==='signup' ? signUpGradient : 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400'}`}
+          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70 bg-gradient-to-r ${mode==='signup' ? 'from-indigo-500 via-fuchsia-500 to-pink-500 hover:from-indigo-600 hover:via-fuchsia-600 hover:to-pink-600' : 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400'}`}
           disabled={loading}
         >
           {loading
