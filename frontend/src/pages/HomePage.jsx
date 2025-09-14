@@ -77,15 +77,9 @@ function HomePage() {
       {/* Action buttons: above search on mobile, top-right on desktop */}
       {user && (
         <>
-          {/* Mobile: above search bar */}
+          {/* Mobile: Rules and Logout at top */}
           <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
             <div className="flex flex-col gap-3">
-              <button
-                className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
-                onClick={() => navigate('/new')}
-              >
-                ✨ New Post
-              </button>
               <button
                 className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
                 onClick={() => setShowRules(true)}
@@ -155,7 +149,7 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Search & Filter */}
+      {/* Search & New Post (mobile) */}
       <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
         <div className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60">
           <span className="text-xl text-gray-400 mr-2">🔍</span>
@@ -176,7 +170,15 @@ function HomePage() {
             <option key={c.key} value={c.key}>{c.label}</option>
           ))}
         </select>
-        <button className="rounded-2xl px-6 py-3 font-bold bg-purple-500 text-white shadow-lg hover:bg-purple-600 transition-all">Filter</button>
+        {/* Show New Post button here on mobile only */}
+        {user && (
+          <button
+            className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
+            onClick={() => navigate('/new')}
+          >
+            ✨ New Post
+          </button>
+        )}
       </div>
 
       {/* Posts */}
