@@ -46,7 +46,14 @@ export default function AuthPage() {
           navigate(`/wait-approval?name=${encodeURIComponent(name)}`, { state: { name } });
         } else if (r.data.token) {
           // fallback if backend returns immediate token (not expected now)
-          login(r.data.token, r.data.user); navigate('/');
+          login(r.data.token, r.data.user);
+          // Show rules popup if not agreed
+          if (!localStorage.getItem(RULES_KEY)) {
+            setShowRules(true);
+            setPendingNav(true);
+          } else {
+            navigate('/');
+          }
         }
       } else {
         const r = await api.post('/auth/login', { name, password });
