@@ -6,6 +6,39 @@ import { useAuth } from '../state/auth';
 
 
 export default function AdminPage() {
+  // --- User Management state ---
+  const [showUsers, setShowUsers] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState('');
+  const [userActionMsg, setUserActionMsg] = useState('');
+  const [deleteUserModal, setDeleteUserModal] = useState({ open: false, id: null, name: '', email: '' });
+
+  // Load all users
+  const loadUsers = async () => {
+    setUsersLoading(true); setUsersError('');
+    try {
+      const r = await api.get('/auth/users');
+      setUsers(r.data);
+    } catch (e) {
+      setUsersError(e?.response?.data?.error || 'Failed to load users');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Delete user
+  const handleDeleteUser = async (id) => {
+    setUserActionMsg('');
+    try {
+      await api.delete(`/auth/users/${id}`);
+      setUserActionMsg('🗑️ User deleted!');
+      setDeleteUserModal({ open: false, id: null, name: '', email: '' });
+      loadUsers();
+    } catch (e) {
+      setUserActionMsg(e?.response?.data?.error || 'Failed to delete user');
+    }
+  };
   // For comments in post detail modal
   const [detailComments, setDetailComments] = useState([]);
   const [detailComment, setDetailComment] = useState('');
