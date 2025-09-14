@@ -6,6 +6,7 @@ import NewPostPage from './pages/NewPostPage';
 import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
 import WaitApprovalPage from './pages/WaitApprovalPage';
+import RulesPage from './pages/RulesPage';
 import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
 
@@ -21,6 +22,7 @@ function NavBar() {
         </Link>
         <nav className="ml-auto flex items-center gap-2">
           <Link className="fun-btn px-4 py-2 text-base" to="/new">✏️ New Post</Link>
+          <Link className="fun-btn px-4 py-2 text-base" to="/rules">📜 Rules</Link>
           {user?.role === 'admin' && <Link className="fun-btn px-4 py-2 text-base" to="/admin">🛠️ Admin</Link>}
           {!user && <Link className="fun-btn px-4 py-2 text-base" to="/auth">Sign In</Link>}
           {user && (
@@ -44,8 +46,9 @@ function AppShell() {
   return (
     <div>
       <Routes>
-  <Route path="/auth" element={<AuthPage />} />
-  <Route path="/wait-approval" element={<WaitApprovalPage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/wait-approval" element={<WaitApprovalPage />} />
+        <Route path="/rules" element={<RulesPage />} />
         <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
