@@ -70,6 +70,13 @@ export default function PostDetailPage() {
             {post.title}
             {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
           </h1>
+          {/* Author and date/time */}
+          <div className="text-center text-gray-500 text-base mb-2">
+            By: <span className="font-bold">{post.author_name}</span>
+            {post.created_at && (
+              <span> • {new Date(post.created_at).toLocaleString()}</span>
+            )}
+          </div>
           {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
           <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{post.content}</p>
           {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
