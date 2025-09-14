@@ -76,21 +76,21 @@ function HomePage() {
       </div>
       {/* Top right action buttons */}
       {user && (
-        <div className="absolute right-0 top-0 mt-6 mr-8 z-20 flex gap-4">
+        <div className="w-full flex flex-col items-center gap-3 mt-4 mb-2 px-2 z-20 sm:absolute sm:right-0 sm:top-0 sm:mt-6 sm:mr-8 sm:w-auto sm:flex-row sm:items-start sm:gap-4">
           <button
-            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
+            className="w-full sm:w-auto rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
             onClick={() => navigate('/new')}
           >
             ✨ New Post
           </button>
           <button
-            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
+            className="w-full sm:w-auto rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
             onClick={() => setShowRules(true)}
           >
             📜 Rules
           </button>
           <button
-            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
+            className="w-full sm:w-auto rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
             onClick={logout}
           >
             🔓 Logout
