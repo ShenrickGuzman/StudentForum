@@ -1,77 +1,9 @@
 
+
+
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
-  // Forum posts state
-  const [posts, setPosts] = useState([]);
-  const [postsLoading, setPostsLoading] = useState(true);
-  const [postsError, setPostsError] = useState('');
-  const [postActionMsg, setPostActionMsg] = useState('');
-
-  // Load all posts
-  const loadPosts = async () => {
-    setPostsLoading(true); setPostsError('');
-    try {
-      const r = await api.get('/posts');
-      setPosts(r.data);
-    } catch (e) {
-      setPostsError(e?.response?.data?.error || 'Failed to load posts');
-    } finally {
-      setPostsLoading(false);
-    }
-  };
-
-  // Admin post actions
-  const handleLock = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/lock`);
-      setPostActionMsg('🔒 Forum locked!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to lock');
-    }
-  };
-  const handleUnlock = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/unlock`);
-      setPostActionMsg('🔓 Forum unlocked!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to unlock');
-    }
-  };
-  const handlePin = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/pin`);
-      setPostActionMsg('📌 Forum pinned!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to pin');
-    }
-  };
-  const handleUnpin = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/unpin`);
-      setPostActionMsg('📌 Forum unpinned!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to unpin');
-    }
-  };
-  const handleDeletePost = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.delete(`/posts/${id}`);
-      setPostActionMsg('🗑️ Forum deleted!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to delete');
-    }
-  };
 
 
 
