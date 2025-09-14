@@ -1,6 +1,7 @@
 
 
 import { useEffect, useState } from 'react';
+import RulesPopup from '../components/RulesPopup';
 import { Link, useNavigate } from 'react-router-dom';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
@@ -20,6 +21,7 @@ function HomePage() {
   const [loading, setLoading] = useState(true);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showRules, setShowRules] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -62,6 +64,7 @@ function HomePage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      <RulesPopup open={showRules} onAgree={() => setShowRules(false)} onClose={() => setShowRules(false)} onDontShowAgain={() => {}} />
       {/* Floating pastel circles */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
@@ -79,6 +82,12 @@ function HomePage() {
             onClick={() => navigate('/new')}
           >
             ✨ New Post
+          </button>
+          <button
+            className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
+            onClick={() => setShowRules(true)}
+          >
+            📜 Rules
           </button>
           <button
             className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
