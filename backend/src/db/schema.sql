@@ -45,4 +45,17 @@ CREATE TABLE IF NOT EXISTS comment_reactions (
   PRIMARY KEY (comment_id, user_id)
 );
 
+-- Pending signup requests waiting for admin approval
+CREATE TABLE IF NOT EXISTS signup_requests (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE,
+  email TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  status TEXT NOT NULL DEFAULT 'pending' -- 'pending' | 'approved' | 'declined'
+);
+
+-- Ensure case-insensitive uniqueness for signup request usernames too
+CREATE UNIQUE INDEX IF NOT EXISTS signup_requests_name_lower_idx ON signup_requests ((lower(name)));
+
 
