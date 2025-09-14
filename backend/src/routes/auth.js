@@ -132,6 +132,28 @@ const createAuthRouter = (pool) => {
     }
   });
 
+  // List all users (admin only)
+  router.get('/users', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const result = await pool.query('SELECT id, name, email FROM users ORDER BY created_at ASC');
+      res.json(result.rows);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to load users' });
+    }
+  });
+
+  // Delete a user by ID (admin only)
+  router.delete('/users/:id', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('DELETE FROM users WHERE id=$1 RETURNING id', [id]);
+      if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
+      res.json({ deleted: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
   // Delete a signup request (admin only)
   router.delete('/signup-requests/:id', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
