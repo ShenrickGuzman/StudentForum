@@ -9,6 +9,13 @@ import { useAuth } from '../state/auth';
 
 export default function AdminPage() {
   const { user } = useAuth();
+  // --- Posts state ---
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState('');
+  const [postActionMsg, setPostActionMsg] = useState('');
+
+  // --- Requests/Admin state ---
   const [makeAdminName, setMakeAdminName] = useState('');
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [showRequests, setShowRequests] = useState(false);
@@ -17,6 +24,70 @@ export default function AdminPage() {
   const [reqError, setReqError] = useState('');
   const [actionMsg, setActionMsg] = useState('');
   const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: '', email: '' });
+
+  // --- Posts API handlers ---
+  const loadPosts = async () => {
+    setPostsLoading(true); setPostsError('');
+    try {
+      const r = await api.get('/posts');
+      setPosts(r.data);
+    } catch (e) {
+      setPostsError(e?.response?.data?.error || 'Failed to load posts');
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  const handleLock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/lock`);
+      setPostActionMsg('🔒 Post locked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to lock post');
+    }
+  };
+  const handleUnlock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unlock`);
+      setPostActionMsg('🔓 Post unlocked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unlock post');
+    }
+  };
+  const handlePin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/pin`);
+      setPostActionMsg('📌 Post pinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to pin post');
+    }
+  };
+  const handleUnpin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unpin`);
+      setPostActionMsg('📌 Post unpinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unpin post');
+    }
+  };
+  const handleDeletePost = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.delete(`/posts/${id}`);
+      setPostActionMsg('🗑️ Post deleted!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to delete post');
+    }
+  };
 
   // Load signup requests
   const loadRequests = async () => {
