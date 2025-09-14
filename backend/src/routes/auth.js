@@ -1,3 +1,14 @@
+  // Delete a signup request (admin only)
+  router.delete('/signup-requests/:id', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('DELETE FROM signup_requests WHERE id=$1 RETURNING id', [id]);
+      if (!result.rows[0]) return res.status(404).json({ error: 'Request not found' });
+      res.json({ deleted: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete request' });
+    }
+  });
 // ...existing code...
 import express from 'express';
 import jwt from 'jsonwebtoken';
