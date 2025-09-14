@@ -10,18 +10,33 @@ export default function AuthPage() {
   const [mode, setMode] = useState('login'); // 'login' or 'signup'
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(''); // gmail only for signup
+  const [emailError, setEmailError] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  const validateEmail = (value) => {
+    if (!value) return 'Email is required';
+    // Allow only gmail.com addresses
+    const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+    if (!re.test(value)) return 'Must be a valid @gmail.com address';
+    return '';
+  };
+
   const submit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    if (mode === 'signup') {
+      const emErr = validateEmail(email);
+      setEmailError(emErr);
+      if (emErr) { setLoading(false); return; }
+    }
     try {
       if (mode === 'signup') {
-        const r = await api.post('/auth/signup', { name, password });
+        const r = await api.post('/auth/signup', { name, password, email });
         login(r.data.token, r.data.user); navigate('/');
       } else {
         const r = await api.post('/auth/login', { name, password });
@@ -37,6 +52,18 @@ export default function AuthPage() {
 
   // Show/hide password
   const [showPassword, setShowPassword] = useState(false);
+
+  // Theme toggle (signup only)
+  const palettes = [
+    { grad: 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400', name: 'Candy' },
+    { grad: 'from-violet-400 to-fuchsia-400 hover:from-violet-500 hover:to-fuchsia-500', name: 'Violet' },
+    { grad: 'from-emerald-400 to-lime-300 hover:from-emerald-500 hover:to-lime-400', name: 'Spring' },
+    { grad: 'from-sky-400 to-indigo-400 hover:from-sky-500 hover:to-indigo-500', name: 'Ocean' },
+    { grad: 'from-amber-400 to-rose-400 hover:from-amber-500 hover:to-rose-500', name: 'Sunset' },
+  ];
+  const [paletteIndex, setPaletteIndex] = useState(0);
+  const cyclePalette = () => setPaletteIndex(i => (i + 1) % palettes.length);
+  const signUpGradient = palettes[paletteIndex].grad;
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center font-cartoon relative overflow-hidden" style={{background: 'linear-gradient(135deg, #7fbcff 0%, #b388ff 50%, #ff7eb3 100%)'}}>
@@ -108,6 +135,29 @@ export default function AuthPage() {
             aria-label="Show/hide password"
           >{showPassword ? '🙈' : '👁️'}</button>
         </div>
+        {/* Gmail Email (signup only) */}
+        {mode === 'signup' && (
+          <div className="w-full">
+            <div className="flex justify-between items-end mb-1">
+              <label className="block text-sm font-bold text-gray-500 flex items-center gap-1"><span className="text-base">📧</span> Gmail</label>
+              <button
+                type="button"
+                onClick={cyclePalette}
+                className="text-xs font-semibold px-2 py-1 rounded-full bg-white/70 border border-gray-200 shadow hover:bg-white transition flex items-center gap-1"
+                title="Change sign up button colors"
+              >🎨 {palettes[paletteIndex].name}</button>
+            </div>
+            <input
+              type="email"
+              className={`w-full rounded-xl px-4 py-3 border-2 bg-pink-50 text-lg focus:ring-2 outline-none transition-all ${emailError ? 'border-pink-400 focus:ring-pink-400' : 'border-gray-200 focus:ring-pink-300'}`}
+              placeholder="you@gmail.com"
+              value={email}
+              onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+              onBlur={() => setEmailError(validateEmail(email))}
+            />
+            {emailError && <div className="mt-1 text-sm text-pink-600 font-semibold">{emailError}</div>}
+          </div>
+        )}
         {/* Error */}
         {error && (
           <div className="text-error bg-pink-100 rounded-xl px-4 py-2 border-2 border-pink-300 w-full text-center animate-wiggle">
@@ -116,7 +166,7 @@ export default function AuthPage() {
         )}
         {/* Submit */}
         <button
-          className="w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70"
+          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70 bg-gradient-to-r ${mode==='signup' ? signUpGradient : 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400'}`}
           disabled={loading}
         >
           {loading
