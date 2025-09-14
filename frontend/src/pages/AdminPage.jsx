@@ -132,10 +132,15 @@ export default function AdminPage() {
                     <span className="font-bold text-lg text-dark">{r.name}</span>
                     <span className="text-base text-gray-500">{r.email}</span>
                     <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
+                    {/* Status badge */}
+                    {r.status === 'approved' && <span className="ml-3 px-3 py-1 rounded-full bg-success/20 text-success font-bold text-xs flex items-center gap-1">Approved <span>✅</span></span>}
+                    {r.status === 'declined' && <span className="ml-3 px-3 py-1 rounded-full bg-error/20 text-error font-bold text-xs flex items-center gap-1">Declined <span>❌</span></span>}
                   </div>
                   <div className="flex gap-2 mt-2 md:mt-0">
-                    <button className="fun-btn px-4 py-2 text-base" onClick={() => handleApprove(r.id)}>Approve ✅</button>
-                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleDecline(r.id)}>Decline ❌</button>
+                    {r.status === 'pending' && <>
+                      <button className="fun-btn px-4 py-2 text-base" onClick={() => handleApprove(r.id)}>Approve ✅</button>
+                      <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleDecline(r.id)}>Decline ❌</button>
+                    </>}
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteModal({ open: true, id: r.id, name: r.name, email: r.email })}>Delete 🗑️</button>
                   </div>
                 </div>
