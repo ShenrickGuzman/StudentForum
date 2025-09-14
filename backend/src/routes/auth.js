@@ -122,6 +122,7 @@ const createAuthRouter = (pool) => {
     }
   });
 
+
   // Polling endpoint for a specific username/email to see status & retrieve token if approved
   router.get('/signup-status', async (req, res) => {
     const { name } = req.query;
@@ -139,6 +140,18 @@ const createAuthRouter = (pool) => {
       return res.json({ status: reqResult.rows[0].status });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch status' });
+    }
+  });
+
+  // Delete a signup request (admin only)
+  router.delete('/signup-requests/:id', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const result = await pool.query('DELETE FROM signup_requests WHERE id=$1 RETURNING id', [id]);
+      if (!result.rows[0]) return res.status(404).json({ error: 'Request not found' });
+      res.json({ deleted: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete request' });
     }
   });
 
