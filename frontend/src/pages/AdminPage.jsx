@@ -6,6 +6,27 @@ import { useAuth } from '../state/auth';
 
 
 export default function AdminPage() {
+  // --- General state hooks for admin panel ---
+  const [makeAdminMsg, setMakeAdminMsg] = useState('');
+  const [reqLoading, setReqLoading] = useState(false);
+  const [reqError, setReqError] = useState('');
+  const [requests, setRequests] = useState([]);
+  const [actionMsg, setActionMsg] = useState('');
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: '', email: '' });
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState('');
+  const [postActionMsg, setPostActionMsg] = useState('');
+
+  // --- Posts API handlers (stubs, should be implemented or already present) ---
+  const loadPosts = async () => {};
+  const handleLock = async (id) => {};
+  const handleUnlock = async (id) => {};
+  const handlePin = async (id) => {};
+  const handleUnpin = async (id) => {};
+  const handleDeletePost = async (id) => {};
+  const closePostDetail = () => {};
+  const [makeAdminName, setMakeAdminName] = useState('');
   const [showRequests, setShowRequests] = useState(false);
   // --- User Management state ---
   const [showUsers, setShowUsers] = useState(false);
