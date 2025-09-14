@@ -12,6 +12,21 @@ export default function AdminPage() {
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [deletingId, setDeletingId] = useState(null);
   const [actionMsg, setActionMsg] = useState('');
+  // Signup requests state
+  const [showRequests, setShowRequests] = useState(false);
+  const [requests, setRequests] = useState([]);
+  const [reqLoading, setReqLoading] = useState(false);
+  const [reqError, setReqError] = useState('');
+
+  const loadRequests = async () => {
+    setReqLoading(true); setReqError('');
+    try {
+      const r = await api.get('/auth/signup-requests');
+      setRequests(r.data);
+    } catch (e) {
+      setReqError(e?.response?.data?.error || 'Failed to load requests');
+    } finally { setReqLoading(false); }
+  };
   const load = () => {
     setLoading(true);
     api.get('/posts').then(r => {
@@ -45,6 +60,59 @@ export default function AdminPage() {
         <h1 className="text-3xl font-extrabold text-accent drop-shadow">Admin Panel</h1>
       </div>
 
+      {/* Signup Requests Toggle */}
+      <div className="cartoon-card flex flex-col gap-3 border-4 border-purple-300 bg-white/90 shadow-fun">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            className="fun-btn px-4 py-2 text-base"
+            onClick={() => { if (!showRequests) { setShowRequests(true); loadRequests(); } else setShowRequests(false); }}
+          >{showRequests ? '⬅️ Back' : '📥 Show Sign Up Requests'}</button>
+          {showRequests && (
+            <button
+              className="fun-btn px-4 py-2 text-base bg-green-200 hover:bg-green-300"
+              onClick={loadRequests}
+              disabled={reqLoading}
+            >🔄 Refresh</button>
+          )}
+          {reqLoading && <span className="text-purple-600 font-bold flex items-center gap-1"><span className="animate-spin">⏳</span> Loading...</span>}
+          {reqError && <span className="text-error font-bold">{reqError}</span>}
+        </div>
+        {showRequests && (
+          <div className="space-y-3">
+            {requests.length === 0 && !reqLoading && <div className="text-center text-dark/60 font-semibold">No signup requests.</div>}
+            {requests.map(rq => (
+              <div key={rq.id} className="flex flex-col md:flex-row md:items-center gap-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50">
+                <div className="flex-1">
+                  <div className="font-bold text-purple-700 text-lg flex items-center gap-2">👤 {rq.name} <span className="text-sm px-2 py-0.5 rounded-full bg-white border border-purple-200">{rq.email}</span></div>
+                  <div className="text-xs text-purple-500">Requested at {new Date(rq.created_at).toLocaleString()} · Status: <b>{rq.status}</b></div>
+                </div>
+                {rq.status === 'pending' && (
+                  <div className="flex gap-2">
+                    <button
+                      className="fun-btn px-4 py-2 text-base bg-green-300 hover:bg-green-400"
+                      onClick={async () => {
+                        try { await api.post(`/auth/signup-requests/${rq.id}/approve`); loadRequests(); }
+                        catch(e){ alert(e?.response?.data?.error || 'Approve failed'); }
+                      }}
+                    >✅ Approve</button>
+                    <button
+                      className="fun-btn px-4 py-2 text-base bg-error/80 hover:bg-error"
+                      onClick={async () => {
+                        try { await api.post(`/auth/signup-requests/${rq.id}/decline`); loadRequests(); }
+                        catch(e){ alert(e?.response?.data?.error || 'Decline failed'); }
+                      }}
+                    >❌ Decline</button>
+                  </div>
+                )}
+                {rq.status !== 'pending' && (
+                  <div className="text-sm font-bold text-purple-600">{rq.status === 'approved' ? '✅ Approved' : '❌ Declined'}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Make Admin Section */}
       <div className="cartoon-card flex flex-col md:flex-row items-center gap-3 border-4 border-accent/30 shadow-fun bg-white/90 p-4">
         <div className="flex-1">
@@ -72,11 +140,11 @@ export default function AdminPage() {
         {makeAdminMsg && <div className="text-accent font-bold">{makeAdminMsg}</div>}
       </div>
 
-      {/* Posts Management */}
-      {posts.length === 0 && (
+      {/* Posts Management (hidden when viewing requests) */}
+      {!showRequests && posts.length === 0 && (
         <div className="cartoon-card text-center text-lg text-dark/60">No posts to manage.</div>
       )}
-      {posts.map(p => (
+      {!showRequests && posts.map(p => (
         <div key={p.id} className="cartoon-card flex flex-col gap-2 border-4 border-primary/30 shadow-fun bg-white/90">
           {/* Forum status indicators */}
           <div className="flex gap-2 items-center mb-1">
@@ -182,7 +250,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-      ))}
+  ))}
   {actionMsg && <div className="text-center text-error font-bold mt-4">{actionMsg}</div>}
     </div>
   );
