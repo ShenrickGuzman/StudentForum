@@ -1,3 +1,36 @@
+  // --- User Management state ---
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState('');
+  const [userActionMsg, setUserActionMsg] = useState('');
+  const [showUsers, setShowUsers] = useState(false);
+  const [deleteUserModal, setDeleteUserModal] = useState({ open: false, id: null, name: '', email: '' });
+
+  // Load all users
+  const loadUsers = async () => {
+    setUsersLoading(true); setUsersError('');
+    try {
+      const r = await api.get('/auth/users');
+      setUsers(r.data);
+    } catch (e) {
+      setUsersError(e?.response?.data?.error || 'Failed to load users');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Delete user
+  const handleDeleteUser = async (id) => {
+    setUserActionMsg('');
+    try {
+      await api.delete(`/auth/users/${id}`);
+      setUserActionMsg('🗑️ User deleted!');
+      setDeleteUserModal({ open: false, id: null, name: '', email: '' });
+      loadUsers();
+    } catch (e) {
+      setUserActionMsg(e?.response?.data?.error || 'Failed to delete user');
+    }
+  };
 
 
 
@@ -203,6 +236,10 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
+    if (showUsers) loadUsers();
+  }, [showUsers]);
+
+  useEffect(() => {
     if (showRequests) loadRequests();
   }, [showRequests]);
 
@@ -236,6 +273,53 @@ export default function AdminPage() {
             <button className="fun-btn px-6 py-3 text-lg" type="submit">Promote ✨</button>
           </form>
           {makeAdminMsg && <div className="text-success font-bold mt-1">{makeAdminMsg}</div>}
+          <button
+            className="fun-btn px-6 py-3 text-lg mt-2"
+            onClick={() => setShowUsers(v => !v)}
+          >{showUsers ? 'Hide All Accounts' : 'Show All Accounts'} <span className="ml-1">👥</span></button>
+      {/* User Management Section */}
+      {showUsers && (
+        <div className="cartoon-card border-4 border-blue-400 shadow-fun bg-white/90 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">👥</span>
+            <h2 className="text-2xl font-bold text-blue-500 drop-shadow">All Registered Accounts</h2>
+            <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadUsers}>Refresh 🔄</button>
+          </div>
+          {usersLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading users...</div>}
+          {usersError && <div className="text-error font-bold">{usersError}</div>}
+          {userActionMsg && <div className="text-success font-bold animate-bouncex">{userActionMsg}</div>}
+          <div className="flex flex-col gap-4 mt-4">
+            {users.length === 0 && !usersLoading && <div className="text-gray-400 text-base">No registered users.</div>}
+            {users.map(u => (
+              <div key={u.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-blue-300 bg-blue-50/60 shadow-fun">
+                <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                  <span className="text-2xl">👤</span>
+                  <span className="font-bold text-lg text-dark">{u.name}</span>
+                  <span className="text-base text-gray-500">{u.email}</span>
+                </div>
+                <div className="flex gap-2 mt-2 md:mt-0">
+                  <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete 🗑️</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Modal */}
+      {deleteUserModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="cartoon-card border-4 border-error bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full animate-wiggle">
+            <div className="text-5xl">🗑️</div>
+            <div className="text-2xl font-extrabold text-error text-center">Delete this account permanently?</div>
+            <div className="text-lg text-dark text-center">{deleteUserModal.name} <span className="text-gray-400">({deleteUserModal.email})</span></div>
+            <div className="flex gap-4 mt-2">
+              <button className="fun-btn px-5 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteUserModal({ open: false, id: null, name: '', email: '' })}>Cancel</button>
+              <button className="fun-btn px-5 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleDeleteUser(deleteUserModal.id)}>Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
           <button
             className="fun-btn px-6 py-3 text-lg mt-4"
             onClick={() => setShowRequests(v => !v)}
