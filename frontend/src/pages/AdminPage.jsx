@@ -19,13 +19,74 @@ export default function AdminPage() {
   const [postActionMsg, setPostActionMsg] = useState('');
 
   // --- Posts API handlers (stubs, should be implemented or already present) ---
-  const loadPosts = async () => {};
-  const handleLock = async (id) => {};
-  const handleUnlock = async (id) => {};
-  const handlePin = async (id) => {};
-  const handleUnpin = async (id) => {};
-  const handleDeletePost = async (id) => {};
-  const closePostDetail = () => {};
+  // --- Posts API handlers ---
+  const loadPosts = async () => {
+    setPostsLoading(true); setPostsError('');
+    try {
+      const r = await api.get('/posts');
+      setPosts(r.data);
+    } catch (e) {
+      setPostsError(e?.response?.data?.error || 'Failed to load posts');
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  const handleLock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/lock`);
+      setPostActionMsg('🔒 Post locked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to lock post');
+    }
+  };
+  const handleUnlock = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unlock`);
+      setPostActionMsg('🔓 Post unlocked!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unlock post');
+    }
+  };
+  const handlePin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/pin`);
+      setPostActionMsg('📌 Post pinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to pin post');
+    }
+  };
+  const handleUnpin = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.post(`/posts/${id}/unpin`);
+      setPostActionMsg('📌 Post unpinned!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to unpin post');
+    }
+  };
+  const handleDeletePost = async (id) => {
+    setPostActionMsg('');
+    try {
+      await api.delete(`/posts/${id}`);
+      setPostActionMsg('🗑️ Post deleted!');
+      loadPosts();
+    } catch (e) {
+      setPostActionMsg(e?.response?.data?.error || 'Failed to delete post');
+    }
+  };
+  const closePostDetail = () => {
+    setDetailPostId(null);
+    setDetailData(null);
+    setDetailLoading(false);
+  };
   const [makeAdminName, setMakeAdminName] = useState('');
   const [showRequests, setShowRequests] = useState(false);
   // --- User Management state ---
