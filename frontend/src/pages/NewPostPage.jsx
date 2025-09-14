@@ -4,6 +4,14 @@ import api from '../lib/api';
 
 const DRAFT_KEY = 'mf_newpost_draft';
 export default function NewPostPage() {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [category, setCategory] = useState('Academics');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
   // Load draft on mount
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY);
@@ -24,13 +32,6 @@ export default function NewPostPage() {
     const draft = { title, content, category, linkUrl };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [title, content, category, linkUrl]);
-  const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState('Academics');
-  const [linkUrl, setLinkUrl] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
 
   function handleFileChange(e) {
     if (e.target.files && e.target.files[0]) {
