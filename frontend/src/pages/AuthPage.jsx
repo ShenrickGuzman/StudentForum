@@ -37,7 +37,12 @@ export default function AuthPage() {
     try {
       if (mode === 'signup') {
         const r = await api.post('/auth/signup', { name, password, email });
-        login(r.data.token, r.data.user); navigate('/');
+        if (r.data.status === 'pending') {
+          navigate(`/wait-approval?name=${encodeURIComponent(name)}`, { state: { name } });
+        } else if (r.data.token) {
+          // fallback if backend returns immediate token (not expected now)
+          login(r.data.token, r.data.user); navigate('/');
+        }
       } else {
         const r = await api.post('/auth/login', { name, password });
         login(r.data.token, r.data.user); navigate('/');
