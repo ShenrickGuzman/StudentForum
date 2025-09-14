@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [requests, setRequests] = useState([]);
   const [reqLoading, setReqLoading] = useState(false);
   const [reqError, setReqError] = useState('');
+  // Modal state for delete confirmation
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null, name: '', email: '' });
 
   const loadRequests = async () => {
     setReqLoading(true); setReqError('');
@@ -109,12 +111,38 @@ export default function AdminPage() {
                     <span className="text-sm font-bold text-purple-600">{rq.status === 'approved' ? '✅ Approved' : '❌ Declined'}</span>
                     <button
                       className="fun-btn px-3 py-1 text-xs bg-error/80 hover:bg-error"
-                      onClick={async () => {
-                        if (!window.confirm('Delete this request log permanently?')) return;
-                        try { await api.delete(`/auth/signup-requests/${rq.id}`); loadRequests(); }
-                        catch(e){ alert(e?.response?.data?.error || 'Delete failed'); }
-                      }}
+                      onClick={() => setDeleteModal({ open: true, id: rq.id, name: rq.name, email: rq.email })}
                     >🗑️ Delete</button>
+      {/* Cartoony Delete Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="cartoon-card bg-white/95 border-4 border-error/40 rounded-3xl shadow-2xl p-8 max-w-sm w-full flex flex-col items-center gap-5 animate-pop">
+            <div className="text-5xl mb-2">🗑️</div>
+            <h2 className="text-2xl font-extrabold text-error mb-1">Delete this log permanently?</h2>
+            <div className="text-lg text-dark/80 font-bold mb-2">User: <span className="text-error">{deleteModal.name}</span></div>
+            <div className="text-base text-dark/60 mb-2">Email: <span className="text-error">{deleteModal.email}</span></div>
+            <div className="flex gap-4 mt-2">
+              <button
+                className="fun-btn px-5 py-2 text-base bg-error/90 hover:bg-error text-white font-bold shadow"
+                onClick={async () => {
+                  try {
+                    await api.delete(`/auth/signup-requests/${deleteModal.id}`);
+                    setDeleteModal({ open: false, id: null, name: '', email: '' });
+                    loadRequests();
+                  } catch (e) {
+                    alert(e?.response?.data?.error || 'Delete failed');
+                  }
+                }}
+              >Yes, Delete</button>
+              <button
+                className="fun-btn px-5 py-2 text-base bg-gray-200 hover:bg-gray-300 text-dark font-bold shadow"
+                onClick={() => setDeleteModal({ open: false, id: null, name: '', email: '' })}
+              >Cancel</button>
+            </div>
+            <div className="text-xs text-error/70 mt-2">This cannot be undone!</div>
+          </div>
+        </div>
+      )}
                   </div>
                 )}
               </div>
