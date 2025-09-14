@@ -5,6 +5,7 @@ import PostDetailPage from './pages/PostDetailPage';
 import NewPostPage from './pages/NewPostPage';
 import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
+import WaitApprovalPage from './pages/WaitApprovalPage';
 import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
 
@@ -43,7 +44,8 @@ function AppShell() {
   return (
     <div>
       <Routes>
-        <Route path="/auth" element={<AuthPage />} />
+  <Route path="/auth" element={<AuthPage />} />
+  <Route path="/wait-approval" element={<WaitApprovalPage />} />
         <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
