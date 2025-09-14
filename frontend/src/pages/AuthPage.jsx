@@ -157,7 +157,7 @@ export default function AuthPage() {
           disabled={loading}
         >
           {loading
-            ? (<span>Logging in, please wait a moment...</span>)
+            ? (<span>{mode === 'signup' ? 'Signing up, please wait a moment...' : 'Logging in, please wait a moment...'}</span>)
             : (mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Sign in<span>💬</span></>)}
         </button>
         {/* Welcome message */}
