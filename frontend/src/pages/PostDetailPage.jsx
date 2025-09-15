@@ -22,6 +22,7 @@ export default function PostDetailPage() {
   const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
   const [userReaction, setUserReaction] = useState(null);
   const [reacting, setReacting] = useState(false);
+  const [commentReacting, setCommentReacting] = useState({});
 
   // Load post, comments, and reactions
   const load = () => api.get(`/posts/${id}`).then(r => {
@@ -41,14 +42,14 @@ export default function PostDetailPage() {
     load();
   };
 
-  // Handle reaction click
+  // Handle reaction click for post
   const handleReact = async (type) => {
     if (!token || reacting) return;
     setReacting(true);
     let newType = type;
     if (userReaction === type) newType = null; // Remove reaction if same
     try {
-      await api.post(`/posts/${id}/react`, { reaction: newType });
+      await api.post(`/posts/post/${id}/react`, { emoji: newType });
       // Optimistic UI update
       setUserReaction(newType);
       setReactions(prev => {
@@ -59,6 +60,20 @@ export default function PostDetailPage() {
       });
     } catch {}
     setReacting(false);
+  };
+
+  // Handle reaction click for comment
+  const handleCommentReact = async (commentId, type, userReact) => {
+    if (!token || commentReacting[commentId]) return;
+    setCommentReacting(r => ({ ...r, [commentId]: true }));
+    let newType = type;
+    if (userReact === type) newType = null;
+    try {
+      await api.post(`/posts/comment/${commentId}/react`, { emoji: newType });
+      // Optimistic UI update: reload all
+      load();
+    } catch {}
+    setCommentReacting(r => ({ ...r, [commentId]: false }));
   };
 
   if (loading) {
@@ -134,19 +149,19 @@ export default function PostDetailPage() {
           {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
 
           {/* Reaction Row */}
-          <div className="flex flex-row items-center justify-center gap-2 sm:gap-4 mt-4 mb-2">
+          <div className="flex flex-row items-center justify-center gap-1 sm:gap-2 mt-4 mb-2">
             {reactionTypes.map(rt => (
               <button
                 key={rt.key}
                 type="button"
                 disabled={!token || reacting}
                 onClick={() => handleReact(rt.key)}
-                className={`flex flex-col items-center px-2 sm:px-4 py-2 rounded-2xl font-extrabold text-lg sm:text-xl shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
+                className={`flex flex-col items-center px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl font-extrabold text-base sm:text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
                 aria-pressed={userReaction === rt.key}
                 aria-label={rt.label}
               >
-                <span className="text-2xl sm:text-3xl mb-1 drop-shadow-lg">{rt.icon}</span>
-                <span className="text-xs sm:text-sm font-bold text-purple-700">{reactions[rt.key] || 0}</span>
+                <span className="text-lg sm:text-2xl mb-0.5 drop-shadow-lg">{rt.icon}</span>
+                <span className="text-[11px] sm:text-xs font-bold text-purple-700">{reactions[rt.key] || 0}</span>
               </button>
             ))}
           </div>
@@ -157,10 +172,29 @@ export default function PostDetailPage() {
           <div className="space-y-3">
             {comments.length === 0 && <div className="text-gray-400 text-base font-cartoon">No comments yet. Be the first!</div>}
             {comments.map(c => (
-              <div key={c.id} className="p-3 rounded-xl border-2 border-purple-100 bg-purple-50 flex items-center gap-2">
-                <span className="text-lg">🗨️</span>
-                <span className="flex-1 text-gray-700 font-cartoon">{c.content}</span>
-                <span className="opacity-70 text-sm text-purple-400 font-bold">- {c.author_name}</span>
+              <div key={c.id} className="p-3 rounded-xl border-2 border-purple-100 bg-purple-50 flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🗨️</span>
+                  <span className="flex-1 text-gray-700 font-cartoon">{c.content}</span>
+                  <span className="opacity-70 text-sm text-purple-400 font-bold">- {c.author_name}</span>
+                </div>
+                {/* Comment Reaction Row */}
+                <div className="flex flex-row items-center justify-start gap-1 sm:gap-2 mt-1 ml-7">
+                  {reactionTypes.map(rt => (
+                    <button
+                      key={rt.key}
+                      type="button"
+                      disabled={!token || commentReacting[c.id]}
+                      onClick={() => handleCommentReact(c.id, rt.key, c.reactions?.user)}
+                      className={`flex flex-col items-center px-1 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-extrabold text-xs sm:text-sm shadow-fun border-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-pink-200 hover:scale-105 ${c.reactions?.user === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-100 to-yellow-50' : 'border-yellow-200 bg-white'} ${rt.color}`}
+                      aria-pressed={c.reactions?.user === rt.key}
+                      aria-label={rt.label}
+                    >
+                      <span className="text-base sm:text-lg mb-0.5 drop-shadow-lg">{rt.icon}</span>
+                      <span className="text-[10px] sm:text-xs font-bold text-purple-700">{c.reactions?.counts?.[rt.key] || 0}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
