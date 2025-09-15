@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import api from '../lib/api';
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = 'mf_token';
@@ -13,6 +14,29 @@ export function AuthContextProvider({ children }) {
   useEffect(() => {
     if (token) localStorage.setItem(STORAGE_KEY, token); else localStorage.removeItem(STORAGE_KEY);
     if (user) localStorage.setItem('mf_user', JSON.stringify(user)); else localStorage.removeItem('mf_user');
+  }, [token, user]);
+
+  // Polling to check if user account has been deleted
+  useEffect(() => {
+    if (!token || !user) return;
+    
+    const checkUserStatus = async () => {
+      try {
+        await api.get('/auth/check-status');
+      } catch (error) {
+        if (error?.response?.status === 401 && 
+            error?.response?.data?.error === 'Account deleted') {
+          // User has been deleted, log them out and redirect
+          setToken(null);
+          setUser(null);
+          window.location.replace('/account-deleted');
+        }
+      }
+    };
+    
+    // Check every 3 seconds
+    const interval = setInterval(checkUserStatus, 3000);
+    return () => clearInterval(interval);
   }, [token, user]);
 
   const value = useMemo(() => ({
