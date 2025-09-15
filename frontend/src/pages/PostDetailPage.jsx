@@ -51,6 +51,7 @@ export default function PostDetailPage() {
     if (userReaction === type) newType = null;
     try {
       console.log('Sending reaction:', { type: newType, postId: id, token: !!token });
+      // Fixed API endpoint - removed extra 'posts' prefix
       await api.post(`/posts/post/${id}/react`, { emoji: newType });
       // Refresh the post data to get updated reactions
       const r = await api.get(`/posts/${id}`);
@@ -59,8 +60,10 @@ export default function PostDetailPage() {
       if (r.data.reactions) setUserReaction(r.data.reactions.user);
     } catch (error) {
       console.error('Failed to react:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       // Show user feedback on error
-      alert('Failed to add reaction. Please try again.');
+      alert(`Failed to add reaction: ${error.response?.data?.error || error.message}`);
     }
     setReacting(false);
   };
@@ -178,11 +181,7 @@ export default function PostDetailPage() {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  handleReact(rt.key);
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  console.log('Button clicked:', rt.key, 'disabled:', !token || reacting);
                   if (!reacting && token) {
                     handleReact(rt.key);
                   }
