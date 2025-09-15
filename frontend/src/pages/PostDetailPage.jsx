@@ -199,30 +199,37 @@ export default function PostDetailPage() {
               />
             ))}
           </div>
-          <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
-              😊
+          {post.locked ? (
+            <div className="flex flex-col items-center justify-center mt-6">
+              <div className="text-error font-extrabold text-lg flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-6 py-4 mb-2">
+                <span className="text-2xl">🔒</span> This Forum has been locked by an admin
+              </div>
             </div>
-            <div className="flex-1">
-              <input
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment... 💭"
-                className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
+          ) : (
+            <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
+                😊
+              </div>
+              <div className="flex-1">
+                <input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Write a comment... 💭"
+                  className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
+                  style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
+                />
+              </div>
+              <button
+                type="submit"
+                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
                 style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-              />
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
-              style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-            >
-              <span className="text-lg">✈️</span> Send
-            </button>
-          </form>
+              >
+                <span className="text-lg">✈️</span> Send
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>
   );
 }
-
