@@ -197,8 +197,8 @@ function HomePage() {
           <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`}>
             {refreshing ? '🔄' : '🔄'}
           </span>
-          <span className="hidden sm:inline ml-2">
-            {refreshing ? 'Refreshing...' : 'Refresh'}
+          <span className="ml-2">
+            {refreshing ? 'Refreshing...' : 'Refresh Forum'}
           </span>
         </button>
         {/* Show New Post button here on mobile only */}
