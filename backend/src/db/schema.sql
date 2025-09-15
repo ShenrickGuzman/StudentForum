@@ -1,8 +1,8 @@
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL UNIQUE,
-  email TEXT UNIQUE,
+  name TEXT NOT NULL,
+  email TEXT,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'student',
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
