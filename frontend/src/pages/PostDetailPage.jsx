@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
-import CommentCard from '../components/CommentCard.jsx';
+import CommentCard from '../components/CommentCard';
 
 export default function PostDetailPage() {
   const { id } = useParams();
