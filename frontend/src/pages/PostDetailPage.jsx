@@ -120,7 +120,7 @@ export default function PostDetailPage() {
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun">
-                <span className="material-icons">person</span>
+                <span className="material-icons">👤</span>
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg text-gray-800 leading-tight">{post.author_name}</span>
@@ -225,3 +225,4 @@ export default function PostDetailPage() {
     </div>
   );
 }
+
