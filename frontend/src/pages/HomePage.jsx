@@ -19,19 +19,32 @@ function HomePage() {
   const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
+  const loadPosts = async () => {
     const params = {};
     if (q) params.q = q;
     if (cat) params.category = cat;
-    api.get('/posts', { params }).then(r => {
-      setPosts(r.data);
-      setLoading(false);
-    });
+    try {
+      const response = await api.get('/posts', { params });
+      setPosts(response.data);
+    } catch (error) {
+      console.error('Failed to load posts:', error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadPosts();
+    setRefreshing(false);
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    loadPosts().finally(() => setLoading(false));
   }, [q, cat]);
 
   if (loading) {
@@ -170,6 +183,24 @@ function HomePage() {
             <option key={c.key} value={c.key}>{c.label}</option>
           ))}
         </select>
+        {/* Refresh Button */}
+        <button
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className={`rounded-2xl px-4 py-3 font-bold shadow-lg transition-all duration-200 border-2 border-white/60 ${
+            refreshing 
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+              : 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white hover:scale-105 active:scale-95'
+          }`}
+          title="Refresh posts to see new content"
+        >
+          <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`}>
+            {refreshing ? '🔄' : '🔄'}
+          </span>
+          <span className="hidden sm:inline ml-2">
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </span>
+        </button>
         {/* Show New Post button here on mobile only */}
         {user && (
           <button
