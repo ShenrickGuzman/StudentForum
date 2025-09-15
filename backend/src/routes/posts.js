@@ -236,7 +236,16 @@ const createPostsRouter = (pool) => {
   router.post('/:type/:id/react', requireAuth, async (req, res) => {
     const { emoji } = req.body || {};
     const { type, id } = req.params;
-    if (!['post', 'comment'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+    console.log('--- REACT API DEBUG ---');
+    console.log('User:', req.user);
+    console.log('Params:', req.params);
+    console.log('Body:', req.body);
+    console.log('Headers:', req.headers);
+    console.log('User-Agent:', req.headers['user-agent']);
+    if (!['post', 'comment'].includes(type)) {
+      console.log('Invalid type:', type);
+      return res.status(400).json({ error: 'Invalid type' });
+    }
     const table = type === 'post' ? 'post_reactions' : 'comment_reactions';
     const targetCol = type === 'post' ? 'post_id' : 'comment_id';
     // If emoji is null, empty, or undefined, remove the reaction
@@ -246,12 +255,17 @@ const createPostsRouter = (pool) => {
           `DELETE FROM ${table} WHERE ${targetCol} = $1 AND user_id = $2`,
           [id, req.user.id]
         );
+        console.log('Removed reaction');
         return res.json({ ok: true, removed: true });
       } catch (e) {
-        return res.status(500).json({ error: 'Failed to remove reaction' });
+        console.error('Failed to remove reaction:', e);
+        return res.status(500).json({ error: 'Failed to remove reaction', details: e.message });
       }
     }
-    if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) return res.status(400).json({ error: 'Invalid reaction' });
+    if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) {
+      console.log('Invalid reaction:', emoji);
+      return res.status(400).json({ error: 'Invalid reaction' });
+    }
     try {
       await pool.query(
         `INSERT INTO ${table} (${targetCol}, user_id, emoji)
@@ -259,9 +273,11 @@ const createPostsRouter = (pool) => {
          ON CONFLICT (${targetCol}, user_id) DO UPDATE SET emoji = EXCLUDED.emoji`,
         [id, req.user.id, emoji]
       );
+      console.log('Reaction added/updated successfully');
       res.json({ ok: true });
     } catch (e) {
-      res.status(500).json({ error: 'Failed to react' });
+      console.error('Failed to react:', e);
+      res.status(500).json({ error: 'Failed to react', details: e.message });
     }
   });
 
