@@ -1,10 +1,12 @@
+
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL UNIQUE,
   email TEXT UNIQUE,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'student',
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Ensure case-insensitive uniqueness for usernames
