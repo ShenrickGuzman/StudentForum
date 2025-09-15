@@ -114,16 +114,20 @@ export default function PostDetailPage() {
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
       <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
-        {/* Post Card */}
-        <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 flex flex-col gap-5 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
-          {/* Forum status indicators */}
-          <div className="flex gap-2 items-center mb-1 justify-center">
-            {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
-            {post.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
-          </div>
-          <div className="flex items-center gap-2 mb-2 justify-center">
-            <span className="text-2xl">{post.pinned ? '📌' : ''}</span>
-            <span className={`px-4 py-1 rounded-full text-white text-sm shadow font-extrabold font-cartoon tracking-wide border-2 border-white drop-shadow-lg ${
+        {/* Post Card - Redesigned */}
+        <div className="bg-white/95 rounded-3xl shadow-fun border-4 border-purple-200 p-0 sm:p-0 animate-pop flex flex-col gap-0" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
+          {/* Header Row: User info left, category right */}
+          <div className="flex justify-between items-start px-8 pt-8 pb-2">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun">
+                <span className="material-icons">person</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-lg text-gray-800 leading-tight">{post.author_name}</span>
+                <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            </div>
+            <span className={`px-4 py-1 rounded-full text-white text-sm shadow font-extrabold font-cartoon tracking-wide border-2 border-white drop-shadow-lg mt-2 ${
               post.category === 'Academics' ? 'bg-blue-400' :
               post.category === 'Arts' ? 'bg-rose-400' :
               post.category === 'Music' ? 'bg-indigo-400' :
@@ -136,35 +140,42 @@ export default function PostDetailPage() {
               {post.category}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-purple-700 mb-2 text-center drop-shadow-lg flex items-center justify-center gap-3 font-cartoon" style={{letterSpacing:1}}>
-            {post.title}
-            {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
-          </h1>
-          {/* Author and date/time (Philippines time) */}
-          <div className="text-center text-purple-400 text-base mb-4 font-bold font-cartoon">
-            <span className="mr-1">👤 {post.author_name}</span>
-            {post.created_at && (
-              <span>• {new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-            )}
+          {/* Title */}
+          <div className="px-8 pt-2 pb-0">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon" style={{letterSpacing:1}}>
+              {post.title}
+              {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
+            </h1>
+            {/* Forum status indicators */}
+            <div className="flex gap-2 items-center mb-1">
+              {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
+              {post.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
+            </div>
           </div>
-          {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
-          <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-center max-w-2xl mx-auto mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>{post.content}</p>
-          {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
-
-          {/* Reaction Row */}
-          <div className="flex flex-row items-center justify-center gap-1 sm:gap-2 mt-4 mb-2">
+          {/* Content with gradient border */}
+          <div className="px-8 pt-4 pb-4">
+            <div className="rounded-3xl p-1" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+              <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
+                {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
+                <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
+                {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
+              </div>
+            </div>
+          </div>
+          {/* Reaction Row - improved */}
+          <div className="flex flex-row items-center justify-start gap-2 px-8 pb-6 pt-2">
             {reactionTypes.map(rt => (
               <button
                 key={rt.key}
                 type="button"
                 disabled={!token || reacting}
                 onClick={() => handleReact(rt.key)}
-                className={`flex flex-col items-center px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl font-extrabold text-base sm:text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
+                className={`flex flex-col items-center px-2 py-2 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
                 aria-pressed={userReaction === rt.key}
                 aria-label={rt.label}
               >
-                <span className="text-lg sm:text-2xl mb-0.5 drop-shadow-lg">{rt.icon}</span>
-                <span className="text-[11px] sm:text-xs font-bold text-purple-700">{reactions[rt.key] || 0}</span>
+                <span className="text-2xl mb-0.5 drop-shadow-lg">{rt.icon}</span>
+                <span className="text-xs font-bold text-purple-700">{reactions[rt.key] || 0}</span>
               </button>
             ))}
           </div>
