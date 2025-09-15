@@ -27,7 +27,11 @@ module.exports = {
       },
       animation: {
         wiggle: 'wiggle 0.3s ease-in-out',
-        bouncex: 'bouncex 0.6s ease-in-out'
+        bouncex: 'bouncex 0.6s ease-in-out',
+        'bounce-slow': 'bounceslow 3s infinite',
+        'bounce-short': 'bounceshort 1.4s infinite',
+        'spin-slow': 'spinslow 5s linear infinite',
+        pop: 'pop 0.4s ease'
       },
       keyframes: {
         wiggle: {
@@ -37,6 +41,23 @@ module.exports = {
         bouncex: {
           '0%, 100%': { transform: 'translateX(0)' },
           '50%': { transform: 'translateX(4px)' }
+        },
+        bounceslow: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-12px)' }
+        },
+        bounceshort: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' }
+        },
+        spinslow: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' }
+        },
+        pop: {
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
+          '60%': { transform: 'scale(1.04)', opacity: '1' },
+          '100%': { transform: 'scale(1)' }
         }
   },
       boxShadow: {
@@ -47,3 +68,5 @@ module.exports = {
   },
   plugins: []
 }
+
+
