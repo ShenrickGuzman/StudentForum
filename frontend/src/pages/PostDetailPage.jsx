@@ -3,19 +3,21 @@ import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
-export default function PostDetailPage() {
+export default function PostDetailPage() {}
   const navigate = useNavigate();
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [comment, setComment] = useState('');
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [commentError, setCommentError] = useState('');
   const { token } = useAuth();
 
   // Reaction system state
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
     { key: 'heart', icon: '❤️', color: 'bg-pink-200', label: 'Heart' },
-    { key: 'wow', icon: '😮', color: 'bg-yellow-200', label: 'Wow' },
+    { key: 'wow', icon: '😮', color: 'bg-white', label: 'Wow' },
     { key: 'sad', icon: '😢', color: 'bg-purple-200', label: 'Sad' },
     { key: 'haha', icon: '😂', color: 'bg-green-200', label: 'HAHA' },
   ];
@@ -34,47 +36,86 @@ export default function PostDetailPage() {
   });
   useEffect(() => { setLoading(true); load(); }, [id]);
 
-  // Send comment
-  const sendComment = async () => {
-    if (!comment.trim()) return;
-    await api.post(`/posts/${id}/comments`, { content: comment });
-    setComment('');
-    load();
-  };
+  if (loading) return (
+    <div className="flex items-center justify-center h-96 text-xl font-bold text-gray-400">Loading...</div>
+  );
 
-  // Handle reaction click for post
-  const handleReact = async (type) => {
-    if (!token || reacting) return;
-    setReacting(true);
-    let newType = type;
-    if (userReaction === type) newType = null; // Remove reaction if same
-    try {
-      await api.post(`/posts/post/${id}/react`, { emoji: newType });
-      // Optimistic UI update
-      setUserReaction(newType);
-      setReactions(prev => {
-        const next = { ...prev };
-        if (userReaction) next[userReaction] = Math.max(0, next[userReaction] - 1);
-        if (newType) next[newType] = (next[newType] || 0) + 1;
-        return next;
-      });
-    } catch {}
-    setReacting(false);
-  };
+  if (!data) return (
+    <div className="flex items-center justify-center h-96 text-xl font-bold text-red-400">Post not found.</div>
+  );
 
-  // Handle reaction click for comment
-  const handleCommentReact = async (commentId, type, userReact) => {
-    if (!token || commentReacting[commentId]) return;
-    setCommentReacting(r => ({ ...r, [commentId]: true }));
-    let newType = type;
-    if (userReact === type) newType = null;
-    try {
-      await api.post(`/posts/comment/${commentId}/react`, { emoji: newType });
-      // Optimistic UI update: reload all
-      load();
-    } catch {}
-    setCommentReacting(r => ({ ...r, [commentId]: false }));
-  };
+  const date = data?.post?.created_at ? new Date(data.post.created_at) : null;
+
+  return (
+    <div className="flex justify-center items-start min-h-screen bg-gradient-to-br from-pink-200 via-purple-100 to-orange-100 py-8 px-2">
+      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-0 relative">
+        {/* Header: User info and category */}
+        <div className="flex justify-between items-start px-8 pt-8">
+          {/* User info */}
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-blue-300 flex items-center justify-center text-white text-xl font-bold">
+                <span>{post.author_name?.[0]?.toUpperCase() || '?'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold text-lg text-gray-800">{post.author_name}</span>
+                <span className="text-xs text-gray-500 mt-0.5">
+                  {date && date.toLocaleString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* Category tag */}
+          <div className="flex items-center">
+            <span className="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold text-sm shadow-md">{post.category}</span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="px-8 pt-6 pb-2">
+          <h1 className="text-4xl font-extrabold text-purple-600 tracking-tight text-left" style={{ letterSpacing: 1 }}>{post.title}</h1>
+        </div>
+
+        {/* Content with gradient border */}
+        <div className="px-8 pb-4">
+          <div className="rounded-2xl p-1 bg-gradient-to-tr from-yellow-200 via-green-100 to-pink-200 border-2 border-transparent" style={{ boxShadow: '0 2px 16px 0 rgba(0,0,0,0.04)' }}>
+            <div className="rounded-xl bg-white p-8 min-h-[220px] flex items-center justify-center text-xl font-medium text-gray-700" style={{ background: 'linear-gradient(135deg, #f8fafc 60%, #e0ffe0 100%)' }}>
+              {/* If image_url exists, show image, else show content */}
+              {post.image_url ? (
+                <img src={getAssetUrl(post.image_url)} alt="post" className="max-w-full max-h-72 rounded-lg shadow-md mx-auto" />
+              ) : (
+                <span>{post.content}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Comments and reactions section */}
+        <div className="px-8 pb-8">
+          <div className="mt-4 text-gray-700 text-lg font-medium">
+            {post.content && !post.image_url && (
+              <div className="mb-4">{post.content}</div>
+            )}
+          </div>
+          {/* Reactions */}
+          <div className="flex items-center gap-3 mt-4">
+            {reactionTypes.map(rt => (
+              <button
+                key={rt.key}
+                className={`flex items-center gap-1 px-3 py-1 rounded-full border border-gray-200 shadow-sm font-semibold text-gray-700 text-base focus:outline-none transition-all ${rt.color} ${userReaction === rt.key ? 'ring-2 ring-purple-400' : ''}`}
+                onClick={() => handleReact(rt.key)}
+                disabled={reacting}
+              >
+                <span>{rt.icon}</span>
+                <span>{reactions[rt.key] || 0}</span>
+              </button>
+            ))}
+            <button className="ml-4 px-4 py-1 bg-green-100 text-green-700 rounded-full font-semibold text-base shadow-sm">Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -166,56 +207,11 @@ export default function PostDetailPage() {
             ))}
           </div>
         </div>
-        {/* Comments Card */}
-        <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-pink-200 p-4 sm:p-8 animate-pop flex flex-col gap-4" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(255, 182, 193, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
-          <h2 className="text-xl sm:text-2xl font-extrabold mb-2 text-pink-500 drop-shadow flex items-center gap-2 font-cartoon">💬 Comments {post.locked && <span className="text-error text-lg">(Locked)</span>}</h2>
-          <div className="space-y-3">
-            {comments.length === 0 && <div className="text-gray-400 text-base font-cartoon">No comments yet. Be the first!</div>}
-            {comments.map(c => (
-              <div key={c.id} className="p-3 rounded-xl border-2 border-purple-100 bg-purple-50 flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">🗨️</span>
-                  <span className="flex-1 text-gray-700 font-cartoon">{c.content}</span>
-                  <span className="opacity-70 text-sm text-purple-400 font-bold">- {c.author_name}</span>
-                </div>
-                {/* Comment Reaction Row */}
-                <div className="flex flex-row items-center justify-start gap-1 sm:gap-2 mt-1 ml-7">
-                  {reactionTypes.map(rt => (
-                    <button
-                      key={rt.key}
-                      type="button"
-                      disabled={!token || commentReacting[c.id]}
-                      onClick={() => handleCommentReact(c.id, rt.key, c.reactions?.user)}
-                      className={`flex flex-col items-center px-1 sm:px-2 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-extrabold text-xs sm:text-sm shadow-fun border-2 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-pink-200 hover:scale-105 ${c.reactions?.user === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-100 to-yellow-50' : 'border-yellow-200 bg-white'} ${rt.color}`}
-                      aria-pressed={c.reactions?.user === rt.key}
-                      aria-label={rt.label}
-                    >
-                      <span className="text-base sm:text-lg mb-0.5 drop-shadow-lg">{rt.icon}</span>
-                      <span className="text-[10px] sm:text-xs font-bold text-purple-700">{c.reactions?.counts?.[rt.key] || 0}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          {token && !post.locked && (
-            <div className="mt-5 flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <input
-                className="flex-1 rounded-2xl px-4 py-3 border-2 border-pink-200 text-base sm:text-lg font-cartoon focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white"
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                placeholder="Write a comment"
-              />
-              <button className="rounded-2xl px-5 py-3 text-base sm:text-lg font-extrabold font-cartoon bg-gradient-to-r from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400 text-white shadow-lg transition-all" onClick={sendComment}>Send 💬</button>
-            </div>
-          )}
-          {token && post.locked && (
-            <div className="mt-6 text-center text-error font-bold font-cartoon">Comments are locked for this post.</div>
-          )}
-        </div>
       </div>
     </div>
   );
-}
 
 
+
+
+//
