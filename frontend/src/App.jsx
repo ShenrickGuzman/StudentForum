@@ -8,6 +8,7 @@ import AuthPage from './pages/AuthPage';
 import WaitApprovalPage from './pages/WaitApprovalPage';
 import RulesPage from './pages/RulesPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import AccountDeletedPage from './pages/AccountDeletedPage';
 import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
 import RequireAdminAuth from './components/RequireAdminAuth';
@@ -42,6 +43,7 @@ function AppShell() {
         <Route path="/wait-approval" element={<WaitApprovalPage />} />
         <Route path="/rules" element={<RulesPage />} />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        <Route path="/account-deleted" element={<AccountDeletedPage />} />
         <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
@@ -59,6 +61,5 @@ export default function App() {
     </AuthContextProvider>
   );
 }
-
 
 
