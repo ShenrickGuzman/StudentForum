@@ -8,6 +8,15 @@ export default function NewPostPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('Academics');
+  const categories = [
+    { key: 'Academics', icon: '📚', colors: 'from-pink-400 to-pink-500' },
+    { key: 'Arts', icon: '🎨', colors: 'from-rose-400 to-orange-300' },
+    { key: 'Music', icon: '🎵', colors: 'from-indigo-400 to-fuchsia-400' },
+    { key: 'Sports', icon: '🏀', colors: 'from-emerald-400 to-teal-400' },
+    { key: 'Technology', icon: '💻', colors: 'from-cyan-400 to-blue-500' },
+    { key: 'Ideas', icon: '💡', colors: 'from-amber-300 to-yellow-400' },
+    { key: 'Random', icon: '✨', colors: 'from-purple-400 to-violet-500' },
+  ];
   const [linkUrl, setLinkUrl] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -109,17 +118,27 @@ export default function NewPostPage() {
           required
           style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}} 
         />
-        <select
-          className="rounded-3xl px-7 py-5 border-4 border-yellow-200 w-full text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 shadow-fun hover:scale-105 focus:scale-105 duration-200"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-        >
-          <option>Academics</option>
-          <option>Class Life</option>
-          <option>Ideas</option>
-          <option>Random</option>
-        </select>
+        <div className="flex flex-col gap-3">
+          <label className="text-sm font-bold text-purple-500 tracking-wide uppercase pl-4" style={{fontFamily: 'Baloo, Fredoka, Comic Neue, cursive'}}>Category</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {categories.map(c => {
+              const active = c.key === category;
+              return (
+                <button
+                  type="button"
+                  key={c.key}
+                  onClick={() => setCategory(c.key)}
+                  className={`relative group rounded-2xl px-4 py-4 font-extrabold text-lg flex items-center justify-center gap-2 border-4 transition-all shadow-fun focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 duration-200 whitespace-nowrap ${active ? 'border-yellow-300 scale-105' : 'border-yellow-200'} bg-gradient-to-br ${c.colors} text-white`}
+                  aria-pressed={active}
+                >
+                  <span className="text-xl group-hover:rotate-6 transition-transform">{c.icon}</span>
+                  <span>{c.key}</span>
+                  {active && <span className="absolute -top-2 -right-2 bg-white text-pink-500 rounded-full text-xs px-2 py-1 shadow">✓</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <textarea
           className="rounded-3xl px-7 py-5 border-4 border-yellow-200 w-full min-h-[140px] text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 placeholder:text-purple-300 shadow-fun hover:scale-105 focus:scale-105 duration-200"
           placeholder="What's on your mind? (Share your story!)"
@@ -162,10 +181,34 @@ export default function NewPostPage() {
           onChange={e => setLinkUrl(e.target.value)}
           style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
         />
-        <button className="w-full text-2xl py-5 mt-2 rounded-3xl font-extrabold shadow-fun bg-gradient-to-r from-pink-400 via-yellow-300 to-orange-300 hover:from-pink-500 hover:via-yellow-400 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 border-4 border-yellow-200 animate-bounce-short hover:scale-105 duration-200" type="submit" disabled={uploading}>
-          {uploading ? <span className="animate-spin">🖼️</span> : <span className="animate-wiggle">🎉</span>} {uploading ? 'Uploading...' : 'Post!'}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-4 mt-2">
+          <button
+            type="button"
+            onClick={() => {
+              const draft = { title, content, category, linkUrl };
+              localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+              // simple visual feedback
+              const el = document.getElementById('draftSavedBadge');
+              if (el) {
+                el.classList.remove('opacity-0');
+                el.classList.add('opacity-100');
+                setTimeout(() => {
+                  el.classList.add('opacity-0');
+                }, 1800);
+              }
+            }}
+            className="w-full text-lg sm:text-xl py-4 rounded-3xl font-extrabold shadow-fun bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 hover:from-indigo-500 hover:via-purple-500 hover:to-fuchsia-500 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 border-4 border-yellow-200 hover:scale-105 duration-200"
+          >💾 Save Draft</button>
+          <button
+            className="w-full text-lg sm:text-xl py-4 rounded-3xl font-extrabold shadow-fun bg-gradient-to-r from-pink-400 via-yellow-300 to-orange-300 hover:from-pink-500 hover:via-yellow-400 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 border-4 border-yellow-200 animate-bounce-short hover:scale-105 duration-200"
+            type="submit"
+            disabled={uploading}
+          >
+            {uploading ? <span className="animate-spin">🖼️</span> : <span className="animate-wiggle">🎉</span>} {uploading ? 'Uploading...' : 'Publish'}
+          </button>
+        </div>
         <div className="text-center mt-4 text-purple-400 font-bold text-lg font-cartoon animate-pop">Your draft is saved automatically! 📝</div>
+        <div id="draftSavedBadge" className="transition-opacity opacity-0 text-center text-emerald-600 font-bold">Draft saved!</div>
       </form>
     </div>
   );
