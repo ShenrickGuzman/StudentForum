@@ -169,6 +169,21 @@ const createAuthRouter = (pool) => {
     }
   });
 
+  // Check if current user is deleted (for real-time logout)
+  router.get('/check-status', requireAuth, async (req, res) => {
+    try {
+      const result = await pool.query('SELECT deleted FROM users WHERE id = $1', [req.user.id]);
+      const user = result.rows[0];
+      if (!user || user.deleted) {
+        return res.status(401).json({ error: 'Account deleted' });
+      }
+      res.json({ status: 'active' });
+    } catch (e) {
+      console.error('CHECK STATUS ERROR:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'Status check failed' });
+    }
+  });
+
   // Updated login route to block deleted users
   router.post('/login', async (req, res) => {
     const { name, password } = req.body || {};
