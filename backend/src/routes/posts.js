@@ -236,11 +236,23 @@ const createPostsRouter = (pool) => {
   router.post('/:type/:id/react', requireAuth, async (req, res) => {
     const { emoji } = req.body || {};
     const { type, id } = req.params;
-  if (!['post', 'comment'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
-  if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) return res.status(400).json({ error: 'Invalid reaction' });
+    if (!['post', 'comment'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+    const table = type === 'post' ? 'post_reactions' : 'comment_reactions';
+    const targetCol = type === 'post' ? 'post_id' : 'comment_id';
+    // If emoji is null, empty, or undefined, remove the reaction
+    if (!emoji) {
+      try {
+        await pool.query(
+          `DELETE FROM ${table} WHERE ${targetCol} = $1 AND user_id = $2`,
+          [id, req.user.id]
+        );
+        return res.json({ ok: true, removed: true });
+      } catch (e) {
+        return res.status(500).json({ error: 'Failed to remove reaction' });
+      }
+    }
+    if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) return res.status(400).json({ error: 'Invalid reaction' });
     try {
-      const table = type === 'post' ? 'post_reactions' : 'comment_reactions';
-      const targetCol = type === 'post' ? 'post_id' : 'comment_id';
       await pool.query(
         `INSERT INTO ${table} (${targetCol}, user_id, emoji)
          VALUES ($1, $2, $3)
