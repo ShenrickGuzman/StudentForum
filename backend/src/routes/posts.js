@@ -81,7 +81,7 @@ const createPostsRouter = (pool) => {
       );
       // For each comment, get reactions and user reaction
       const commentIds = commentsRaw.rows.map(c => c.id);
-      let commentReactions = [];
+      let commentReactions;
       if (commentIds.length > 0) {
         commentReactions = await pool.query(
           `SELECT comment_id, emoji, COUNT(*) as count
@@ -90,13 +90,17 @@ const createPostsRouter = (pool) => {
            GROUP BY comment_id, emoji`,
           [commentIds]
         );
+      } else {
+        commentReactions = { rows: [] };
       }
-      let userCommentReactions = [];
+      let userCommentReactions;
       if (commentIds.length > 0) {
         userCommentReactions = await pool.query(
           `SELECT comment_id, emoji FROM comment_reactions WHERE comment_id = ANY($1) AND user_id = $2`,
           [commentIds, req.user.id]
         );
+      } else {
+        userCommentReactions = { rows: [] };
       }
       // Map reactions to each comment
       const commentReactionsMap = {};
