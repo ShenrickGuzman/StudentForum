@@ -50,12 +50,18 @@ export default function PostDetailPage() {
     let newType = type;
     if (userReaction === type) newType = null;
     try {
+      console.log('Sending reaction:', { type: newType, postId: id, token: !!token });
       await api.post(`/posts/post/${id}/react`, { emoji: newType });
+      // Refresh the post data to get updated reactions
       const r = await api.get(`/posts/${id}`);
       setData(r.data);
       if (r.data.reactions) setReactions(r.data.reactions.counts);
       if (r.data.reactions) setUserReaction(r.data.reactions.user);
-    } catch {}
+    } catch (error) {
+      console.error('Failed to react:', error);
+      // Show user feedback on error
+      alert('Failed to add reaction. Please try again.');
+    }
     setReacting(false);
   };
 
@@ -169,15 +175,25 @@ export default function PostDetailPage() {
                 key={rt.key}
                 type="button"
                 disabled={!token || reacting}
-                onClick={() => handleReact(rt.key)}
-                onTouchStart={() => {}} // Ensure touch events work on mobile
-                className={`flex flex-col items-center px-3 sm:px-4 py-3 sm:py-4 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 active:scale-95 touch-manipulation min-w-[60px] sm:min-w-[70px] ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReact(rt.key);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!reacting && token) {
+                    handleReact(rt.key);
+                  }
+                }}
+                className={`flex flex-col items-center px-3 sm:px-4 py-3 sm:py-4 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 active:scale-95 touch-manipulation min-w-[60px] sm:min-w-[70px] cursor-pointer ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
                 aria-pressed={userReaction === rt.key}
                 aria-label={rt.label}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
+                style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
               >
-                <span className="text-xl sm:text-2xl mb-0.5 drop-shadow-lg pointer-events-none">{rt.icon}</span>
-                <span className="text-xs font-bold text-purple-700 pointer-events-none">{reactions[rt.key] || 0}</span>
+                <span className="text-xl sm:text-2xl mb-0.5 drop-shadow-lg pointer-events-none select-none">{rt.icon}</span>
+                <span className="text-xs font-bold text-purple-700 pointer-events-none select-none">{reactions[rt.key] || 0}</span>
               </button>
             ))}
           </div>
