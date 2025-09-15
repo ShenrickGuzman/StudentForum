@@ -21,7 +21,57 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = (pool) => {
+
   const router = express.Router();
+
+  // Get all comments for a post (with author and reactions)
+  router.get('/:id/comments', requireAuth, async (req, res) => {
+    try {
+      const commentsRaw = await pool.query(
+        `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
+        [req.params.id]
+      );
+      const commentIds = commentsRaw.rows.map(c => c.id);
+      let commentReactions;
+      if (commentIds.length > 0) {
+        commentReactions = await pool.query(
+          `SELECT comment_id, emoji, COUNT(*) as count FROM comment_reactions WHERE comment_id = ANY($1) GROUP BY comment_id, emoji`,
+          [commentIds]
+        );
+      } else {
+        commentReactions = { rows: [] };
+      }
+      let userCommentReactions;
+      if (commentIds.length > 0) {
+        userCommentReactions = await pool.query(
+          `SELECT comment_id, emoji FROM comment_reactions WHERE comment_id = ANY($1) AND user_id = $2`,
+          [commentIds, req.user.id]
+        );
+      } else {
+        userCommentReactions = { rows: [] };
+      }
+      // Map reactions to each comment
+      const commentReactionsMap = {};
+      for (const row of commentReactions.rows) {
+        if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
+        commentReactionsMap[row.comment_id][row.emoji] = parseInt(row.count, 10);
+      }
+      const userCommentReactionsMap = {};
+      for (const row of userCommentReactions.rows) {
+        userCommentReactionsMap[row.comment_id] = row.emoji;
+      }
+      const comments = commentsRaw.rows.map(c => ({
+        ...c,
+        reactions: {
+          counts: commentReactionsMap[c.id] || {},
+          user: userCommentReactionsMap[c.id] || null
+        }
+      }));
+      res.json(comments);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch comments', details: e.message });
+    }
+  });
 
   // Create post
   router.post('/', requireAuth, async (req, res) => {
