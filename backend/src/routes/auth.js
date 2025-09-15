@@ -39,6 +39,7 @@ const createAuthRouter = (pool) => {
     }
   });
 
+  // Updated signup route to allow reuse of deleted usernames/emails
   router.post('/signup', async (req, res) => {
     const { name, password, email } = req.body || {};
     if (!name || !password || !email) {
@@ -49,9 +50,9 @@ const createAuthRouter = (pool) => {
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
     if (!gmailRegex.test(email)) return res.status(400).json({ error: 'Only valid @gmail.com addresses are allowed' });
     try {
-      // Check conflicts in users and signup_requests
+      // Check conflicts in users (only non-deleted) and signup_requests
       const conflict = await pool.query(
-        `SELECT 'user' AS src FROM users WHERE lower(name)=lower($1) OR lower(email)=lower($2)
+        `SELECT 'user' AS src FROM users WHERE (lower(name)=lower($1) OR lower(email)=lower($2)) AND deleted=FALSE
          UNION ALL
          SELECT 'request' AS src FROM signup_requests WHERE lower(name)=lower($1) OR lower(email)=lower($2)`,
         [name, email]
@@ -142,11 +143,11 @@ const createAuthRouter = (pool) => {
     }
   });
 
-  // Delete a user by ID (admin only)
+  // Soft delete a user by ID (admin only)
   router.delete('/users/:id', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await pool.query('DELETE FROM users WHERE id=$1 RETURNING id', [id]);
+      const result = await pool.query('UPDATE users SET deleted=TRUE WHERE id=$1 RETURNING id', [id]);
       if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
       res.json({ deleted: true });
     } catch (e) {
@@ -166,15 +167,16 @@ const createAuthRouter = (pool) => {
     }
   });
 
+  // Updated login route to block deleted users
   router.post('/login', async (req, res) => {
     const { name, password } = req.body || {};
     if (!name || !password) {
       return res.status(400).json({ error: 'Username and password are required' });
     }
     try {
-      const result = await pool.query('SELECT id, name, role, password_hash FROM users WHERE name = $1', [name]);
+      const result = await pool.query('SELECT id, name, role, password_hash, deleted FROM users WHERE name = $1', [name]);
       const user = result.rows[0];
-      if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+      if (!user || user.deleted) return res.status(401).json({ error: user && user.deleted ? 'Account deleted' : 'Invalid credentials' });
       const ok = await bcrypt.compare(password, user.password_hash);
       if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
       const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
