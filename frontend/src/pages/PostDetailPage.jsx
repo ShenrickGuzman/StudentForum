@@ -1,19 +1,17 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
-export default function PostDetailPage() {}
-  const navigate = useNavigate();
+export default function PostDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [comment, setComment] = useState('');
-  const [commentLoading, setCommentLoading] = useState(false);
-  const [commentError, setCommentError] = useState('');
   const { token } = useAuth();
+  const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
+  const [userReaction, setUserReaction] = useState(null);
+  const [reacting, setReacting] = useState(false);
 
-  // Reaction system state
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
     { key: 'heart', icon: '❤️', color: 'bg-pink-200', label: 'Heart' },
@@ -21,25 +19,35 @@ export default function PostDetailPage() {}
     { key: 'sad', icon: '😢', color: 'bg-purple-200', label: 'Sad' },
     { key: 'haha', icon: '😂', color: 'bg-green-200', label: 'HAHA' },
   ];
-  const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
-  const [userReaction, setUserReaction] = useState(null);
-  const [reacting, setReacting] = useState(false);
-  const [commentReacting, setCommentReacting] = useState({});
 
-  // Load post, comments, and reactions
-  const load = () => api.get(`/posts/${id}`).then(r => {
-    setData(r.data);
-    setLoading(false);
-    // Reaction counts and user reaction
-    if (r.data.reactions) setReactions(r.data.reactions.counts);
-    if (r.data.reactions) setUserReaction(r.data.reactions.user);
-  });
-  useEffect(() => { setLoading(true); load(); }, [id]);
+  useEffect(() => {
+    setLoading(true);
+    api.get(`/posts/${id}`).then(r => {
+      setData(r.data);
+      setLoading(false);
+      if (r.data.reactions) setReactions(r.data.reactions.counts);
+      if (r.data.reactions) setUserReaction(r.data.reactions.user);
+    });
+  }, [id]);
+
+  const handleReact = async (type) => {
+    if (!token || reacting) return;
+    setReacting(true);
+    let newType = type;
+    if (userReaction === type) newType = null;
+    try {
+      await api.post(`/posts/post/${id}/react`, { emoji: newType });
+      const r = await api.get(`/posts/${id}`);
+      setData(r.data);
+      if (r.data.reactions) setReactions(r.data.reactions.counts);
+      if (r.data.reactions) setUserReaction(r.data.reactions.user);
+    } catch {}
+    setReacting(false);
+  };
 
   if (loading) return (
     <div className="flex items-center justify-center h-96 text-xl font-bold text-gray-400">Loading...</div>
   );
-
   if (!data) return (
     <div className="flex items-center justify-center h-96 text-xl font-bold text-red-400">Post not found.</div>
   );
@@ -55,10 +63,10 @@ export default function PostDetailPage() {}
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-blue-300 flex items-center justify-center text-white text-xl font-bold">
-                <span>{post.author_name?.[0]?.toUpperCase() || '?'}</span>
+                <span>{data.post.author_name?.[0]?.toUpperCase() || '?'}</span>
               </div>
               <div className="flex flex-col">
-                <span className="font-semibold text-lg text-gray-800">{post.author_name}</span>
+                <span className="font-semibold text-lg text-gray-800">{data.post.author_name}</span>
                 <span className="text-xs text-gray-500 mt-0.5">
                   {date && date.toLocaleString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -67,24 +75,23 @@ export default function PostDetailPage() {}
           </div>
           {/* Category tag */}
           <div className="flex items-center">
-            <span className="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold text-sm shadow-md">{post.category}</span>
+            <span className="bg-blue-500 text-white px-4 py-1 rounded-full font-semibold text-sm shadow-md">{data.post.category}</span>
           </div>
         </div>
 
         {/* Title */}
         <div className="px-8 pt-6 pb-2">
-          <h1 className="text-4xl font-extrabold text-purple-600 tracking-tight text-left" style={{ letterSpacing: 1 }}>{post.title}</h1>
+          <h1 className="text-4xl font-extrabold text-purple-600 tracking-tight text-left" style={{ letterSpacing: 1 }}>{data.post.title}</h1>
         </div>
 
         {/* Content with gradient border */}
         <div className="px-8 pb-4">
           <div className="rounded-2xl p-1 bg-gradient-to-tr from-yellow-200 via-green-100 to-pink-200 border-2 border-transparent" style={{ boxShadow: '0 2px 16px 0 rgba(0,0,0,0.04)' }}>
             <div className="rounded-xl bg-white p-8 min-h-[220px] flex items-center justify-center text-xl font-medium text-gray-700" style={{ background: 'linear-gradient(135deg, #f8fafc 60%, #e0ffe0 100%)' }}>
-              {/* If image_url exists, show image, else show content */}
-              {post.image_url ? (
-                <img src={getAssetUrl(post.image_url)} alt="post" className="max-w-full max-h-72 rounded-lg shadow-md mx-auto" />
+              {data.post.image_url ? (
+                <img src={getAssetUrl(data.post.image_url)} alt="post" className="max-w-full max-h-72 rounded-lg shadow-md mx-auto" />
               ) : (
-                <span>{post.content}</span>
+                <span>{data.post.content}</span>
               )}
             </div>
           </div>
@@ -93,8 +100,8 @@ export default function PostDetailPage() {}
         {/* Comments and reactions section */}
         <div className="px-8 pb-8">
           <div className="mt-4 text-gray-700 text-lg font-medium">
-            {post.content && !post.image_url && (
-              <div className="mb-4">{post.content}</div>
+            {data.post.content && !data.post.image_url && (
+              <div className="mb-4">{data.post.content}</div>
             )}
           </div>
           {/* Reactions */}
@@ -116,6 +123,54 @@ export default function PostDetailPage() {}
       </div>
     </div>
   );
+}
+import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import api, { getAssetUrl } from '../lib/api';
+import { useAuth } from '../state/auth';
+
+export default function PostDetailPage() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { token } = useAuth();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
+  const [userReaction, setUserReaction] = useState(null);
+  const [reacting, setReacting] = useState(false);
+
+  const reactionTypes = [
+    { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
+    { key: 'heart', icon: '❤️', color: 'bg-pink-200', label: 'Heart' },
+    { key: 'wow', icon: '😮', color: 'bg-white', label: 'Wow' },
+    { key: 'sad', icon: '😢', color: 'bg-purple-200', label: 'Sad' },
+    { key: 'haha', icon: '😂', color: 'bg-green-200', label: 'HAHA' },
+  ];
+
+  useEffect(() => {
+    setLoading(true);
+    api.get(`/posts/${id}`).then(r => {
+      setData(r.data);
+      setLoading(false);
+      if (r.data.reactions) setReactions(r.data.reactions.counts);
+      if (r.data.reactions) setUserReaction(r.data.reactions.user);
+    });
+  }, [id]);
+
+  const handleReact = async (type) => {
+    if (!token || reacting) return;
+    setReacting(true);
+    let newType = type;
+    if (userReaction === type) newType = null;
+    try {
+      await api.post(`/posts/post/${id}/react`, { emoji: newType });
+      const r = await api.get(`/posts/${id}`);
+      setData(r.data);
+      if (r.data.reactions) setReactions(r.data.reactions.counts);
+      if (r.data.reactions) setUserReaction(r.data.reactions.user);
+    } catch {}
+    setReacting(false);
+  };
 
   if (loading) {
     return (
@@ -128,7 +183,7 @@ export default function PostDetailPage() {}
     );
   }
   if (!data) return null;
-  const { post, comments = [] } = data;
+  const { post } = data;
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
@@ -151,9 +206,9 @@ export default function PostDetailPage() {}
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-  <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
+      <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
         {/* Post Card */}
-  <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 flex flex-col gap-5 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
+        <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 flex flex-col gap-5 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
           {/* Forum status indicators */}
           <div className="flex gap-2 items-center mb-1 justify-center">
             {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
@@ -210,8 +265,4 @@ export default function PostDetailPage() {}
       </div>
     </div>
   );
-
-
-
-
-//
+}
