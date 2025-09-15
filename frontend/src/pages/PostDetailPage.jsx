@@ -97,7 +97,7 @@ export default function PostDetailPage() {
       {/* Close Forum Button */}
       <button
         type="button"
-        className="fixed top-20 left-4 z-30 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
+        className="fixed top-24 md:top-28 left-4 md:left-6 z-30 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
         onClick={() => navigate('/')}
         style={{fontFamily: 'Baloo, Fredoka, Comic Neue, cursive'}}
         aria-label="Close Forum and return to Home"
