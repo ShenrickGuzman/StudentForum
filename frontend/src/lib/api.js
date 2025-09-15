@@ -20,6 +20,25 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Intercept responses to handle deleted account
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (
+      error?.response?.data?.error === 'Account deleted' ||
+      (error?.response?.status === 401 && error?.response?.data?.error?.toLowerCase().includes('deleted'))
+    ) {
+      // Clear auth and redirect to account deleted page
+      localStorage.removeItem('mf_token');
+      localStorage.removeItem('mf_user');
+      if (typeof window !== 'undefined') {
+        window.location.replace('/account-deleted');
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Function to get full URL for static assets like images
 export function getAssetUrl(path) {
   if (!path) return '';
