@@ -7,8 +7,10 @@ import AdminPage from './pages/AdminPage';
 import AuthPage from './pages/AuthPage';
 import WaitApprovalPage from './pages/WaitApprovalPage';
 import RulesPage from './pages/RulesPage';
+import UnauthorizedPage from './pages/UnauthorizedPage';
 import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
+import RequireAdminAuth from './components/RequireAdminAuth';
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -23,7 +25,7 @@ function NavBar() {
         <nav className="ml-auto flex items-center gap-2">
           <Link className="fun-btn px-4 py-2 text-base" to="/new">✏️ New Post</Link>
           <Link className="fun-btn px-4 py-2 text-base" to="/rules">📜 Rules</Link>
-          {user?.role === 'admin' && <Link className="fun-btn px-4 py-2 text-base" to="/admin">🛠️ Admin</Link>}
+          {user?.name?.toLowerCase() === 'shen' && <Link className="fun-btn px-4 py-2 text-base" to="/admin">🛠️ Admin</Link>}
           {!user && <Link className="fun-btn px-4 py-2 text-base" to="/auth">Sign In</Link>}
           {user && (
             <>
@@ -45,14 +47,16 @@ function NavBar() {
 function AppShell() {
   return (
     <div>
+      <NavBar />
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/wait-approval" element={<WaitApprovalPage />} />
         <Route path="/rules" element={<RulesPage />} />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
-        <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAdminAuth><AdminPage /></RequireAdminAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
@@ -66,3 +70,5 @@ export default function App() {
     </AuthContextProvider>
   );
 }
+
+
