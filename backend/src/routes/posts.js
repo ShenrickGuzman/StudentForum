@@ -1,3 +1,15 @@
+  // Get comments for a post
+  router.get('/:id/comments', requireAuth, async (req, res) => {
+    try {
+      const comments = await pool.query(
+        `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
+        [req.params.id]
+      );
+      res.json(comments.rows);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch comments' });
+    }
+  });
 import express from 'express';
 import jwt from 'jsonwebtoken';
 
