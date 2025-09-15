@@ -45,27 +45,54 @@ export default function PostDetailPage() {
   }, [id]);
 
   const handleReact = async (type) => {
-    if (!token || reacting) return;
-    setReacting(true);
-    let newType = type;
-    if (userReaction === type) newType = null;
-    try {
-      console.log('Sending reaction:', { type: newType, postId: id, token: !!token });
-      // Fixed API endpoint - removed extra 'posts' prefix
-      await api.post(`/posts/post/${id}/react`, { emoji: newType });
-      // Refresh the post data to get updated reactions
-      const r = await api.get(`/posts/${id}`);
-      setData(r.data);
-      if (r.data.reactions) setReactions(r.data.reactions.counts);
-      if (r.data.reactions) setUserReaction(r.data.reactions.user);
-    } catch (error) {
-      console.error('Failed to react:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      // Show user feedback on error
-      alert(`Failed to add reaction: ${error.response?.data?.error || error.message}`);
-    }
-    setReacting(false);
+      if (!token || reacting) {
+        console.log('Reaction blocked:', { hasToken: !!token, reacting });
+        return;
+      }
+      setReacting(true);
+      let newType = type;
+      if (userReaction === type) newType = null;
+    
+      console.log('Starting reaction process:', { 
+        type: newType, 
+        postId: id, 
+        hasToken: !!token,
+        tokenLength: token?.length,
+        userAgent: navigator.userAgent
+      });
+    
+      try {
+        // Check if we can get post data first (to verify API connectivity)
+        console.log('Testing API connectivity...');
+        await api.get(`/posts/${id}`);
+        console.log('API connectivity OK, sending reaction...');
+      
+        const response = await api.post(`/posts/post/${id}/react`, { emoji: newType });
+        console.log('Reaction response:', response.data);
+      
+        // Refresh the post data to get updated reactions
+        console.log('Refreshing post data...');
+        const r = await api.get(`/posts/${id}`);
+        setData(r.data);
+        if (r.data.reactions) setReactions(r.data.reactions.counts);
+        if (r.data.reactions) setUserReaction(r.data.reactions.user);
+        console.log('Reaction completed successfully');
+      } catch (error) {
+        console.error('Reaction failed:', {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          headers: error.response?.headers,
+          url: error.config?.url,
+          method: error.config?.method
+        });
+      
+        // Show user feedback on error with more specific info
+        const errorMsg = error.response?.data?.error || error.response?.statusText || error.message || 'Unknown error';
+        alert(`Failed to add reaction: ${errorMsg} (Status: ${error.response?.status || 'Unknown'})`);
+      }
+      setReacting(false);
   };
 
   const handleCommentSubmit = async (e) => {
