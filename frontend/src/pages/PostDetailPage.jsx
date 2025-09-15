@@ -1,7 +1,9 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
+import CommentCard from '../components/CommentCard';
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -167,29 +169,44 @@ export default function PostDetailPage() {
             ))}
           </div>
         </div>
-        {/* Comment Section */}
+        {/* Comment Section - New Format */}
         <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg">Comments</h3>
-          <ul className="space-y-2 mb-4">
+          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg flex items-center gap-2">
+            <span className="text-3xl">💬</span> Comments
+          </h3>
+          <div className="mb-4">
+            {comments.length === 0 && (
+              <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
+            )}
             {comments.map((comment) => (
-              <li key={comment.id} className="p-3 rounded-lg bg-purple-50 border border-purple-200 shadow-sm">
-                {comment.content}
-              </li>
+              <CommentCard
+                key={comment.id}
+                avatar={comment.avatar || '😊'}
+                username={comment.author_name || 'User'}
+                time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
+                content={comment.content}
+              />
             ))}
-          </ul>
-          <form onSubmit={handleCommentSubmit} className="flex flex-col sm:flex-row gap-2">
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Add a comment..."
-              className="flex-1 p-3 rounded-lg border border-purple-300 focus:ring-2 focus:ring-purple-200 focus:outline-none resize-none"
-              rows="3"
-            />
+          </div>
+          <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
+              😊
+            </div>
+            <div className="flex-1">
+              <input
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment... 💭"
+                className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
+                style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
+              />
+            </div>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-800 font-extrabold shadow-md hover:scale-105 transition-all"
+              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
+              style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
             >
-              Submit
+              <span className="text-lg">✈️</span> Send
             </button>
           </form>
         </div>
