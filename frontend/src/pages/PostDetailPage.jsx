@@ -163,19 +163,21 @@ export default function PostDetailPage() {
             </div>
           </div>
           {/* Reaction Row - improved */}
-          <div className="flex flex-row items-center justify-start gap-2 px-8 pb-6 pt-2">
+          <div className="flex flex-row items-center justify-start gap-2 sm:gap-3 px-4 sm:px-8 pb-6 pt-2 overflow-x-auto">
             {reactionTypes.map(rt => (
               <button
                 key={rt.key}
                 type="button"
                 disabled={!token || reacting}
                 onClick={() => handleReact(rt.key)}
-                className={`flex flex-col items-center px-2 py-2 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
+                onTouchStart={() => {}} // Ensure touch events work on mobile
+                className={`flex flex-col items-center px-3 sm:px-4 py-3 sm:py-4 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 active:scale-95 touch-manipulation min-w-[60px] sm:min-w-[70px] ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color}`}
                 aria-pressed={userReaction === rt.key}
                 aria-label={rt.label}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <span className="text-2xl mb-0.5 drop-shadow-lg">{rt.icon}</span>
-                <span className="text-xs font-bold text-purple-700">{reactions[rt.key] || 0}</span>
+                <span className="text-xl sm:text-2xl mb-0.5 drop-shadow-lg pointer-events-none">{rt.icon}</span>
+                <span className="text-xs font-bold text-purple-700 pointer-events-none">{reactions[rt.key] || 0}</span>
               </button>
             ))}
           </div>
