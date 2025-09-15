@@ -87,7 +87,7 @@ export default function PostDetailPage() {
     );
   }
   if (!data) return null;
-  const { post, comments } = data;
+  const { post, comments = [] } = data;
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
