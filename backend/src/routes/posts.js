@@ -72,6 +72,9 @@ const createPostsRouter = (pool) => {
          WHERE p.id = $1`,
         [req.params.id]
       );
+      if (!post.rows[0]) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
       const commentsRaw = await pool.query(
         `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
         [req.params.id]
@@ -129,14 +132,15 @@ const createPostsRouter = (pool) => {
       }
       res.json({
         post: post.rows[0],
-        comments: comments.rows,
+        comments,
         reactions: {
           counts,
           user: userReaction.rows[0]?.emoji || null
         }
       });
     } catch (e) {
-      res.status(500).json({ error: 'Failed to fetch post' });
+      console.error('Error fetching post detail:', e);
+      res.status(500).json({ error: 'Failed to fetch post', details: e.message });
     }
   });
 
