@@ -147,9 +147,11 @@ const createAuthRouter = (pool) => {
   router.delete('/users/:id', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await pool.query('UPDATE users SET deleted=TRUE WHERE id=$1 RETURNING id', [id]);
+      const result = await pool.query('UPDATE users SET deleted=TRUE WHERE id=$1 RETURNING id, name', [id]);
       if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
-      res.json({ deleted: true });
+      
+      // Send signal to frontend that this user should be logged out
+      res.json({ deleted: true, deletedUserId: id, deletedUserName: result.rows[0].name });
     } catch (e) {
       res.status(500).json({ error: 'Failed to delete user' });
     }
