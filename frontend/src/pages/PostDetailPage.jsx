@@ -12,6 +12,8 @@ export default function PostDetailPage() {
   const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
   const [userReaction, setUserReaction] = useState(null);
   const [reacting, setReacting] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
 
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
@@ -31,6 +33,15 @@ export default function PostDetailPage() {
     });
   }, [id]);
 
+  useEffect(() => {
+    // Fetch comments for the post
+    const fetchComments = async () => {
+      const response = await api.get(`/posts/${id}/comments`);
+      setComments(response.data);
+    };
+    fetchComments();
+  }, [id]);
+
   const handleReact = async (type) => {
     if (!token || reacting) return;
     setReacting(true);
@@ -44,6 +55,17 @@ export default function PostDetailPage() {
       if (r.data.reactions) setUserReaction(r.data.reactions.user);
     } catch {}
     setReacting(false);
+  };
+
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (newComment.trim()) {
+      await api.post(`/posts/${id}/comments`, { content: newComment });
+      setNewComment('');
+      // Re-fetch comments after adding a new one
+      const response = await api.get(`/posts/${id}/comments`);
+      setComments(response.data);
+    }
   };
 
   if (loading) {
@@ -135,6 +157,32 @@ export default function PostDetailPage() {
               </button>
             ))}
           </div>
+        </div>
+        {/* Comment Section */}
+        <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg">Comments</h3>
+          <ul className="space-y-2 mb-4">
+            {comments.map((comment) => (
+              <li key={comment.id} className="p-3 rounded-lg bg-purple-50 border border-purple-200 shadow-sm">
+                {comment.content}
+              </li>
+            ))}
+          </ul>
+          <form onSubmit={handleCommentSubmit} className="flex flex-col sm:flex-row gap-2">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="flex-1 p-3 rounded-lg border border-purple-300 focus:ring-2 focus:ring-purple-200 focus:outline-none resize-none"
+              rows="3"
+            />
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-800 font-extrabold shadow-md hover:scale-105 transition-all"
+            >
+              Submit
+            </button>
+          </form>
         </div>
       </div>
     </div>
