@@ -114,7 +114,17 @@ export default function AdminPage() {
   const handleDeleteUser = async (id) => {
     setUserActionMsg('');
     try {
-      await api.delete(`/auth/users/${id}`);
+      const response = await api.delete(`/auth/users/${id}`);
+      const { deletedUserName } = response.data;
+      
+      // Check if the deleted user is the current user
+      if (user && user.name === deletedUserName) {
+        // Log out current user and redirect to account deleted page
+        logout();
+        window.location.replace('/account-deleted');
+        return;
+      }
+      
       setUserActionMsg('🗑️ User deleted!');
       setDeleteUserModal({ open: false, id: null, name: '', email: '' });
       loadUsers();
@@ -126,7 +136,7 @@ export default function AdminPage() {
   const [detailComments, setDetailComments] = useState([]);
   const [detailComment, setDetailComment] = useState('');
   const [detailCommentsLoading, setDetailCommentsLoading] = useState(false);
-  const { token } = useAuth();
+  const { token, user, logout } = useAuth();
 
   // (removed duplicate openPostDetail)
 
