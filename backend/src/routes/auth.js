@@ -136,8 +136,8 @@ const createAuthRouter = (pool) => {
   // List all users (admin only)
   router.get('/users', requireAuth, isAdmin, async (req, res) => {
     try {
-      const result = await pool.query('SELECT id, name, email FROM users ORDER BY created_at ASC');
-      res.json(result.rows);
+  const result = await pool.query('SELECT id, name, email FROM users WHERE deleted=FALSE ORDER BY created_at ASC');
+  res.json(result.rows);
     } catch (e) {
       res.status(500).json({ error: 'Failed to load users' });
     }
