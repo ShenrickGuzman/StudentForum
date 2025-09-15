@@ -1,7 +1,5 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import express from 'express';
-import jwt from 'jsonwebtoken';
 
 const requireAuth = (req, res, next) => {
   const auth = req.headers.authorization || '';
