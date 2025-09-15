@@ -78,7 +78,16 @@ export default function PostDetailPage() {
       </div>
     );
   }
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
+        <div className="cartoon-card text-2xl font-bold text-red-600 bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
+          <span className="text-4xl">❌</span>
+          Failed to load post. Please check your connection or try again later.
+        </div>
+      </div>
+    );
+  }
   const { post } = data;
 
   return (
