@@ -4,9 +4,6 @@ import { useAuth } from '../state/auth';
 
 export default function AdminPage() {
   // --- General state hooks for admin panel ---
-  useDeletedUserCheck();
-  
-  // --- General state hooks for admin panel ---
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [reqLoading, setReqLoading] = useState(false);
   const [reqError, setReqError] = useState('');
