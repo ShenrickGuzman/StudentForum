@@ -18,8 +18,8 @@ function NavBar() {
   return (
     <header className="sticky top-0 z-20 bg-gradient-to-r from-primary/80 to-secondary/80 shadow-cartoon border-b-4 border-accent/40">
       <div className="max-w-5xl mx-auto flex items-center gap-4 py-2 px-2 md:px-4">
-        <Link to="/" className="flex items-center gap-2 text-2xl font-extrabold text-accent drop-shadow hover:scale-105 transition-transform">
-          <span className="hidden sm:inline">Class Forum</span>
+        <Link to="/" className="flex items-center gap-2 text-xl md:text-2xl lg:text-3xl font-extrabold text-accent drop-shadow-lg hover:scale-105 transition-all duration-200 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm border border-white/30">
+          <span className="inline">📚 Class Forum</span>
         </Link>
         <nav className="ml-auto flex items-center gap-2">
           {user && (
