@@ -182,7 +182,8 @@ const createAuthRouter = (pool) => {
       const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
       res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
     } catch (e) {
-      res.status(500).json({ error: 'Login failed' });
+      console.error('LOGIN ERROR:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'Login failed', details: e && e.message ? e.message : e });
     }
   });
 
