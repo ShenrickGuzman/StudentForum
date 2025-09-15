@@ -62,7 +62,7 @@ const createPostsRouter = (pool) => {
     }
   });
 
-  // Get post detail with comments (auth required)
+  // Get post detail with comments and reactions (auth required)
   router.get('/:id', requireAuth, async (req, res) => {
     try {
       const post = await pool.query(
@@ -72,11 +72,69 @@ const createPostsRouter = (pool) => {
          WHERE p.id = $1`,
         [req.params.id]
       );
-      const comments = await pool.query(
+      const commentsRaw = await pool.query(
         `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
         [req.params.id]
       );
-      res.json({ post: post.rows[0], comments: comments.rows });
+      // For each comment, get reactions and user reaction
+      const commentIds = commentsRaw.rows.map(c => c.id);
+      let commentReactions = [];
+      if (commentIds.length > 0) {
+        commentReactions = await pool.query(
+          `SELECT comment_id, emoji, COUNT(*) as count
+           FROM comment_reactions
+           WHERE comment_id = ANY($1)
+           GROUP BY comment_id, emoji`,
+          [commentIds]
+        );
+      }
+      let userCommentReactions = [];
+      if (commentIds.length > 0) {
+        userCommentReactions = await pool.query(
+          `SELECT comment_id, emoji FROM comment_reactions WHERE comment_id = ANY($1) AND user_id = $2`,
+          [commentIds, req.user.id]
+        );
+      }
+      // Map reactions to each comment
+      const commentReactionsMap = {};
+      for (const row of commentReactions.rows) {
+        if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
+        commentReactionsMap[row.comment_id][row.emoji] = parseInt(row.count, 10);
+      }
+      const userCommentReactionsMap = {};
+      for (const row of userCommentReactions.rows) {
+        userCommentReactionsMap[row.comment_id] = row.emoji;
+      }
+      const comments = commentsRaw.rows.map(c => ({
+        ...c,
+        reactions: {
+          counts: commentReactionsMap[c.id] || {},
+          user: userCommentReactionsMap[c.id] || null
+        }
+      }));
+      // Get reaction counts for this post
+      const reactionCounts = await pool.query(
+        `SELECT emoji, COUNT(*) as count FROM post_reactions WHERE post_id = $1 GROUP BY emoji`,
+        [req.params.id]
+      );
+      // Get current user's reaction for this post
+      const userReaction = await pool.query(
+        `SELECT emoji FROM post_reactions WHERE post_id = $1 AND user_id = $2`,
+        [req.params.id, req.user.id]
+      );
+      // Format counts as {like: 2, heart: 1, ...}
+      const counts = {};
+      for (const row of reactionCounts.rows) {
+        counts[row.emoji] = parseInt(row.count, 10);
+      }
+      res.json({
+        post: post.rows[0],
+        comments: comments.rows,
+        reactions: {
+          counts,
+          user: userReaction.rows[0]?.emoji || null
+        }
+      });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch post' });
     }
@@ -120,8 +178,8 @@ const createPostsRouter = (pool) => {
   router.post('/:type/:id/react', requireAuth, async (req, res) => {
     const { emoji } = req.body || {};
     const { type, id } = req.params;
-    if (!['post', 'comment'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
-    if (!['like', 'heart'].includes(emoji)) return res.status(400).json({ error: 'Invalid reaction' });
+  if (!['post', 'comment'].includes(type)) return res.status(400).json({ error: 'Invalid type' });
+  if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) return res.status(400).json({ error: 'Invalid reaction' });
     try {
       const table = type === 'post' ? 'post_reactions' : 'comment_reactions';
       const targetCol = type === 'post' ? 'post_id' : 'comment_id';
