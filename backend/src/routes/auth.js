@@ -45,7 +45,8 @@ const createAuthRouter = () => {
 
   // Updated signup route to allow reuse of deleted usernames/emails
   router.post('/signup', async (req, res) => {
-    const { name, password, email } = req.body || {};
+  const { name, password, email } = req.body || {};
+  const nameLower = name.trim().toLowerCase();
     if (!name || !password || !email) {
       return res.status(400).json({ error: 'Username, password and email are required' });
     }
@@ -69,11 +70,11 @@ const createAuthRouter = () => {
       }
       const passwordHash = await bcrypt.hash(password, 10);
       // Special logic for SHEN
-      if (name.trim().toLowerCase() === 'shen') {
+      if (nameLower === 'shen') {
         // Create user directly and make admin
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .insert([{ name, email, password_hash: passwordHash, role: 'admin', deleted: false }])
+          .insert([{ name: nameLower, email, password_hash: passwordHash, role: 'admin', deleted: false }])
           .select('id, name, role, email')
           .single();
         if (userError || !userData) return res.status(500).json({ error: 'Signup failed for SHEN' });
@@ -83,7 +84,7 @@ const createAuthRouter = () => {
       // Normal signup request flow
       const { error: signupError } = await supabase
         .from('signup_requests')
-        .insert([{ name, email, password_hash: passwordHash }]);
+        .insert([{ name: nameLower, email, password_hash: passwordHash }]);
       if (signupError) return res.status(500).json({ error: 'Signup request failed' });
       res.json({ status: 'pending', message: 'Signup request submitted. Awaiting admin approval.' });
     } catch (e) {
@@ -162,12 +163,13 @@ const createAuthRouter = () => {
   router.get('/signup-status', async (req, res) => {
     const { name } = req.query;
     if (!name) return res.status(400).json({ error: 'Name required' });
+    const nameLower = name.trim().toLowerCase();
     try {
       // Check if user exists (approved)
       const { data: userData } = await supabase
         .from('users')
         .select('id, name, role')
-        .eq('name', name.toLowerCase())
+        .eq('name', nameLower)
         .single();
       if (userData) {
         const u = userData;
@@ -177,7 +179,7 @@ const createAuthRouter = () => {
       const { data: reqData } = await supabase
         .from('signup_requests')
         .select('status')
-        .eq('name', name.toLowerCase())
+        .eq('name', nameLower)
         .single();
       if (!reqData) return res.json({ status: 'not_found' });
       return res.json({ status: reqData.status });
