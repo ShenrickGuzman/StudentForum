@@ -1,5 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { supabase } from '../lib/supabaseClient.js';
 
 const requireAuth = (req, res, next) => {
   const auth = req.headers.authorization || '';
@@ -14,54 +15,55 @@ const requireAuth = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  // Allow admin, teacher, or user named 'SHEN' (case-insensitive, trimmed)
   const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
   if (req.user?.role === 'admin' || req.user?.role === 'teacher' || isShen) return next();
   return res.status(403).json({ error: 'Forbidden' });
 };
 
-const createPostsRouter = (pool) => {
+const createPostsRouter = () => {
 
   const router = express.Router();
 
   // Get all comments for a post (with author and reactions)
   router.get('/:id/comments', requireAuth, async (req, res) => {
     try {
-      const commentsRaw = await pool.query(
-        `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
-        [req.params.id]
-      );
-      const commentIds = commentsRaw.rows.map(c => c.id);
-      let commentReactions;
+      const { data: commentsRaw, error: commentsError } = await supabase
+        .from('comments')
+        .select('*, users(name)')
+        .eq('post_id', req.params.id)
+        .order('created_at', { ascending: true });
+      if (commentsError) return res.status(500).json({ error: 'Failed to fetch comments' });
+      const commentIds = commentsRaw.map(c => c.id);
+      let commentReactions = [];
       if (commentIds.length > 0) {
-        commentReactions = await pool.query(
-          `SELECT comment_id, emoji, COUNT(*) as count FROM comment_reactions WHERE comment_id = ANY($1) GROUP BY comment_id, emoji`,
-          [commentIds]
-        );
-      } else {
-        commentReactions = { rows: [] };
+        const { data: reactionsData } = await supabase
+          .from('comment_reactions')
+          .select('comment_id, emoji')
+          .in('comment_id', commentIds);
+        commentReactions = reactionsData || [];
       }
-      let userCommentReactions;
+      let userCommentReactions = [];
       if (commentIds.length > 0) {
-        userCommentReactions = await pool.query(
-          `SELECT comment_id, emoji FROM comment_reactions WHERE comment_id = ANY($1) AND user_id = $2`,
-          [commentIds, req.user.id]
-        );
-      } else {
-        userCommentReactions = { rows: [] };
+        const { data: userReactionsData } = await supabase
+          .from('comment_reactions')
+          .select('comment_id, emoji')
+          .in('comment_id', commentIds)
+          .eq('user_id', req.user.id);
+        userCommentReactions = userReactionsData || [];
       }
       // Map reactions to each comment
       const commentReactionsMap = {};
-      for (const row of commentReactions.rows) {
+      for (const row of commentReactions) {
         if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
-        commentReactionsMap[row.comment_id][row.emoji] = parseInt(row.count, 10);
+        commentReactionsMap[row.comment_id][row.emoji] = (commentReactionsMap[row.comment_id][row.emoji] || 0) + 1;
       }
       const userCommentReactionsMap = {};
-      for (const row of userCommentReactions.rows) {
+      for (const row of userCommentReactions) {
         userCommentReactionsMap[row.comment_id] = row.emoji;
       }
-      const comments = commentsRaw.rows.map(c => ({
+      const comments = commentsRaw.map(c => ({
         ...c,
+        author_name: c.users?.name || null,
         reactions: {
           counts: commentReactionsMap[c.id] || {},
           user: userCommentReactionsMap[c.id] || null
@@ -78,13 +80,13 @@ const createPostsRouter = (pool) => {
     const { title, content, category, imageUrl, linkUrl } = req.body || {};
     if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
     try {
-      const result = await pool.query(
-        `INSERT INTO posts (user_id, title, content, category, image_url, link_url)
-         VALUES ($1, $2, $3, $4, $5, $6)
-         RETURNING *`,
-        [req.user.id, title, content, category, imageUrl || null, linkUrl || null]
-      );
-      res.json(result.rows[0]);
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([{ user_id: req.user.id, title, content, category, image_url: imageUrl || null, link_url: linkUrl || null }])
+        .select('*')
+        .single();
+      if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
+      res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to create post' });
     }
@@ -93,20 +95,23 @@ const createPostsRouter = (pool) => {
   // List posts with search/filter, pinned first (auth required)
   router.get('/', requireAuth, async (req, res) => {
     const { q, category } = req.query;
-    const clauses = [];
-    const params = [];
-    if (q) { params.push(`%${q}%`); clauses.push(`(title ILIKE $${params.length} OR content ILIKE $${params.length})`); }
-    if (category) { params.push(category); clauses.push(`category = $${params.length}`); }
-    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    let query = supabase
+      .from('posts')
+      .select('*, users(name)')
+      .order('pinned', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (q) {
+      query = query.ilike('title', `%${q}%`).or(`content.ilike.%${q}%`);
+    }
+    if (category) {
+      query = query.eq('category', category);
+    }
     try {
-      const result = await pool.query(
-        `SELECT p.*, u.name as author_name
-         FROM posts p
-         JOIN users u ON u.id = p.user_id
-         ${where}
-         ORDER BY pinned DESC, created_at DESC`
-        , params);
-      res.json(result.rows);
+      const { data, error } = await query;
+      if (error) return res.status(500).json({ error: 'Failed to fetch posts' });
+      // Add author_name for compatibility
+      const posts = data.map(p => ({ ...p, author_name: p.users?.name || null }));
+      res.json(posts);
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch posts' });
     }
@@ -115,81 +120,74 @@ const createPostsRouter = (pool) => {
   // Get post detail with comments and reactions (auth required)
   router.get('/:id', requireAuth, async (req, res) => {
     try {
-      const post = await pool.query(
-        `SELECT p.*, u.name as author_name
-         FROM posts p
-         JOIN users u ON u.id = p.user_id
-         WHERE p.id = $1`,
-        [req.params.id]
-      );
-      if (!post.rows[0]) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      const commentsRaw = await pool.query(
-        `SELECT c.*, u.name as author_name FROM comments c JOIN users u ON u.id = c.user_id WHERE post_id = $1 ORDER BY created_at ASC`,
-        [req.params.id]
-      );
-      // For each comment, get reactions and user reaction
-      const commentIds = commentsRaw.rows.map(c => c.id);
-      let commentReactions;
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('*, users(name)')
+        .eq('id', req.params.id)
+        .single();
+      if (postError || !postData) return res.status(404).json({ error: 'Post not found' });
+      const { data: commentsRaw, error: commentsError } = await supabase
+        .from('comments')
+        .select('*, users(name)')
+        .eq('post_id', req.params.id)
+        .order('created_at', { ascending: true });
+      const commentIds = commentsRaw.map(c => c.id);
+      let commentReactions = [];
       if (commentIds.length > 0) {
-        commentReactions = await pool.query(
-          `SELECT comment_id, emoji, COUNT(*) as count
-           FROM comment_reactions
-           WHERE comment_id = ANY($1)
-           GROUP BY comment_id, emoji`,
-          [commentIds]
-        );
-      } else {
-        commentReactions = { rows: [] };
+        const { data: reactionsData } = await supabase
+          .from('comment_reactions')
+          .select('comment_id, emoji')
+          .in('comment_id', commentIds);
+        commentReactions = reactionsData || [];
       }
-      let userCommentReactions;
+      let userCommentReactions = [];
       if (commentIds.length > 0) {
-        userCommentReactions = await pool.query(
-          `SELECT comment_id, emoji FROM comment_reactions WHERE comment_id = ANY($1) AND user_id = $2`,
-          [commentIds, req.user.id]
-        );
-      } else {
-        userCommentReactions = { rows: [] };
+        const { data: userReactionsData } = await supabase
+          .from('comment_reactions')
+          .select('comment_id, emoji')
+          .in('comment_id', commentIds)
+          .eq('user_id', req.user.id);
+        userCommentReactions = userReactionsData || [];
       }
-      // Map reactions to each comment
       const commentReactionsMap = {};
-      for (const row of commentReactions.rows) {
+      for (const row of commentReactions) {
         if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
-        commentReactionsMap[row.comment_id][row.emoji] = parseInt(row.count, 10);
+        commentReactionsMap[row.comment_id][row.emoji] = (commentReactionsMap[row.comment_id][row.emoji] || 0) + 1;
       }
       const userCommentReactionsMap = {};
-      for (const row of userCommentReactions.rows) {
+      for (const row of userCommentReactions) {
         userCommentReactionsMap[row.comment_id] = row.emoji;
       }
-      const comments = commentsRaw.rows.map(c => ({
+      const comments = commentsRaw.map(c => ({
         ...c,
+        author_name: c.users?.name || null,
         reactions: {
           counts: commentReactionsMap[c.id] || {},
           user: userCommentReactionsMap[c.id] || null
         }
       }));
       // Get reaction counts for this post
-      const reactionCounts = await pool.query(
-        `SELECT emoji, COUNT(*) as count FROM post_reactions WHERE post_id = $1 GROUP BY emoji`,
-        [req.params.id]
-      );
-      // Get current user's reaction for this post
-      const userReaction = await pool.query(
-        `SELECT emoji FROM post_reactions WHERE post_id = $1 AND user_id = $2`,
-        [req.params.id, req.user.id]
-      );
-      // Format counts as {like: 2, heart: 1, ...}
+      const { data: reactionCountsRaw } = await supabase
+        .from('post_reactions')
+        .select('emoji')
+        .eq('post_id', req.params.id);
       const counts = {};
-      for (const row of reactionCounts.rows) {
-        counts[row.emoji] = parseInt(row.count, 10);
+      for (const row of reactionCountsRaw || []) {
+        counts[row.emoji] = (counts[row.emoji] || 0) + 1;
       }
+      // Get current user's reaction for this post
+      const { data: userReactionRaw } = await supabase
+        .from('post_reactions')
+        .select('emoji')
+        .eq('post_id', req.params.id)
+        .eq('user_id', req.user.id)
+        .single();
       res.json({
-        post: post.rows[0],
+        post: { ...postData, author_name: postData.users?.name || null },
         comments,
         reactions: {
           counts,
-          user: userReaction.rows[0]?.emoji || null
+          user: userReactionRaw?.emoji || null
         }
       });
     } catch (e) {
@@ -203,13 +201,19 @@ const createPostsRouter = (pool) => {
     const { content } = req.body || {};
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
-      const postRes = await pool.query('SELECT locked FROM posts WHERE id = $1', [req.params.id]);
-      if (postRes.rows[0]?.locked) return res.status(403).json({ error: 'Post is locked. Comments are disabled.' });
-      const result = await pool.query(
-        `INSERT INTO comments (post_id, user_id, content) VALUES ($1, $2, $3) RETURNING *`,
-        [req.params.id, req.user.id, content]
-      );
-      res.json(result.rows[0]);
+      const { data: postRes } = await supabase
+        .from('posts')
+        .select('locked')
+        .eq('id', req.params.id)
+        .single();
+      if (postRes?.locked) return res.status(403).json({ error: 'Post is locked. Comments are disabled.' });
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([{ post_id: req.params.id, user_id: req.user.id, content }])
+        .select('*')
+        .single();
+      if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
+      res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
     }
@@ -217,7 +221,11 @@ const createPostsRouter = (pool) => {
   // Lock/unlock post (admin only)
   router.post('/:id/lock', requireAuth, isAdmin, async (req, res) => {
     try {
-      await pool.query('UPDATE posts SET locked = TRUE WHERE id = $1', [req.params.id]);
+      const { error } = await supabase
+        .from('posts')
+        .update({ locked: true })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to lock post' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to lock post' });
@@ -225,7 +233,11 @@ const createPostsRouter = (pool) => {
   });
   router.post('/:id/unlock', requireAuth, isAdmin, async (req, res) => {
     try {
-      await pool.query('UPDATE posts SET locked = FALSE WHERE id = $1', [req.params.id]);
+      const { error } = await supabase
+        .from('posts')
+        .update({ locked: false })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to unlock post' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to unlock post' });
@@ -236,14 +248,7 @@ const createPostsRouter = (pool) => {
   router.post('/:type/:id/react', requireAuth, async (req, res) => {
     const { emoji } = req.body || {};
     const { type, id } = req.params;
-    console.log('--- REACT API DEBUG ---');
-    console.log('User:', req.user);
-    console.log('Params:', req.params);
-    console.log('Body:', req.body);
-    console.log('Headers:', req.headers);
-    console.log('User-Agent:', req.headers['user-agent']);
     if (!['post', 'comment'].includes(type)) {
-      console.log('Invalid type:', type);
       return res.status(400).json({ error: 'Invalid type' });
     }
     const table = type === 'post' ? 'post_reactions' : 'comment_reactions';
@@ -251,32 +256,33 @@ const createPostsRouter = (pool) => {
     // If emoji is null, empty, or undefined, remove the reaction
     if (!emoji) {
       try {
-        await pool.query(
-          `DELETE FROM ${table} WHERE ${targetCol} = $1 AND user_id = $2`,
-          [id, req.user.id]
-        );
-        console.log('Removed reaction');
+        const { error } = await supabase
+          .from(table)
+          .delete()
+          .eq(targetCol, id)
+          .eq('user_id', req.user.id);
+        if (error) return res.status(500).json({ error: 'Failed to remove reaction' });
         return res.json({ ok: true, removed: true });
       } catch (e) {
-        console.error('Failed to remove reaction:', e);
         return res.status(500).json({ error: 'Failed to remove reaction', details: e.message });
       }
     }
     if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) {
-      console.log('Invalid reaction:', emoji);
       return res.status(400).json({ error: 'Invalid reaction' });
     }
     try {
-      await pool.query(
-        `INSERT INTO ${table} (${targetCol}, user_id, emoji)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (${targetCol}, user_id) DO UPDATE SET emoji = EXCLUDED.emoji`,
-        [id, req.user.id, emoji]
-      );
-      console.log('Reaction added/updated successfully');
+      // Upsert logic: delete existing, then insert new
+      await supabase
+        .from(table)
+        .delete()
+        .eq(targetCol, id)
+        .eq('user_id', req.user.id);
+      const { error } = await supabase
+        .from(table)
+        .insert([{ [targetCol]: id, user_id: req.user.id, emoji }]);
+      if (error) return res.status(500).json({ error: 'Failed to react' });
       res.json({ ok: true });
     } catch (e) {
-      console.error('Failed to react:', e);
       res.status(500).json({ error: 'Failed to react', details: e.message });
     }
   });
@@ -284,7 +290,11 @@ const createPostsRouter = (pool) => {
   // Pin/unpin (admin only)
   router.post('/:id/pin', requireAuth, isAdmin, async (req, res) => {
     try {
-      await pool.query('UPDATE posts SET pinned = TRUE WHERE id = $1', [req.params.id]);
+      const { error } = await supabase
+        .from('posts')
+        .update({ pinned: true })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to pin' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to pin' });
@@ -292,7 +302,11 @@ const createPostsRouter = (pool) => {
   });
   router.post('/:id/unpin', requireAuth, isAdmin, async (req, res) => {
     try {
-      await pool.query('UPDATE posts SET pinned = FALSE WHERE id = $1', [req.params.id]);
+      const { error } = await supabase
+        .from('posts')
+        .update({ pinned: false })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to unpin' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to unpin' });
@@ -302,13 +316,21 @@ const createPostsRouter = (pool) => {
   // Delete (admin, SHEN, or author)
   router.delete('/:id', requireAuth, async (req, res) => {
     try {
-      const post = await pool.query('SELECT user_id FROM posts WHERE id = $1', [req.params.id]);
-      if (!post.rows[0]) return res.status(404).json({ error: 'Not found' });
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('user_id')
+        .eq('id', req.params.id)
+        .single();
+      if (postError || !postData) return res.status(404).json({ error: 'Not found' });
       const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
-      if (post.rows[0].user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher' && !isShen) {
+      if (postData.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher' && !isShen) {
         return res.status(403).json({ error: 'Forbidden' });
       }
-      await pool.query('DELETE FROM posts WHERE id = $1', [req.params.id]);
+      const { error: deleteError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', req.params.id);
+      if (deleteError) return res.status(500).json({ error: 'Failed to delete' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to delete' });
