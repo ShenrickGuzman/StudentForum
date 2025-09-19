@@ -33,43 +33,60 @@ const createPostsRouter = () => {
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       if (commentsError) return res.status(500).json({ error: 'Failed to fetch comments' });
-      const commentsArr = commentsRaw || [];
+      const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
       const commentIds = commentsArr.map(c => c.id);
       let commentReactions = [];
-      if (commentIds.length > 0) {
+      if (Array.isArray(commentIds) && commentIds.length > 0) {
         const { data: reactionsData } = await supabase
           .from('comment_reactions')
           .select('comment_id, emoji')
           .in('comment_id', commentIds);
-        commentReactions = reactionsData || [];
+        commentReactions = Array.isArray(reactionsData) ? reactionsData : [];
       }
       let userCommentReactions = [];
-      if (commentIds.length > 0) {
+      if (Array.isArray(commentIds) && commentIds.length > 0) {
         const { data: userReactionsData } = await supabase
           .from('comment_reactions')
           .select('comment_id, emoji')
           .in('comment_id', commentIds)
           .eq('user_id', req.user.id);
-        userCommentReactions = userReactionsData || [];
+        userCommentReactions = Array.isArray(userReactionsData) ? userReactionsData : [];
       }
       // Map reactions to each comment
       const commentReactionsMap = {};
-      for (const row of commentReactions) {
-        if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
-        commentReactionsMap[row.comment_id][row.emoji] = (commentReactionsMap[row.comment_id][row.emoji] || 0) + 1;
+      if (Array.isArray(commentReactions)) {
+        for (const row of commentReactions) {
+          if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
+          commentReactionsMap[row.comment_id][row.emoji] = (commentReactionsMap[row.comment_id][row.emoji] || 0) + 1;
+        }
       }
       const userCommentReactionsMap = {};
-      for (const row of userCommentReactions) {
-        userCommentReactionsMap[row.comment_id] = row.emoji;
-      }
-      const comments = commentsArr.map(c => ({
-        ...c,
-        author_name: c.users?.name || null,
-        reactions: {
-          counts: commentReactionsMap[c.id] || {},
-          user: userCommentReactionsMap[c.id] || null
+      if (Array.isArray(userCommentReactions)) {
+        for (const row of userCommentReactions) {
+          userCommentReactionsMap[row.comment_id] = row.emoji;
         }
-      }));
+      }
+      const comments = Array.isArray(commentsArr)
+        ? commentsArr.map(c => ({
+            ...c,
+            author_name: c.users?.name || null,
+            reactions: {
+              counts: commentReactionsMap[c.id] || {},
+              user: userCommentReactionsMap[c.id] || null
+            }
+          }))
+        : [];
+      // Extra logging for debugging
+      console.log('COMMENTS DEBUG:', {
+        commentsRaw,
+        commentsArr,
+        commentIds,
+        commentReactions,
+        userCommentReactions,
+        commentReactionsMap,
+        userCommentReactionsMap,
+        comments
+      });
       res.json(comments);
     } catch (e) {
       console.error('COMMENTS ERROR:', e && e.stack ? e.stack : e);
