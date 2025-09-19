@@ -33,7 +33,8 @@ const createPostsRouter = () => {
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       if (commentsError) return res.status(500).json({ error: 'Failed to fetch comments' });
-      const commentIds = commentsRaw.map(c => c.id);
+      const commentsArr = commentsRaw || [];
+      const commentIds = commentsArr.map(c => c.id);
       let commentReactions = [];
       if (commentIds.length > 0) {
         const { data: reactionsData } = await supabase
@@ -61,7 +62,7 @@ const createPostsRouter = () => {
       for (const row of userCommentReactions) {
         userCommentReactionsMap[row.comment_id] = row.emoji;
       }
-      const comments = commentsRaw.map(c => ({
+      const comments = commentsArr.map(c => ({
         ...c,
         author_name: c.users?.name || null,
         reactions: {
