@@ -79,17 +79,14 @@ app.use('/uploads', (req, res, next) => {
 }, express.static(uploadsPath));
 
 // Auth and feature routes
-app.use('/api/auth', (await import('./src/routes/auth.js')).default(pool));
-app.use('/api/posts', (await import('./src/routes/posts.js')).default(pool));
+// ...existing code...
 app.use('/api/auth', (await import('./src/routes/auth.js')).default());
 app.use('/api/posts', (await import('./src/routes/posts.js')).default());
 app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
-ensureSchema().then(() => {
-  app.listen(port, () => {
-    console.log(`Backend running on port ${port}`);
-  });
+app.listen(port, () => {
+  console.log(`Backend running on port ${port}`);
 });
 
 
