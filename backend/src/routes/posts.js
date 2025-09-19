@@ -72,7 +72,8 @@ const createPostsRouter = () => {
       }));
       res.json(comments);
     } catch (e) {
-      res.status(500).json({ error: 'Failed to fetch comments', details: e.message });
+      console.error('COMMENTS ERROR:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'Failed to fetch comments', details: e && e.message ? e.message : e });
     }
   });
 
