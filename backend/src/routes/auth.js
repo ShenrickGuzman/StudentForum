@@ -47,6 +47,7 @@ const createAuthRouter = () => {
   router.post('/signup', async (req, res) => {
   const { name, password, email } = req.body || {};
   const nameLower = name.trim().toLowerCase();
+  const nameDisplay = name.trim();
     if (!name || !password || !email) {
       return res.status(400).json({ error: 'Username, password and email are required' });
     }
@@ -59,12 +60,12 @@ const createAuthRouter = () => {
       const { data: userConflict } = await supabase
         .from('users')
         .select('id')
-        .or(`name.eq.${name.toLowerCase()},email.eq.${email.toLowerCase()}`)
+        .or(`name.ilike.${nameLower},email.ilike.${email.toLowerCase()}`)
         .eq('deleted', false);
       const { data: requestConflict } = await supabase
         .from('signup_requests')
         .select('id')
-        .or(`name.eq.${name.toLowerCase()},email.eq.${email.toLowerCase()}`);
+        .or(`name.ilike.${nameLower},email.ilike.${email.toLowerCase()}`);
       if ((userConflict && userConflict.length) || (requestConflict && requestConflict.length)) {
         return res.status(409).json({ error: 'Username or email already taken or pending' });
       }
@@ -74,7 +75,7 @@ const createAuthRouter = () => {
         // Create user directly and make admin
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .insert([{ name: nameLower, email, password_hash: passwordHash, role: 'admin', deleted: false }])
+          .insert([{ name: nameDisplay, email, password_hash: passwordHash, role: 'admin', deleted: false }])
           .select('id, name, role, email')
           .single();
         if (userError || !userData) return res.status(500).json({ error: 'Signup failed for SHEN' });
@@ -84,7 +85,7 @@ const createAuthRouter = () => {
       // Normal signup request flow
       const { error: signupError } = await supabase
         .from('signup_requests')
-        .insert([{ name: nameLower, email, password_hash: passwordHash }]);
+        .insert([{ name: nameDisplay, email, password_hash: passwordHash }]);
       if (signupError) return res.status(500).json({ error: 'Signup request failed' });
       res.json({ status: 'pending', message: 'Signup request submitted. Awaiting admin approval.' });
     } catch (e) {
@@ -120,12 +121,12 @@ const createAuthRouter = () => {
       if (rqError || !rqData) return res.status(404).json({ error: 'Request not found' });
       if (rqData.status === 'declined') return res.status(400).json({ error: 'Request already declined' });
       if (rqData.status === 'approved') return res.status(400).json({ error: 'Request already approved' });
-      // Create user (enforce lowercase for name/email)
-      const nameLower = rqData.name.trim().toLowerCase();
+      // Create user (preserve display case, but enforce lowercase for uniqueness)
+      const nameDisplay = rqData.name.trim();
       const emailLower = rqData.email.trim().toLowerCase();
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .insert([{ name: nameLower, email: emailLower, password_hash: rqData.password_hash, role: 'student', deleted: false }])
+        .insert([{ name: nameDisplay, email: emailLower, password_hash: rqData.password_hash, role: 'student', deleted: false }])
         .select('id, name, role, email')
         .single();
       if (userError) {
@@ -275,7 +276,7 @@ const createAuthRouter = () => {
       const { data: user, error } = await supabase
         .from('users')
         .select('id, name, role, password_hash, deleted')
-        .eq('name', name)
+        .eq('name', name.trim())
         .single();
       if (error || !user || user.deleted) return res.status(401).json({ error: user && user.deleted ? 'Account deleted' : 'Invalid credentials' });
       const ok = await bcrypt.compare(password, user.password_hash);
