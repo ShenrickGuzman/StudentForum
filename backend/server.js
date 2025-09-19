@@ -48,7 +48,10 @@ app.use(cors({
 app.use(express.json({ limit: '1mb' }));
 
 // Database
-const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.DATABASE_URL?.includes('render.com') ? { rejectUnauthorized: false } : undefined });
+const pool = new Pool({
+  connectionString: 'postgresql://postgres:Shenrick_Arianah080709@db.xuezboawkhqlkdaspkos.supabase.co:5432/postgres',
+  ssl: { rejectUnauthorized: false }
+});
 
 async function ensureSchema() {
   try {
