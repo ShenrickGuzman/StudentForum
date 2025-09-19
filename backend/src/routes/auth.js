@@ -120,13 +120,22 @@ const createAuthRouter = () => {
       if (rqError || !rqData) return res.status(404).json({ error: 'Request not found' });
       if (rqData.status === 'declined') return res.status(400).json({ error: 'Request already declined' });
       if (rqData.status === 'approved') return res.status(400).json({ error: 'Request already approved' });
-      // Create user
+      // Create user (enforce lowercase for name/email)
+      const nameLower = rqData.name.trim().toLowerCase();
+      const emailLower = rqData.email.trim().toLowerCase();
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .insert([{ name: rqData.name, email: rqData.email, password_hash: rqData.password_hash, role: 'student' }])
+        .insert([{ name: nameLower, email: emailLower, password_hash: rqData.password_hash, role: 'student' }])
         .select('id, name, role, email')
         .single();
-      if (userError || !userData) return res.status(500).json({ error: 'Failed to create user' });
+      if (userError) {
+        // Unique constraint violation (already exists)
+        if (userError.code === '23505' || userError.message?.toLowerCase().includes('duplicate')) {
+          return res.status(409).json({ error: 'Username or email already exists' });
+        }
+        return res.status(500).json({ error: 'Failed to create user' });
+      }
+      if (!userData) return res.status(500).json({ error: 'No user data returned' });
       // Update signup request status
       const { error: updateError } = await supabase
         .from('signup_requests')
