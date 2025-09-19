@@ -174,23 +174,24 @@ const createAuthRouter = () => {
   router.get('/signup-status', async (req, res) => {
     const { name } = req.query;
     if (!name) return res.status(400).json({ error: 'Name required' });
-    const nameLower = name.trim().toLowerCase();
+  const nameTrimmed = name.trim();
     try {
-      // Check if user exists (approved)
+      // Check if user exists (approved, case-insensitive)
       const { data: userData } = await supabase
         .from('users')
         .select('id, name, role')
-        .eq('name', nameLower)
+        .ilike('name', nameTrimmed)
         .single();
       if (userData) {
         const u = userData;
         const token = jwt.sign({ id: u.id, role: u.role, name: u.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
         return res.json({ status: 'approved', token, user: u });
       }
+      // Check signup request (case-insensitive)
       const { data: reqData } = await supabase
         .from('signup_requests')
         .select('status')
-        .eq('name', nameLower)
+        .ilike('name', nameTrimmed)
         .single();
       if (!reqData) return res.json({ status: 'not_found' });
       return res.json({ status: reqData.status });
