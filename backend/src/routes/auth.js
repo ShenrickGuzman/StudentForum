@@ -132,7 +132,13 @@ const createAuthRouter = () => {
       if (userError) {
         // Unique constraint violation (already exists)
         if (userError.code === '23505' || userError.message?.toLowerCase().includes('duplicate')) {
-          return res.status(409).json({ error: 'Username or email already exists', details: userError.message });
+          // Find conflicting user(s)
+          const { data: conflictUsers } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .or(`name.ilike.${nameDisplay.toLowerCase()},email.ilike.${emailLower}`)
+            .eq('deleted', false);
+          return res.status(409).json({ error: 'Username or email already exists', details: userError.message, conflicts: conflictUsers });
         }
         // Log full error for debugging
         return res.status(500).json({ error: 'Failed to create user', details: userError.message || userError });
