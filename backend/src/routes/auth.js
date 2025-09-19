@@ -2,9 +2,9 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { supabase } from '../lib/supabaseClient.js';
 
-
-const createAuthRouter = (pool) => {
+const createAuthRouter = () => {
   const router = express.Router();
 
   // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
@@ -31,9 +31,13 @@ const createAuthRouter = (pool) => {
     const { name } = req.body || {};
     if (!name) return res.status(400).json({ error: 'Username required' });
     try {
-      const result = await pool.query('UPDATE users SET role = $1 WHERE lower(name) = lower($2) RETURNING id, name, role', ['admin', name]);
-      if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
-      res.json({ ok: true, user: result.rows[0] });
+      const { data, error } = await supabase
+        .from('users')
+        .update({ role: 'admin' })
+        .eq('name', name.toLowerCase())
+        .select('id, name, role');
+      if (error || !data || !data.length) return res.status(404).json({ error: 'User not found' });
+      res.json({ ok: true, user: data[0] });
     } catch (e) {
       res.status(500).json({ error: 'Failed to grant admin role' });
     }
@@ -51,15 +55,24 @@ const createAuthRouter = (pool) => {
     if (!gmailRegex.test(email)) return res.status(400).json({ error: 'Only valid @gmail.com addresses are allowed' });
     try {
       // Check conflicts in users (only non-deleted) and signup_requests
-      const conflict = await pool.query(
-        `SELECT 'user' AS src FROM users WHERE (lower(name)=lower($1) OR lower(email)=lower($2)) AND deleted=FALSE
-         UNION ALL
-         SELECT 'request' AS src FROM signup_requests WHERE lower(name)=lower($1) OR lower(email)=lower($2)`,
-        [name, email]
-      );
-      if (conflict.rows.length) return res.status(409).json({ error: 'Username or email already taken or pending' });
+      // Check for conflicts in users and signup_requests
+      const { data: userConflict } = await supabase
+        .from('users')
+        .select('id')
+        .or(`name.eq.${name.toLowerCase()},email.eq.${email.toLowerCase()}`)
+        .eq('deleted', false);
+      const { data: requestConflict } = await supabase
+        .from('signup_requests')
+        .select('id')
+        .or(`name.eq.${name.toLowerCase()},email.eq.${email.toLowerCase()}`);
+      if ((userConflict && userConflict.length) || (requestConflict && requestConflict.length)) {
+        return res.status(409).json({ error: 'Username or email already taken or pending' });
+      }
       const passwordHash = await bcrypt.hash(password, 10);
-      await pool.query('INSERT INTO signup_requests (name, email, password_hash) VALUES ($1, $2, $3)', [name, email, passwordHash]);
+      const { error: signupError } = await supabase
+        .from('signup_requests')
+        .insert([{ name, email, password_hash: passwordHash }]);
+      if (signupError) return res.status(500).json({ error: 'Signup request failed' });
       res.json({ status: 'pending', message: 'Signup request submitted. Awaiting admin approval.' });
     } catch (e) {
       if (e?.code === '23505') return res.status(409).json({ error: 'Username or email already taken or pending' });
@@ -70,8 +83,12 @@ const createAuthRouter = (pool) => {
   // List pending signup requests (admin only)
   router.get('/signup-requests', requireAuth, isAdmin, async (req, res) => {
     try {
-      const result = await pool.query('SELECT id, name, email, created_at, status FROM signup_requests ORDER BY created_at ASC');
-      res.json(result.rows);
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .select('id, name, email, created_at, status')
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: 'Failed to load signup requests' });
+      res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to load signup requests' });
     }
@@ -81,21 +98,31 @@ const createAuthRouter = (pool) => {
   router.post('/signup-requests/:id/approve', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      await pool.query('BEGIN');
-      const rq = await pool.query('SELECT * FROM signup_requests WHERE id=$1 FOR UPDATE', [id]);
-      const r = rq.rows[0];
-      if (!r) { await pool.query('ROLLBACK'); return res.status(404).json({ error: 'Request not found' }); }
-      if (r.status === 'declined') { await pool.query('ROLLBACK'); return res.status(400).json({ error: 'Request already declined' }); }
-      if (r.status === 'approved') { await pool.query('ROLLBACK'); return res.status(400).json({ error: 'Request already approved' }); }
+      // Get signup request
+      const { data: rqData, error: rqError } = await supabase
+        .from('signup_requests')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (rqError || !rqData) return res.status(404).json({ error: 'Request not found' });
+      if (rqData.status === 'declined') return res.status(400).json({ error: 'Request already declined' });
+      if (rqData.status === 'approved') return res.status(400).json({ error: 'Request already approved' });
       // Create user
-      const userResult = await pool.query('INSERT INTO users (name, email, password_hash, role) VALUES ($1,$2,$3,$4) RETURNING id, name, role, email', [r.name, r.email, r.password_hash, 'student']);
-      await pool.query('UPDATE signup_requests SET status=\'approved\' WHERE id=$1', [id]);
-      await pool.query('COMMIT');
-      const user = userResult.rows[0];
-      const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
-      res.json({ approved: true, token, user });
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert([{ name: rqData.name, email: rqData.email, password_hash: rqData.password_hash, role: 'student' }])
+        .select('id, name, role, email')
+        .single();
+      if (userError || !userData) return res.status(500).json({ error: 'Failed to create user' });
+      // Update signup request status
+      const { error: updateError } = await supabase
+        .from('signup_requests')
+        .update({ status: 'approved' })
+        .eq('id', id);
+      if (updateError) return res.status(500).json({ error: 'Failed to update request status' });
+      const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.json({ approved: true, token, user: userData });
     } catch (e) {
-      await pool.query('ROLLBACK').catch(()=>{});
       res.status(500).json({ error: 'Failed to approve request' });
     }
   });
@@ -104,8 +131,14 @@ const createAuthRouter = (pool) => {
   router.post('/signup-requests/:id/decline', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await pool.query('UPDATE signup_requests SET status=\'declined\' WHERE id=$1 AND status=\'pending\' RETURNING id', [id]);
-      if (!result.rows[0]) return res.status(404).json({ error: 'Request not found or already processed' });
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .update({ status: 'declined' })
+        .eq('id', id)
+        .eq('status', 'pending')
+        .select('id')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Request not found or already processed' });
       res.json({ declined: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to decline request' });
@@ -119,15 +152,23 @@ const createAuthRouter = (pool) => {
     if (!name) return res.status(400).json({ error: 'Name required' });
     try {
       // Check if user exists (approved)
-      const userResult = await pool.query('SELECT id, name, role FROM users WHERE lower(name)=lower($1)', [name]);
-      if (userResult.rows[0]) {
-        const u = userResult.rows[0];
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, name, role')
+        .eq('name', name.toLowerCase())
+        .single();
+      if (userData) {
+        const u = userData;
         const token = jwt.sign({ id: u.id, role: u.role, name: u.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
         return res.json({ status: 'approved', token, user: u });
       }
-      const reqResult = await pool.query('SELECT status FROM signup_requests WHERE lower(name)=lower($1)', [name]);
-      if (!reqResult.rows[0]) return res.json({ status: 'not_found' });
-      return res.json({ status: reqResult.rows[0].status });
+      const { data: reqData } = await supabase
+        .from('signup_requests')
+        .select('status')
+        .eq('name', name.toLowerCase())
+        .single();
+      if (!reqData) return res.json({ status: 'not_found' });
+      return res.json({ status: reqData.status });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch status' });
     }
@@ -136,8 +177,13 @@ const createAuthRouter = (pool) => {
   // List all users (admin only)
   router.get('/users', requireAuth, isAdmin, async (req, res) => {
     try {
-  const result = await pool.query('SELECT id, name, email FROM users WHERE deleted=FALSE ORDER BY created_at ASC');
-  res.json(result.rows);
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email')
+        .eq('deleted', false)
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: 'Failed to load users' });
+      res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to load users' });
     }
@@ -147,11 +193,14 @@ const createAuthRouter = (pool) => {
   router.delete('/users/:id', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await pool.query('UPDATE users SET deleted=TRUE WHERE id=$1 RETURNING id, name', [id]);
-      if (!result.rows[0]) return res.status(404).json({ error: 'User not found' });
-      
-      // Send signal to frontend that this user should be logged out
-      res.json({ deleted: true, deletedUserId: id, deletedUserName: result.rows[0].name });
+      const { data, error } = await supabase
+        .from('users')
+        .update({ deleted: true })
+        .eq('id', id)
+        .select('id, name')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'User not found' });
+      res.json({ deleted: true, deletedUserId: id, deletedUserName: data.name });
     } catch (e) {
       res.status(500).json({ error: 'Failed to delete user' });
     }
@@ -161,8 +210,13 @@ const createAuthRouter = (pool) => {
   router.delete('/signup-requests/:id', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await pool.query('DELETE FROM signup_requests WHERE id=$1 RETURNING id', [id]);
-      if (!result.rows[0]) return res.status(404).json({ error: 'Request not found' });
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Request not found' });
       res.json({ deleted: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to delete request' });
@@ -172,9 +226,12 @@ const createAuthRouter = (pool) => {
   // Check if current user is deleted (for real-time logout)
   router.get('/check-status', requireAuth, async (req, res) => {
     try {
-      const result = await pool.query('SELECT deleted FROM users WHERE id = $1', [req.user.id]);
-      const user = result.rows[0];
-      if (!user || user.deleted) {
+      const { data, error } = await supabase
+        .from('users')
+        .select('deleted')
+        .eq('id', req.user.id)
+        .single();
+      if (error || !data || data.deleted) {
         return res.status(401).json({ error: 'Account deleted' });
       }
       res.json({ status: 'active' });
@@ -191,9 +248,12 @@ const createAuthRouter = (pool) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
     try {
-      const result = await pool.query('SELECT id, name, role, password_hash, deleted FROM users WHERE name = $1', [name]);
-      const user = result.rows[0];
-      if (!user || user.deleted) return res.status(401).json({ error: user && user.deleted ? 'Account deleted' : 'Invalid credentials' });
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, name, role, password_hash, deleted')
+        .eq('name', name)
+        .single();
+      if (error || !user || user.deleted) return res.status(401).json({ error: user && user.deleted ? 'Account deleted' : 'Invalid credentials' });
       const ok = await bcrypt.compare(password, user.password_hash);
       if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
       const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
