@@ -125,7 +125,7 @@ const createAuthRouter = () => {
       const emailLower = rqData.email.trim().toLowerCase();
       const { data: userData, error: userError } = await supabase
         .from('users')
-        .insert([{ name: nameLower, email: emailLower, password_hash: rqData.password_hash, role: 'student' }])
+        .insert([{ name: nameLower, email: emailLower, password_hash: rqData.password_hash, role: 'student', deleted: false }])
         .select('id, name, role, email')
         .single();
       if (userError) {
