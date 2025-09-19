@@ -131,9 +131,10 @@ const createAuthRouter = () => {
       if (userError) {
         // Unique constraint violation (already exists)
         if (userError.code === '23505' || userError.message?.toLowerCase().includes('duplicate')) {
-          return res.status(409).json({ error: 'Username or email already exists' });
+          return res.status(409).json({ error: 'Username or email already exists', details: userError.message });
         }
-        return res.status(500).json({ error: 'Failed to create user' });
+        // Log full error for debugging
+        return res.status(500).json({ error: 'Failed to create user', details: userError.message || userError });
       }
       if (!userData) return res.status(500).json({ error: 'No user data returned' });
       // Update signup request status
