@@ -3,14 +3,12 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
-import pkg from 'pg';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 dotenv.config();
 
-const { Pool } = pkg;
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -47,32 +45,11 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 
-// Database
-const pool = new Pool({
-  connectionString: 'postgresql://postgres:Shenrick_Arianah080709@db.xuezboawkhqlkdaspkos.supabase.co:5432/postgres',
-  ssl: { rejectUnauthorized: false }
-});
 
-async function ensureSchema() {
-  try {
-    const schemaPath = path.join(__dirname, 'src', 'db', 'schema.sql');
-    const sql = await fs.readFile(schemaPath, 'utf8');
-    await pool.query(sql);
-    console.log('Database schema ensured');
-  } catch (e) {
-    console.error('Schema initialization failed', e);
-  }
-}
 
-// Simple health route
-app.get('/api/health', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW() as now');
-    res.json({ ok: true, now: result.rows[0].now });
-  } catch (e) {
-    res.status(500).json({ ok: false, error: 'Database connection failed' });
-  }
-});
+// ...existing code...
+// Remove PostgreSQL pool and schema logic
+// Remove health route that checks PostgreSQL
 
 
 // Ensure uploads directory exists
@@ -104,6 +81,8 @@ app.use('/uploads', (req, res, next) => {
 // Auth and feature routes
 app.use('/api/auth', (await import('./src/routes/auth.js')).default(pool));
 app.use('/api/posts', (await import('./src/routes/posts.js')).default(pool));
+app.use('/api/auth', (await import('./src/routes/auth.js')).default());
+app.use('/api/posts', (await import('./src/routes/posts.js')).default());
 app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
