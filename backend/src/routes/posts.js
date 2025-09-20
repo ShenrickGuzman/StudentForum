@@ -160,18 +160,26 @@ const createPostsRouter = () => {
       if (postData.status !== 'approved' && postData.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher') {
         return res.status(403).json({ error: 'Post not available' });
       }
-  // List pending posts for admin review
+  // List pending posts for admin review (rewritten for clarity and debugging)
   router.get('/pending/admin', requireAuth, isAdmin, async (req, res) => {
     try {
+      // Debug log to confirm route is hit
+      console.log('GET /pending/admin called by user:', req.user?.name, 'role:', req.user?.role);
       const { data, error } = await supabase
         .from('posts')
         .select('*, users(name)')
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
-      if (error) return res.status(500).json({ error: 'Failed to fetch pending posts' });
-      res.json(data);
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ error: 'Failed to fetch pending posts' });
+      }
+      // Add author_name for compatibility
+      const posts = Array.isArray(data) ? data.map(p => ({ ...p, author_name: p.users?.name || null })) : [];
+      res.json(posts);
     } catch (e) {
-      res.status(500).json({ error: 'Failed to fetch pending posts' });
+      console.error('Exception in /pending/admin:', e);
+      res.status(500).json({ error: 'Failed to fetch pending posts', details: e?.message || e });
     }
   });
 
