@@ -205,6 +205,17 @@ export default function PostDetailPage() {
                 }}
               >Cancel Post</button>
             )}
+            {isAuthor && post.status === 'rejected' && (
+              <button
+                className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold shadow-fun border-2 border-red-200 hover:scale-105 transition-all"
+                onClick={async () => {
+                  if (window.confirm('Delete this rejected post? This cannot be undone.')) {
+                    await api.delete(`/posts/${post.id}/cancel`);
+                    navigate('/');
+                  }
+                }}
+              >Delete Post</button>
+            )}
           </div>
           {/* Content with gradient border */}
           <div className="px-8 pt-4 pb-4">
