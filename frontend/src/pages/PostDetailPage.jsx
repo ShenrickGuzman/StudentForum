@@ -127,6 +127,7 @@ export default function PostDetailPage() {
     );
   }
   const { post } = data;
+  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
   // Helper: show status label
   const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
   const isAuthor = user && post.user_id === user.id;
@@ -195,15 +196,33 @@ export default function PostDetailPage() {
             </div>
             {/* Cancel Post button for author if pending */}
             {isAuthor && (
-              <button
-                className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold shadow-fun border-2 border-red-200 hover:scale-105 transition-all"
-                onClick={async () => {
-                  if (window.confirm('Delete this post? This cannot be undone.')) {
-                    await api.delete(`/posts/${post.id}/cancel`);
-                    navigate('/');
-                  }
-                }}
-              >Delete Post</button>
+              <>
+                <button
+                  className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold shadow-fun border-2 border-red-200 hover:scale-105 transition-all"
+                  onClick={() => setShowPostDeleteConfirm(true)}
+                >Delete Post</button>
+                {showPostDeleteConfirm && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+                    <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
+                      <div className="font-bold text-lg mb-3 text-purple-700">Are you sure you want to delete this forum?</div>
+                      <div className="flex gap-4">
+                        <button
+                          className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-bold shadow hover:scale-105 transition-all"
+                          onClick={async () => {
+                            setShowPostDeleteConfirm(false);
+                            await api.delete(`/posts/${post.id}/cancel`);
+                            navigate('/');
+                          }}
+                        >Yes</button>
+                        <button
+                          className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-bold shadow hover:scale-105 transition-all"
+                          onClick={() => setShowPostDeleteConfirm(false)}
+                        >No</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
           {/* Content with gradient border */}
@@ -263,12 +282,10 @@ export default function PostDetailPage() {
                     content={comment.content}
                     canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                     onDelete={async () => {
-                      if (window.confirm('Delete this comment? This cannot be undone.')) {
-                        await api.delete(`/posts/comments/${comment.id}`);
-                        // Re-fetch comments after deleting
-                        const response = await api.get(`/posts/${id}/comments`);
-                        setComments(response.data);
-                      }
+                      await api.delete(`/posts/comments/${comment.id}`);
+                      // Re-fetch comments after deleting
+                      const response = await api.get(`/posts/${id}/comments`);
+                      setComments(response.data);
                     }}
                   />
                 ))}
