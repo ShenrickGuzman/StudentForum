@@ -3,15 +3,17 @@ import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function AdminPage() {
-  // Pending posts for admin approval
+  // Pending posts for admin moderation
   const [pendingPosts, setPendingPosts] = useState([]);
   const [pendingPostsLoading, setPendingPostsLoading] = useState(false);
   const [pendingPostsError, setPendingPostsError] = useState('');
   const [pendingActionMsg, setPendingActionMsg] = useState('');
+
+  // Load all pending posts for admin
   const loadPendingPosts = async () => {
     setPendingPostsLoading(true); setPendingPostsError('');
     try {
-      const r = await api.get('/posts/pending/admin');
+      const r = await api.get('/posts', { params: { status: 'pending', admin: 1 } });
       setPendingPosts(r.data);
     } catch (e) {
       setPendingPostsError(e?.response?.data?.error || 'Failed to load pending posts');
@@ -19,6 +21,8 @@ export default function AdminPage() {
       setPendingPostsLoading(false);
     }
   };
+
+  // Approve a pending post
   const handleApprovePost = async (id) => {
     setPendingActionMsg('');
     try {
@@ -29,6 +33,8 @@ export default function AdminPage() {
       setPendingActionMsg(e?.response?.data?.error || 'Failed to approve post');
     }
   };
+
+  // Reject a pending post
   const handleRejectPost = async (id) => {
     setPendingActionMsg('');
     try {
@@ -39,6 +45,7 @@ export default function AdminPage() {
       setPendingActionMsg(e?.response?.data?.error || 'Failed to reject post');
     }
   };
+  // ...existing code...
   // --- General state hooks for admin panel ---
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [reqLoading, setReqLoading] = useState(false);
@@ -231,10 +238,10 @@ export default function AdminPage() {
 
   // Automatically load posts, users, and pending posts on mount
   useEffect(() => {
-    loadPosts();
-    loadUsers();
-    loadPendingPosts();
-    loadRequests();
+  loadPosts();
+  loadUsers();
+  loadPendingPosts();
+  loadRequests();
   }, []);
 
   return (
