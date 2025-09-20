@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS posts (
   link_url TEXT,
   pinned BOOLEAN NOT NULL DEFAULT FALSE,
   locked BOOLEAN NOT NULL DEFAULT FALSE,
+  status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
