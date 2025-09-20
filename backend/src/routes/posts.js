@@ -21,6 +21,9 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+
+  const router = express.Router();
+
   // Delete a comment (author or admin)
   router.delete('/comments/:id', requireAuth, async (req, res) => {
     try {
@@ -45,9 +48,6 @@ const createPostsRouter = () => {
       res.status(500).json({ error: 'Failed to delete comment' });
     }
   });
-
-  const router = express.Router();
-
   // Get all comments for a post (with author and reactions)
   router.get('/:id/comments', requireAuth, async (req, res) => {
     try {
