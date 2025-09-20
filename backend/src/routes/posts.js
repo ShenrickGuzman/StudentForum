@@ -101,7 +101,7 @@ const createPostsRouter = () => {
     try {
       const { data, error } = await supabase
         .from('posts')
-        .insert([{ user_id: req.user.id, title, content, category, image_url: imageUrl || null, link_url: linkUrl || null }])
+        .insert([{ user_id: req.user.id, title, content, category, image_url: imageUrl || null, link_url: linkUrl || null, status: 'pending' }])
         .select('*')
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
@@ -117,6 +117,7 @@ const createPostsRouter = () => {
     let query = supabase
       .from('posts')
       .select('*, users(name)')
+      .eq('status', 'approved')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
     if (q) {
@@ -145,6 +146,76 @@ const createPostsRouter = () => {
         .eq('id', req.params.id)
         .single();
       if (postError || !postData) return res.status(404).json({ error: 'Post not found' });
+      // Only show post if approved or author is viewing
+      if (postData.status !== 'approved' && postData.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher') {
+        return res.status(403).json({ error: 'Post not available' });
+      }
+  // List pending posts for admin review
+  router.get('/pending/admin', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('*, users(name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: 'Failed to fetch pending posts' });
+      res.json(data);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch pending posts' });
+    }
+  });
+
+  // Admin approve post
+  router.post('/:id/approve', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ status: 'approved' })
+        .eq('id', req.params.id)
+        .eq('status', 'pending');
+      if (error) return res.status(500).json({ error: 'Failed to approve post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to approve post' });
+    }
+  });
+
+  // Admin reject post
+  router.post('/:id/reject', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ status: 'rejected' })
+        .eq('id', req.params.id)
+        .eq('status', 'pending');
+      if (error) return res.status(500).json({ error: 'Failed to reject post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to reject post' });
+    }
+  });
+
+  // Author cancels (deletes) their own pending post
+  router.delete('/:id/cancel', requireAuth, async (req, res) => {
+    try {
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('user_id, status')
+        .eq('id', req.params.id)
+        .single();
+      if (postError || !postData) return res.status(404).json({ error: 'Not found' });
+      if (postData.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+      if (postData.status !== 'pending') return res.status(400).json({ error: 'Only pending posts can be cancelled' });
+      const { error: deleteError } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', req.params.id);
+      if (deleteError) return res.status(500).json({ error: 'Failed to cancel post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to cancel post' });
+    }
+  });
       const { data: commentsRaw, error: commentsError } = await supabase
         .from('comments')
         .select('*, users(name)')
