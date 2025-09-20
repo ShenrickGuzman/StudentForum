@@ -229,6 +229,14 @@ export default function AdminPage() {
     }
   };
 
+  // Automatically load posts, users, and pending posts on mount
+  useEffect(() => {
+    loadPosts();
+    loadUsers();
+    loadPendingPosts();
+    loadRequests();
+  }, []);
+
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       {/* Floating pastel circles */}
