@@ -117,9 +117,19 @@ const createPostsRouter = () => {
     let query = supabase
       .from('posts')
       .select('*, users(name)')
-      .eq('status', 'approved')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
+
+    // Show all approved posts to everyone
+    // Also show current user's own pending/rejected posts
+    const statusFilter = [
+      'status.eq.approved'
+    ];
+    if (req.user) {
+      statusFilter.push(`and(status.in.(pending,rejected),user_id.eq.${req.user.id})`);
+    }
+    query = query.or(statusFilter.join(','));
+
     if (q) {
       query = query.ilike('title', `%${q}%`).or(`content.ilike.%${q}%`);
     }
