@@ -21,6 +21,30 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  // Delete a comment (author or admin)
+  router.delete('/comments/:id', requireAuth, async (req, res) => {
+    try {
+      // Get comment info
+      const { data: commentData, error: commentError } = await supabase
+        .from('comments')
+        .select('user_id')
+        .eq('id', req.params.id)
+        .single();
+      if (commentError || !commentData) return res.status(404).json({ error: 'Comment not found' });
+      const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
+      if (commentData.user_id !== req.user.id && req.user.role !== 'admin' && !isShen) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const { error: deleteError } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', req.params.id);
+      if (deleteError) return res.status(500).json({ error: 'Failed to delete comment' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete comment' });
+    }
+  });
 
   const router = express.Router();
 
