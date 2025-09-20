@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -47,7 +46,6 @@ app.use(express.json({ limit: '1mb' }));
 
 
 
-// ...existing code...
 // Remove PostgreSQL pool and schema logic
 // Remove health route that checks PostgreSQL
 
@@ -79,9 +77,9 @@ app.use('/uploads', (req, res, next) => {
 }, express.static(uploadsPath));
 
 // Auth and feature routes
-// ...existing code...
 app.use('/api/auth', (await import('./src/routes/auth.js')).default());
-app.use('/api/posts', (await import('./src/routes/posts.js')).default());
+import createPostsRouter from './src/routes/posts.js';
+app.use('/api/posts', createPostsRouter());
 app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
