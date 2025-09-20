@@ -3,6 +3,42 @@ import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function AdminPage() {
+  // Pending posts for admin approval
+  const [pendingPosts, setPendingPosts] = useState([]);
+  const [pendingPostsLoading, setPendingPostsLoading] = useState(false);
+  const [pendingPostsError, setPendingPostsError] = useState('');
+  const [pendingActionMsg, setPendingActionMsg] = useState('');
+  const loadPendingPosts = async () => {
+    setPendingPostsLoading(true); setPendingPostsError('');
+    try {
+      const r = await api.get('/posts/pending/admin');
+      setPendingPosts(r.data);
+    } catch (e) {
+      setPendingPostsError(e?.response?.data?.error || 'Failed to load pending posts');
+    } finally {
+      setPendingPostsLoading(false);
+    }
+  };
+  const handleApprovePost = async (id) => {
+    setPendingActionMsg('');
+    try {
+      await api.post(`/posts/${id}/approve`);
+      setPendingActionMsg('✅ Post approved!');
+      loadPendingPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to approve post');
+    }
+  };
+  const handleRejectPost = async (id) => {
+    setPendingActionMsg('');
+    try {
+      await api.post(`/posts/${id}/reject`);
+      setPendingActionMsg('❌ Post rejected!');
+      loadPendingPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to reject post');
+    }
+  };
   // --- General state hooks for admin panel ---
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [reqLoading, setReqLoading] = useState(false);
@@ -23,50 +59,9 @@ export default function AdminPage() {
       const r = await api.get('/posts');
       setPosts(r.data);
     } catch (e) {
-      setPostsError(e?.response?.data?.error || 'Failed to load posts');
+      setPostActionMsg(e?.response?.data?.error || 'Failed to load posts');
     } finally {
       setPostsLoading(false);
-    }
-  };
-
-  const handleLock = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/lock`);
-      setPostActionMsg('🔒 Post locked!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to lock post');
-    }
-  };
-  const handleUnlock = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/unlock`);
-      setPostActionMsg('🔓 Post unlocked!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to unlock post');
-    }
-  };
-  const handlePin = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/pin`);
-      setPostActionMsg('📌 Post pinned!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to pin post');
-    }
-  };
-  const handleUnpin = async (id) => {
-    setPostActionMsg('');
-    try {
-      await api.post(`/posts/${id}/unpin`);
-      setPostActionMsg('📌 Post unpinned!');
-      loadPosts();
-    } catch (e) {
-      setPostActionMsg(e?.response?.data?.error || 'Failed to unpin post');
     }
   };
   const handleDeletePost = async (id) => {
@@ -227,26 +222,13 @@ export default function AdminPage() {
     setMakeAdminMsg('');
     try {
       await api.post('/auth/make-admin', { name: makeAdminName });
-      setMakeAdminMsg('🎉 User promoted to admin!');
+      setMakeAdminMsg('✅ User promoted to admin!');
       setMakeAdminName('');
-    } catch (e) {
-      setMakeAdminMsg(e?.response?.data?.error || 'Failed to promote');
+    } catch (err) {
+      setMakeAdminMsg(err?.response?.data?.error || 'Failed to promote user');
     }
   };
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
-
-  useEffect(() => {
-    if (showUsers) loadUsers();
-  }, [showUsers]);
-
-  useEffect(() => {
-    if (showRequests) loadRequests();
-  }, [showRequests]);
-
-  // --- UI ---
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       {/* Floating pastel circles */}
@@ -258,9 +240,36 @@ export default function AdminPage() {
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-
-      {/* Admin Panel Section (moved to top) */}
       <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
+        {/* Pending Posts Approval Section */}
+        <div className="cartoon-card border-4 border-yellow-400 shadow-fun bg-white/90 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">📝</span>
+            <h2 className="text-2xl font-bold text-yellow-500 drop-shadow">Pending Posts for Approval</h2>
+            <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadPendingPosts}>Refresh 🔄</button>
+          </div>
+          {pendingPostsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading pending posts...</div>}
+          {pendingPostsError && <div className="text-error font-bold">{pendingPostsError}</div>}
+          {pendingActionMsg && <div className="text-success font-bold animate-bouncex">{pendingActionMsg}</div>}
+          <div className="flex flex-col gap-4 mt-4">
+            {pendingPosts.length === 0 && !pendingPostsLoading && <div className="text-gray-400 text-base">No pending posts.</div>}
+            {pendingPosts.map(p => (
+              <div key={p.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-yellow-300 bg-yellow-50/60 shadow-fun">
+                <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                  <span className="text-2xl">👤</span>
+                  <span className="font-bold text-lg text-dark">{p.author_name}</span>
+                  <span className="text-base text-gray-500">{p.category}</span>
+                  <span className="text-xs text-gray-400 ml-2">{new Date(p.created_at).toLocaleString()}</span>
+                  <span className="font-bold text-purple-700 ml-2">{p.title}</span>
+                </div>
+                <div className="flex gap-2 mt-2 md:mt-0">
+                  <button className="fun-btn px-4 py-2 text-base" onClick={() => handleApprovePost(p.id)}>Approve ✅</button>
+                  <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleRejectPost(p.id)}>Reject ❌</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="cartoon-card border-4 border-accent shadow-cartoon flex flex-col items-center gap-4 bg-white/90">
           <div className="flex items-center gap-3 mb-2">
             <span className="text-4xl">🛠️</span>
@@ -515,5 +524,6 @@ export default function AdminPage() {
     </div>
   );
 }
+
 
 
