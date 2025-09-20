@@ -16,6 +16,7 @@ export default function PostDetailPage() {
   const [reacting, setReacting] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
 
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
@@ -126,8 +127,7 @@ export default function PostDetailPage() {
       </div>
     );
   }
-  const { post } = data;
-  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+  const post = data?.post;
   // Helper: show status label
   const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
   const isAuthor = user && post.user_id === user.id;
