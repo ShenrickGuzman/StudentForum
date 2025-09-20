@@ -291,16 +291,11 @@ const createPostsRouter = () => {
       return res.status(400).json({ error: 'Invalid reaction' });
     }
     try {
-      // Upsert logic: delete existing, then insert new
-      await supabase
-        .from(table)
-        .delete()
-        .eq(targetCol, id)
-        .eq('user_id', req.user.id);
+      // True upsert: insert or update emoji for (post_id/user_id) or (comment_id/user_id)
       const { error } = await supabase
         .from(table)
-        .insert([{ [targetCol]: id, user_id: req.user.id, emoji }]);
-      if (error) return res.status(500).json({ error: 'Failed to react' });
+        .upsert([{ [targetCol]: id, user_id: req.user.id, emoji }], { onConflict: [targetCol, 'user_id'] });
+      if (error) return res.status(500).json({ error: 'Failed to react', details: error.message });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to react', details: e.message });
