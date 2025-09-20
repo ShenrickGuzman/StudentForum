@@ -8,7 +8,7 @@ import CommentCard from '../components/CommentCard';
 export default function PostDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
@@ -127,6 +127,9 @@ export default function PostDetailPage() {
     );
   }
   const { post } = data;
+  // Helper: show status label
+  const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
+  const isAuthor = user && post.user_id === user.id;
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
@@ -176,7 +179,7 @@ export default function PostDetailPage() {
               {post.category}
             </span>
           </div>
-          {/* Title */}
+          {/* Title & Status */}
           <div className="px-8 pt-2 pb-0">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon" style={{letterSpacing:1}}>
               {post.title}
@@ -186,7 +189,22 @@ export default function PostDetailPage() {
             <div className="flex gap-2 items-center mb-1">
               {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
               {post.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
+              {statusLabel && isAuthor && (
+                <span className={`ml-2 px-3 py-1 rounded-full font-bold text-xs shadow ${post.status === 'pending' ? 'bg-yellow-200 text-yellow-900' : post.status === 'rejected' ? 'bg-red-200 text-red-700' : 'bg-green-200 text-green-700'}`}>{statusLabel}</span>
+              )}
             </div>
+            {/* Cancel Post button for author if pending */}
+            {isAuthor && post.status === 'pending' && (
+              <button
+                className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-bold shadow-fun border-2 border-yellow-200 hover:scale-105 transition-all"
+                onClick={async () => {
+                  if (window.confirm('Cancel and delete this post? This cannot be undone.')) {
+                    await api.delete(`/posts/${post.id}/cancel`);
+                    navigate('/');
+                  }
+                }}
+              >Cancel Post</button>
+            )}
           </div>
           {/* Content with gradient border */}
           <div className="px-8 pt-4 pb-4">
@@ -229,48 +247,55 @@ export default function PostDetailPage() {
           <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg flex items-center gap-2">
             <span className="text-3xl">💬</span> Comments
           </h3>
-          <div className="mb-4">
-            {comments.length === 0 && (
-              <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
-            )}
-            {comments.map((comment) => (
-              <CommentCard
-                key={comment.id}
-                avatar={comment.avatar || '😊'}
-                username={comment.author_name || 'User'}
-                time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
-                content={comment.content}
-              />
-            ))}
-          </div>
-          {post.locked ? (
-            <div className="flex flex-col items-center justify-center mt-6">
-              <div className="text-error font-extrabold text-lg flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-6 py-4 mb-2">
-                <span className="text-2xl">🔒</span> This Forum has been locked by an admin
+          {/* Only show comments if post is approved or author is viewing */}
+          {(post.status === 'approved' || isAuthor) ? (
+            <>
+              <div className="mb-4">
+                {comments.length === 0 && (
+                  <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
+                )}
+                {comments.map((comment) => (
+                  <CommentCard
+                    key={comment.id}
+                    avatar={comment.avatar || '😊'}
+                    username={comment.author_name || 'User'}
+                    time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
+                    content={comment.content}
+                  />
+                ))}
               </div>
-            </div>
+              {post.locked ? (
+                <div className="flex flex-col items-center justify-center mt-6">
+                  <div className="text-error font-extrabold text-lg flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-6 py-4 mb-2">
+                    <span className="text-2xl">🔒</span> This Forum has been locked by an admin
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
+                    😊
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      placeholder="Write a comment... 💭"
+                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
+                      style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
+                    style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
+                  >
+                    <span className="text-lg">✈️</span> Send
+                  </button>
+                </form>
+              )}
+            </>
           ) : (
-            <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
-                😊
-              </div>
-              <div className="flex-1">
-                <input
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Write a comment... 💭"
-                  className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
-                  style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-                />
-              </div>
-              <button
-                type="submit"
-                className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
-                style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-              >
-                <span className="text-lg">✈️</span> Send
-              </button>
-            </form>
+            <div className="text-center text-purple-400 font-bold py-8">This post is not public yet. Comments will be available after admin approval.</div>
           )}
         </div>
       </div>
