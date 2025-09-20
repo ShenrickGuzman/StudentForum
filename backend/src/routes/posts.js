@@ -113,22 +113,27 @@ const createPostsRouter = () => {
 
   // List posts with search/filter, pinned first (auth required)
   router.get('/', requireAuth, async (req, res) => {
-    const { q, category } = req.query;
+    const { q, category, status, admin } = req.query;
     let query = supabase
       .from('posts')
       .select('*, users(name)')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
 
-    // Show all approved posts to everyone
-    // Also show current user's own pending/rejected posts
-    const statusFilter = [
-      'status.eq.approved'
-    ];
-    if (req.user) {
-      statusFilter.push(`and(status.in.(pending,rejected),user_id.eq.${req.user.id})`);
+    // If admin panel requests all pending posts
+    if (admin && status === 'pending' && (req.user?.role === 'admin' || (req.user?.name && req.user.name.trim().toLowerCase() === 'shen'))) {
+      query = query.eq('status', 'pending');
+    } else {
+      // Show all approved posts to everyone
+      // Also show current user's own pending/rejected posts
+      const statusFilter = [
+        'status.eq.approved'
+      ];
+      if (req.user) {
+        statusFilter.push(`and(status.in.(pending,rejected),user_id.eq.${req.user.id})`);
+      }
+      query = query.or(statusFilter.join(','));
     }
-    query = query.or(statusFilter.join(','));
 
     if (q) {
       query = query.ilike('title', `%${q}%`).or(`content.ilike.%${q}%`);
@@ -160,28 +165,6 @@ const createPostsRouter = () => {
       if (postData.status !== 'approved' && postData.user_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'teacher') {
         return res.status(403).json({ error: 'Post not available' });
       }
-  // List pending posts for admin review (rewritten for clarity and debugging)
-  router.get('/pending/admin', requireAuth, isAdmin, async (req, res) => {
-    try {
-      // Debug log to confirm route is hit
-      console.log('GET /pending/admin called by user:', req.user?.name, 'role:', req.user?.role);
-      const { data, error } = await supabase
-        .from('posts')
-        .select('*, users(name)')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: true });
-      if (error) {
-        console.error('Supabase error:', error);
-        return res.status(500).json({ error: 'Failed to fetch pending posts' });
-      }
-      // Add author_name for compatibility
-      const posts = Array.isArray(data) ? data.map(p => ({ ...p, author_name: p.users?.name || null })) : [];
-      res.json(posts);
-    } catch (e) {
-      console.error('Exception in /pending/admin:', e);
-      res.status(500).json({ error: 'Failed to fetch pending posts', details: e?.message || e });
-    }
-  });
 
   // Admin approve post
   router.post('/:id/approve', requireAuth, isAdmin, async (req, res) => {
