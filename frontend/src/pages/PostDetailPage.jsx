@@ -194,22 +194,11 @@ export default function PostDetailPage() {
               )}
             </div>
             {/* Cancel Post button for author if pending */}
-            {isAuthor && post.status === 'pending' && (
-              <button
-                className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-bold shadow-fun border-2 border-yellow-200 hover:scale-105 transition-all"
-                onClick={async () => {
-                  if (window.confirm('Cancel and delete this post? This cannot be undone.')) {
-                    await api.delete(`/posts/${post.id}/cancel`);
-                    navigate('/');
-                  }
-                }}
-              >Cancel Post</button>
-            )}
-            {isAuthor && post.status === 'rejected' && (
+            {isAuthor && (
               <button
                 className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold shadow-fun border-2 border-red-200 hover:scale-105 transition-all"
                 onClick={async () => {
-                  if (window.confirm('Delete this rejected post? This cannot be undone.')) {
+                  if (window.confirm('Delete this post? This cannot be undone.')) {
                     await api.delete(`/posts/${post.id}/cancel`);
                     navigate('/');
                   }
@@ -272,6 +261,15 @@ export default function PostDetailPage() {
                     username={comment.author_name || 'User'}
                     time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
                     content={comment.content}
+                    canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
+                    onDelete={async () => {
+                      if (window.confirm('Delete this comment? This cannot be undone.')) {
+                        await api.delete(`/posts/comments/${comment.id}`);
+                        // Re-fetch comments after deleting
+                        const response = await api.get(`/posts/${id}/comments`);
+                        setComments(response.data);
+                      }
+                    }}
                   />
                 ))}
               </div>
