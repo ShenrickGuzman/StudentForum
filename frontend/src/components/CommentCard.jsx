@@ -10,6 +10,13 @@ export default function CommentCard({ avatar, username, time, content }) {
         <div className="flex items-center gap-2 mb-1">
           <span className="font-extrabold text-purple-800 text-base">{username}</span>
           <span className="text-gray-400 text-xs font-semibold">• {time}</span>
+          {canDelete && (
+            <button
+              className="ml-2 px-2 py-1 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-xs font-bold shadow hover:scale-105 transition-all"
+              onClick={onDelete}
+              title="Delete comment"
+            >Delete 🗑️</button>
+          )}
         </div>
         <div className="text-gray-700 text-base font-medium">
           {content}
