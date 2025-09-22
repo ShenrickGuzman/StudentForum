@@ -15,14 +15,13 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// POST /api/upload
+
+// POST /api/upload (general file upload)
 router.post('/', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-
   try {
-    // Upload to Cloudinary
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'margaretforum' },
@@ -33,11 +32,33 @@ router.post('/', upload.single('file'), async (req, res) => {
       );
       stream.end(req.file.buffer);
     });
-
     res.json({ url: result.secure_url });
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Upload failed' });
+  }
+});
+
+// POST /api/upload/avatar (avatar upload)
+router.post('/avatar', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'avatars' },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+    res.json({ url: result.secure_url });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({ error: 'Avatar upload failed' });
   }
 });
 
