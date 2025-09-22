@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
   const router = express.Router();
+
+
   // Update user profile (avatar, about, interests, etc.)
   router.put('/profile', requireAuth, async (req, res) => {
     const { avatar, about, interests, major, year, location } = req.body || {};
