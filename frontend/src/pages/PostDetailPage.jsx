@@ -159,11 +159,23 @@ export default function PostDetailPage() {
           {/* Header Row: User info left, category right */}
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun">
-                <span className="material-icons">👤</span>
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
+                {post.avatar ? (
+                  <img src={post.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                  <span className="material-icons">👤</span>
+                )}
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg text-gray-800 leading-tight">{post.author_name}</span>
+                <span className="font-extrabold text-lg text-gray-800 leading-tight">
+                  {post.author_name}
+                  {post.author_role === 'admin' && (
+                    <span className="ml-2 px-2 py-1 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-400">ADMIN</span>
+                  )}
+                  {post.author_role === 'dev' && (
+                    <span className="ml-2 px-2 py-1 rounded-full bg-blue-300 text-blue-900 text-xs font-bold border border-blue-400">DEV</span>
+                  )}
+                </span>
                 <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
@@ -276,8 +288,16 @@ export default function PostDetailPage() {
                 {comments.map((comment) => (
                   <CommentCard
                     key={comment.id}
-                    avatar={comment.avatar || '😊'}
-                    username={comment.author_name || 'User'}
+                    avatar={comment.avatar ? <img src={comment.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" /> : '😊'}
+                    username={<>
+                      {comment.author_name || 'User'}
+                      {comment.author_role === 'admin' && (
+                        <span className="ml-2 px-2 py-1 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-400">ADMIN</span>
+                      )}
+                      {comment.author_role === 'dev' && (
+                        <span className="ml-2 px-2 py-1 rounded-full bg-blue-300 text-blue-900 text-xs font-bold border border-blue-400">DEV</span>
+                      )}
+                    </>}
                     time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
                     content={comment.content}
                     canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
