@@ -448,7 +448,7 @@ const createPostsRouter = () => {
     }
   });
 
-  return (req, res, next) => router(req, res, next);
+  return router;
 };
 
 export default createPostsRouter;
