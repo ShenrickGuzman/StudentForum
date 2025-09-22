@@ -1,4 +1,5 @@
 import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
+import ProfilePage from './pages/ProfilePage';
 import { useEffect, useState } from 'react';
 import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
@@ -23,10 +24,20 @@ function NavBar() {
           <span className="inline">📚 Students Forum</span>
         </Link>
         <nav className="ml-auto flex items-center gap-2">
+          <Link to="/new" className="bg-green-400 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">New Post</Link>
+          <Link to="/rules" className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">Rules</Link>
           {user && (
-            <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun">
-              <span className="text-lg">👤</span> {user.name}
-            </span>
+            <div className="relative group">
+              <button className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun focus:outline-none">
+                <span className="text-lg">👤</span> {user.name}
+                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 hidden group-hover:block">
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => navigate('/profile')}>View Profile</button>
+                <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => navigate('/settings')}>Settings</button>
+                <button className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100" onClick={logout}>Logout</button>
+              </div>
+            </div>
           )}
         </nav>
       </div>
@@ -48,6 +59,9 @@ function AppShell() {
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
         <Route path="/admin" element={<RequireAdminAuth><AdminPage /></RequireAdminAuth>} />
+  <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+        {/* Add a settings page route if you create one */}
+        <Route path="/settings" element={<RequireAuth><div className="p-8 text-2xl">Settings Page (Coming Soon)</div></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
