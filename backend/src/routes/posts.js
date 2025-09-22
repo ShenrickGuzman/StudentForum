@@ -229,8 +229,8 @@ const createPostsRouter = () => {
         .eq('id', req.params.id)
         .single();
       if (postError || !postData) return res.status(404).json({ error: 'Not found' });
-  if (postData.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
-  if (postData.status !== 'pending' && postData.status !== 'rejected') return res.status(400).json({ error: 'Only pending or rejected posts can be deleted' });
+      if (postData.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+      // Allow user to delete their own post regardless of status
       const { error: deleteError } = await supabase
         .from('posts')
         .delete()
