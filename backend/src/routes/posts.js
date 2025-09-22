@@ -24,6 +24,40 @@ const createPostsRouter = () => {
 
   const router = express.Router();
 
+    // Approve post via /api/posts/approve (admin only)
+    router.post('/approve', requireAuth, isAdmin, async (req, res) => {
+      const { postId } = req.body;
+      if (!postId) return res.status(400).json({ error: 'Missing postId' });
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({ status: 'approved' })
+          .eq('id', postId)
+          .eq('status', 'pending');
+        if (error) return res.status(500).json({ error: 'Failed to approve post' });
+        res.json({ ok: true });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to approve post' });
+      }
+    });
+
+    // Reject post via /api/posts/reject (admin only)
+    router.post('/reject', requireAuth, isAdmin, async (req, res) => {
+      const { postId } = req.body;
+      if (!postId) return res.status(400).json({ error: 'Missing postId' });
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({ status: 'rejected' })
+          .eq('id', postId)
+          .eq('status', 'pending');
+        if (error) return res.status(500).json({ error: 'Failed to reject post' });
+        res.json({ ok: true });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to reject post' });
+      }
+    });
+
   // Delete a comment (author or admin)
   router.delete('/comments/:id', requireAuth, async (req, res) => {
     try {
