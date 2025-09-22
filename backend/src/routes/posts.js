@@ -23,6 +23,35 @@ const isAdmin = (req, res, next) => {
 const createPostsRouter = () => {
 
   const router = express.Router();
+    // Approve post via /api/posts/:id/approve (admin only)
+    router.post('/:id/approve', requireAuth, isAdmin, async (req, res) => {
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({ status: 'approved' })
+          .eq('id', req.params.id)
+          .eq('status', 'pending');
+        if (error) return res.status(500).json({ error: 'Failed to approve post' });
+        res.json({ ok: true });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to approve post' });
+      }
+    });
+
+    // Reject post via /api/posts/:id/reject (admin only)
+    router.post('/:id/reject', requireAuth, isAdmin, async (req, res) => {
+      try {
+        const { error } = await supabase
+          .from('posts')
+          .update({ status: 'rejected' })
+          .eq('id', req.params.id)
+          .eq('status', 'pending');
+        if (error) return res.status(500).json({ error: 'Failed to reject post' });
+        res.json({ ok: true });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to reject post' });
+      }
+    });
 
     // Approve post via /api/posts/approve (admin only)
     router.post('/approve', requireAuth, isAdmin, async (req, res) => {
