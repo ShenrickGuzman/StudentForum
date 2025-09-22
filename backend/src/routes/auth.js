@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
+  const router = express.Router();
   // Update user profile (avatar, about, interests, etc.)
   router.put('/profile', requireAuth, async (req, res) => {
     const { avatar, about, interests, major, year, location } = req.body || {};
@@ -27,7 +28,6 @@ const createAuthRouter = () => {
       res.status(500).json({ error: 'Failed to update profile' });
     }
   });
-  const router = express.Router();
 
   // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
   const requireAuth = (req, res, next) => {
