@@ -59,16 +59,28 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append('file', avatarFile);
       const res = await fetch('/api/upload/avatar', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.url) avatarUrl = data.url;
+      let data = null;
+      try {
+        data = await res.json();
+      } catch {
+        alert('Failed to upload avatar: server returned no response.');
+        return;
+      }
+      if (data && data.url) avatarUrl = data.url;
     }
     const res = await fetch('/api/auth/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ avatar: avatarUrl, about, interests })
     });
-    const data = await res.json();
-    if (data.ok && data.user) {
+    let data = null;
+    try {
+      data = await res.json();
+    } catch {
+      alert('Failed to save profile: server returned no response.');
+      return;
+    }
+    if (data && data.ok && data.user) {
       setProfile({ ...profile, ...data.user });
       login(token, { ...user, ...data.user });
       setSuccessMsg('Profile updated successfully!');
@@ -76,7 +88,7 @@ export default function ProfilePage() {
       setEditing(false);
       setAvatarFile(null);
     } else {
-      alert(data.error || 'Failed to save profile.');
+      alert((data && data.error) || 'Failed to save profile.');
     }
   };
 
