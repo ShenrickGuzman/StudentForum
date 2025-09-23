@@ -178,7 +178,13 @@ function HomePage() {
             {refreshing ? 'Refreshing...' : 'Refresh Forum'}
           </span>
         </button>
-        {/* Removed mobile New Post button. Navigation bar provides this action. */}
+        {/* Mobile only: New Post button under Refresh Forum button */}
+        <button
+          className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all mt-2"
+          onClick={() => navigate('/new')}
+        >
+          ✨ New Post
+        </button>
       </div>
 
       {/* Posts */}
