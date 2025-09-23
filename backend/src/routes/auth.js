@@ -25,12 +25,12 @@ const createAuthRouter = () => {
   router.post('/profile/picture', requireAuth, async (req, res) => {
     try {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
-      if (!req.files || !req.files.picture) return res.status(400).json({ error: 'No file uploaded' });
-      const file = req.files.picture;
-      const fileExt = file.name.split('.').pop();
+      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      const file = req.file;
+      const fileExt = file.originalname.split('.').pop();
       const filePath = `profile-pictures/${req.user.id}.${fileExt}`;
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.data, {
+      const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.buffer, {
         cacheControl: '3600',
         upsert: true
       });
@@ -40,7 +40,7 @@ const createAuthRouter = () => {
       // Update profile_picture column
       const { data: updateData, error: updateError } = await supabase
         .from('profiles')
-        .update({ profile_picture: publicURL })
+        .update({ profile_picture: publicURL || '/Cute-Cat.png' })
         .eq('id', req.user.id)
         .select('id, profile_picture');
       if (updateError) return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
@@ -59,6 +59,8 @@ const createAuthRouter = () => {
       const updateFields = {};
       if (about_me !== undefined) updateFields.about_me = about_me;
       if (hobbies_interests !== undefined) updateFields.hobbies_interests = hobbies_interests;
+      // Set default profile picture if not present
+      updateFields.profile_picture = updateFields.profile_picture || '/Cute-Cat.png';
       const { data, error } = await supabase
         .from('profiles')
         .update(updateFields)
