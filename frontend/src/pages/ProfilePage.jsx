@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
-  avatar: '/public/avatar-grad-hat.png', // Replace with your avatar asset
+  avatar: '/avatar-grad-hat.png', // Use correct public path
   name: 'SHEN',
   major: 'Computer Science',
   year: '3rd Year',
