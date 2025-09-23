@@ -85,50 +85,7 @@ function HomePage() {
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-      {/* Action buttons: above search on mobile, top-right on desktop */}
-      {user && (
-        <>
-          {/* Mobile: Rules and Logout at top */}
-          <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
-            <div className="flex flex-col gap-3">
-              <button
-                className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
-                onClick={() => setShowRules(true)}
-              >
-                📜 Rules
-              </button>
-              <button
-                className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
-                onClick={logout}
-              >
-                🔓 Logout
-              </button>
-            </div>
-            <div className="my-3" />
-          </div>
-          {/* Desktop: top-right */}
-          <div className="hidden sm:flex absolute right-0 top-0 mt-6 mr-8 z-20 gap-4">
-            <button
-              className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
-              onClick={() => navigate('/new')}
-            >
-              ✨ New Post
-            </button>
-            <button
-              className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
-              onClick={() => setShowRules(true)}
-            >
-              📜 Rules
-            </button>
-            <button
-              className="rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-pink-400 to-orange-400 text-white shadow-lg hover:from-pink-500 hover:to-orange-500 transition-all"
-              onClick={logout}
-            >
-              🔓 Logout
-            </button>
-          </div>
-        </>
-      )}
+      {/* Removed duplicate New Post, Rules, and Logout buttons. Navigation bar handles these actions. */}
 
       {/* Hero Section */}
       <div className="flex flex-col items-center mb-10 z-10 relative">
@@ -199,15 +156,7 @@ function HomePage() {
             {refreshing ? 'Refreshing...' : 'Refresh Forum'}
           </span>
         </button>
-        {/* Show New Post button here on mobile only */}
-        {user && (
-          <button
-            className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
-            onClick={() => navigate('/new')}
-          >
-            ✨ New Post
-          </button>
-        )}
+        {/* Removed mobile New Post button. Navigation bar provides this action. */}
       </div>
 
       {/* Posts */}
