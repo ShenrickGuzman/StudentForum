@@ -21,69 +21,54 @@ const createAuthRouter = () => {
 
   const router = express.Router();
 
-  // Reworked: Update user profile (avatar, about, interests, etc.) with improved logging and error handling
-  router.put('/profile', requireAuth, async (req, res) => {
-    console.log('--- Profile Update Request ---');
-    console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
+  // Profile Picture Upload (Supabase Storage) and Profile Update
+  router.post('/profile/picture', requireAuth, async (req, res) => {
     try {
-      const { id, avatar, about, interests } = req.body || {};
-      if (!id) {
-        console.warn('Missing user ID in request body');
-        return res.status(400).json({ error: 'User ID is required in request body.' });
-      }
-      // Validate avatar
-      if (avatar && typeof avatar !== 'string') {
-        console.warn('Invalid avatar URL');
-        return res.status(400).json({ error: 'Invalid avatar URL' });
-      }
-      // Validate about
-      if (about && typeof about !== 'string') {
-        console.warn('Invalid about text');
-        return res.status(400).json({ error: 'Invalid about text' });
-      }
-      // Validate interests
-      let interestsArr = interests;
-      if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
-        console.warn('Invalid interests format');
-        return res.status(400).json({ error: 'Invalid interests format' });
-      }
-      if (typeof interests === 'string') {
-        interestsArr = interests.split(',').map(i => i.trim()).filter(Boolean);
-      }
-      const updateFields = {};
-      if (avatar !== undefined) updateFields.avatar = avatar;
-      if (about !== undefined) updateFields.about = about;
-      if (interestsArr !== undefined) updateFields.interests = interestsArr;
-      console.log('Update fields:', updateFields);
-      // Log before DB call
-      console.log('Calling Supabase update...');
-      let dbResponse;
-      try {
-        dbResponse = await supabase
-          .from('users')
-          .update(updateFields)
-          .eq('id', id)
-          .select('id, name, avatar, about, interests');
-      } catch (dbErr) {
-        console.error('Supabase update threw exception:', dbErr);
-        return res.status(500).json({ error: 'Database error during profile update', details: dbErr && dbErr.message ? dbErr.message : dbErr });
-      }
-      const { data, error } = dbResponse || {};
-      // Log after DB call
-      console.log('Supabase response:', dbResponse);
-      if (error) {
-        console.error('Supabase update error:', error);
-        return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
-      }
-      if (!data || !data.length) {
-        console.error('No user data returned after update:', data);
-        return res.status(500).json({ error: 'Failed to update profile: no user data returned' });
-      }
-      console.log('Profile updated successfully:', data[0]);
-      return res.json({ ok: true, user: data[0] });
+      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
+      if (!req.files || !req.files.picture) return res.status(400).json({ error: 'No file uploaded' });
+      const file = req.files.picture;
+      const fileExt = file.name.split('.').pop();
+      const filePath = `profile-pictures/${req.user.id}.${fileExt}`;
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.data, {
+        cacheControl: '3600',
+        upsert: true
+      });
+      if (error) return res.status(500).json({ error: 'Failed to upload profile picture', details: error.message || error });
+      // Get public URL
+      const { publicURL } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+      // Update profile_picture column
+      const { data: updateData, error: updateError } = await supabase
+        .from('profiles')
+        .update({ profile_picture: publicURL })
+        .eq('id', req.user.id)
+        .select('id, profile_picture');
+      if (updateError) return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
+      return res.json({ ok: true, profile_picture: publicURL });
     } catch (e) {
-      console.error('Profile update exception:', e);
+      console.error('Profile picture upload error:', e);
+      return res.status(500).json({ error: 'Failed to upload profile picture', details: e && e.message ? e.message : e });
+    }
+  });
+
+  // Update About Me and Hobbies & Interests
+  router.put('/profile', requireAuth, async (req, res) => {
+    try {
+      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
+      const { about_me, hobbies_interests } = req.body || {};
+      const updateFields = {};
+      if (about_me !== undefined) updateFields.about_me = about_me;
+      if (hobbies_interests !== undefined) updateFields.hobbies_interests = hobbies_interests;
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updateFields)
+        .eq('id', req.user.id)
+        .select('id, profile_picture, about_me, hobbies_interests');
+      if (error) return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
+      if (!data || !data.length) return res.status(500).json({ error: 'No profile data returned after update' });
+      return res.json({ ok: true, profile: data[0] });
+    } catch (e) {
+      console.error('Profile update error:', e);
       return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
     }
   });
