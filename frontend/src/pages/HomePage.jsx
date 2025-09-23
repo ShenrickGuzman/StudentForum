@@ -37,15 +37,27 @@ function HomePage() {
     </div>
   ) : null;
 
+  const [error, setError] = useState('');
   const loadPosts = async () => {
     const params = {};
     if (q) params.q = q;
     if (cat) params.category = cat;
     try {
       const response = await api.get('/posts', { params });
-      setPosts(response.data);
+      setPosts(Array.isArray(response.data) ? response.data : []);
+      setError('');
     } catch (error) {
       console.error('Failed to load posts:', error);
+      // Fallback to fetch if api.get fails
+      try {
+        const res = await fetch('/api/posts');
+        const data = await res.json();
+        setPosts(Array.isArray(data) ? data : []);
+        setError('');
+      } catch (e) {
+        setError('Failed to load posts');
+        setPosts([]);
+      }
     }
   };
 
@@ -86,6 +98,14 @@ function HomePage() {
         </div>
       </div>
     );
+  }
+
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-500 text-2xl">{error}</div>;
+  }
+
+  if (posts.length === 0) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500 text-2xl">No posts found.</div>;
   }
 
   return (
