@@ -15,8 +15,11 @@ const categories = [
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [showRules, setShowRules] = useState(false);
 
-  // ...existing code...
+  // Mobile only: Rules and New Post buttons
   const mobileActionButtons = user ? (
     <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
       <div className="flex flex-col gap-3">
@@ -36,9 +39,6 @@ function HomePage() {
       <div className="my-3" />
     </div>
   ) : null;
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [showRules, setShowRules] = useState(false);
 
   const loadPosts = async () => {
     const params = {};
