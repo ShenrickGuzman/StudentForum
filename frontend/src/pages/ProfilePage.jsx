@@ -1,92 +1,81 @@
+
 import React, { useState } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
-  avatar: '/Cute-Cat.png',
+  profile_picture: '/Cute-Cat.png',
   name: 'Your Name',
-  about: '',
-  interests: [],
+  about_me: '',
+  hobbies_interests: '',
   stats: { posts: 0, likes: 0, comments: 0 }
 };
 
 export default function ProfilePage() {
-  const { user, token, login } = useAuth();
+  const { user, token } = useAuth();
   const [profile, setProfile] = useState(user ? {
-    avatar: user.avatar || defaultProfile.avatar,
+    profile_picture: user.profile_picture || defaultProfile.profile_picture,
     name: user.name,
-    about: user.about || defaultProfile.about,
-    interests: user.interests || defaultProfile.interests,
+    about_me: user.about_me || defaultProfile.about_me,
+    hobbies_interests: user.hobbies_interests || defaultProfile.hobbies_interests,
     stats: user.stats || defaultProfile.stats
   } : defaultProfile);
   const [editing, setEditing] = useState(false);
-  const [about, setAbout] = useState(profile.about);
-  const [interests, setInterests] = useState(profile.interests);
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(profile.avatar);
+  const [aboutMe, setAboutMe] = useState(profile.about_me);
+  const [hobbies, setHobbies] = useState(profile.hobbies_interests);
+  const [avatarError, setAvatarError] = useState('');
+  const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
   const [successMsg, setSuccessMsg] = useState('');
 
-    const [avatarError, setAvatarError] = useState('');
-
-
-    const handleAvatarChange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        // Validate type
-        if (!['image/jpeg', 'image/png'].includes(file.type)) {
-          setAvatarError('Only JPEG and PNG images are allowed.');
-          return;
-        }
-        // Validate size (max 2MB)
-        if (file.size > 2 * 1024 * 1024) {
-          setAvatarError('Image size must be less than 2MB.');
-          return;
-        }
-        setAvatarError('');
-        setAvatarFile(file);
-        setAvatarPreview(URL.createObjectURL(file));
-      }
-    };
-
-    const handleRemoveAvatar = () => {
-      setAvatarFile(null);
-      setAvatarPreview(defaultProfile.avatar);
-      setProfile({ ...profile, avatar: defaultProfile.avatar });
-    };
-
-  const handleSave = async () => {
-    let avatarUrl = profile.avatar;
-    if (avatarFile) {
-      const formData = new FormData();
-      formData.append('file', avatarFile);
-  const res = await fetch('https://studentforum-backend.onrender.com/api/upload/avatar', { method: 'POST', body: formData });
-      let data = null;
-      try {
-        data = await res.json();
-      } catch {
-        alert('Failed to upload avatar: server returned no response.');
-        return;
-      }
-      if (data && data.url) avatarUrl = data.url;
+  // Profile picture upload
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      setAvatarError('Only JPEG and PNG images are allowed.');
+      return;
     }
+    if (file.size > 2 * 1024 * 1024) {
+      setAvatarError('Image size must be less than 2MB.');
+      return;
+    }
+    setAvatarError('');
+    const formData = new FormData();
+    formData.append('picture', file);
+    const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile/picture', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (data && data.profile_picture) {
+      setAvatarPreview(data.profile_picture);
+      setProfile(p => ({ ...p, profile_picture: data.profile_picture }));
+    } else {
+      alert((data && data.error) || 'Failed to upload profile picture.');
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarPreview(defaultProfile.profile_picture);
+    setProfile(p => ({ ...p, profile_picture: defaultProfile.profile_picture }));
+  };
+
+  // Save About Me and Hobbies & Interests
+  const handleSave = async () => {
     const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ id: user.id, avatar: avatarUrl, about, interests })
+      body: JSON.stringify({
+        about_me: aboutMe,
+        hobbies_interests: hobbies
+      })
     });
-    let data = null;
-    try {
-      data = await res.json();
-    } catch {
-      alert('Failed to save profile: server returned no response.');
-      return;
-    }
-    if (data && data.ok && data.user) {
-      setProfile({ ...profile, ...data.user });
-      login(token, { ...user, ...data.user });
+    const data = await res.json();
+    if (data && data.ok && data.profile) {
+      setProfile(p => ({ ...p, ...data.profile }));
       setSuccessMsg('Profile updated successfully!');
       setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
-      setAvatarFile(null);
     } else {
       alert((data && data.error) || 'Failed to save profile.');
     }
