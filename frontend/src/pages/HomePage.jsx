@@ -16,7 +16,7 @@ function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
 
-  // Mobile only: Rules and New Post buttons
+  // ...existing code...
   const mobileActionButtons = user ? (
     <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
       <div className="flex flex-col gap-3">
