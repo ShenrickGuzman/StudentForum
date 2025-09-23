@@ -1,4 +1,22 @@
-// ...existing code...
+import { useEffect, useState } from 'react';
+import RulesPopup from '../components/RulesPopup';
+import { Link, useNavigate } from 'react-router-dom';
+import api, { getAssetUrl } from '../lib/api';
+import { useAuth } from '../state/auth';
+
+const categories = [
+  { key: 'Academics', label: '📚 Academics', color: 'bg-primary/30' },
+  { key: 'Class Life', label: '🎉 Class Life', color: 'bg-secondary/30' },
+  { key: 'Ideas', label: '💡 Ideas & Suggestions', color: 'bg-accent/30' },
+  { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-success/30' },
+];
+
+
+function HomePage() {
+  const [posts, setPosts] = useState([]);
+  const [q, setQ] = useState('');
+  // Removed duplicate hook and variable declarations
+
   // Mobile only: Rules and New Post buttons
   const mobileActionButtons = user ? (
     <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
@@ -19,23 +37,6 @@
       <div className="my-3" />
     </div>
   ) : null;
-import { useEffect, useState } from 'react';
-import RulesPopup from '../components/RulesPopup';
-import { Link, useNavigate } from 'react-router-dom';
-import api, { getAssetUrl } from '../lib/api';
-import { useAuth } from '../state/auth';
-
-const categories = [
-  { key: 'Academics', label: '📚 Academics', color: 'bg-primary/30' },
-  { key: 'Class Life', label: '🎉 Class Life', color: 'bg-secondary/30' },
-  { key: 'Ideas', label: '💡 Ideas & Suggestions', color: 'bg-accent/30' },
-  { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-success/30' },
-];
-
-
-function HomePage() {
-  const [posts, setPosts] = useState([]);
-  const [q, setQ] = useState('');
   const [cat, setCat] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -248,5 +249,3 @@ function HomePage() {
 }
 
 export default HomePage;
-
-
