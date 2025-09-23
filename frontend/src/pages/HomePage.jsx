@@ -22,7 +22,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
 
-  // Mobile only: Rules and New Post buttons
+  // Mobile only: Rules button
   const mobileActionButtons = user ? (
     <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
       <div className="flex flex-col gap-3">
@@ -31,12 +31,6 @@ function HomePage() {
           onClick={() => setShowRules(true)}
         >
           📜 Rules
-        </button>
-        <button
-          className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all"
-          onClick={() => navigate('/new')}
-        >
-          ✨ New Post
         </button>
       </div>
       <div className="my-3" />
