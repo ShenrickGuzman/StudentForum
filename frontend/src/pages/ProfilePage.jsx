@@ -171,7 +171,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div className="flex flex-wrap gap-4 animate-fadeIn">
-                {profile.interests.map((interest, idx) => (
+                {(Array.isArray(profile.interests) ? profile.interests : (profile.interests ? profile.interests.split(',') : [])).map((interest, idx) => (
                   <span key={idx} className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-semibold shadow">
                     {interest}
                   </span>
