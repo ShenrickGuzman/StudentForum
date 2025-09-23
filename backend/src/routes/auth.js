@@ -22,7 +22,7 @@ const createAuthRouter = () => {
   const router = express.Router();
 
   // Update user profile (avatar, about, interests, etc.)
-  router.put('/profile', requireAuth, async (req, res) => {
+  router.put('/profile', async (req, res) => {
     try {
       console.log('Profile update endpoint hit');
       const { avatar, about, interests } = req.body || {};
