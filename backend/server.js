@@ -25,21 +25,10 @@ app.use(helmet({
     },
   },
 }));
-const allowedOrigins = [
-  'https://studentforum.onrender.com',
-  'https://studentforum-uk42.onrender.com',
-  'https://studentforum-backend.onrender.com',
-];
 app.use(cors({
-  origin: function(origin, callback) {
-    // allow requests with no origin (like mobile apps, curl, etc.)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: '*', // Allow all origins for development; restrict for production
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 app.use(express.json({ limit: '1mb' }));
@@ -77,11 +66,11 @@ app.use('/uploads', (req, res, next) => {
 }, express.static(uploadsPath));
 
 // Auth and feature routes
-const authRouter = (await import('./src/routes/auth.js')).default;
+const authRouter = (await import('./src/routes/auth.js')).default();
 app.use('/api/auth', authRouter);
 import createPostsRouter from './src/routes/posts.js';
 app.use('/api/posts', createPostsRouter());
-const uploadRouter = (await import('./src/routes/upload.js')).default;
+const uploadRouter = (await import('./src/routes/upload.js')).default();
 app.use('/api/upload', uploadRouter);
 
 // Start
