@@ -77,10 +77,12 @@ app.use('/uploads', (req, res, next) => {
 }, express.static(uploadsPath));
 
 // Auth and feature routes
-app.use('/api/auth', (await import('./src/routes/auth.js')).default());
+const authRouter = (await import('./src/routes/auth.js')).default;
+app.use('/api/auth', authRouter());
 import createPostsRouter from './src/routes/posts.js';
 app.use('/api/posts', createPostsRouter());
-app.use('/api/upload', (await import('./src/routes/upload.js')).default());
+const uploadRouter = (await import('./src/routes/upload.js')).default;
+app.use('/api/upload', uploadRouter());
 
 // Start
 // Global error handler to catch all uncaught errors and always return JSON
