@@ -44,6 +44,14 @@ router.post('/avatar', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
+  // Validate type
+  if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+    return res.status(400).json({ error: 'Only JPEG and PNG images are allowed.' });
+  }
+  // Validate size (max 2MB)
+  if (req.file.size > 2 * 1024 * 1024) {
+    return res.status(400).json({ error: 'Image size must be less than 2MB.' });
+  }
   try {
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
