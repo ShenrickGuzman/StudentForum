@@ -25,11 +25,26 @@ const createAuthRouter = () => {
   router.put('/profile', requireAuth, async (req, res) => {
     console.log('Profile update endpoint hit');
     const { avatar, about, interests } = req.body || {};
+    // Basic validation
+    if (avatar && typeof avatar !== 'string') {
+      return res.status(400).json({ error: 'Invalid avatar URL' });
+    }
+    if (about && typeof about !== 'string') {
+      return res.status(400).json({ error: 'Invalid about text' });
+    }
+    if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
+      return res.status(400).json({ error: 'Invalid interests format' });
+    }
+    // Convert interests to array if comma-separated string
+    let interestsArr = interests;
+    if (typeof interests === 'string') {
+      interestsArr = interests.split(',').map(i => i.trim()).filter(Boolean);
+    }
     try {
       const updateFields = {};
       if (avatar !== undefined) updateFields.avatar = avatar;
       if (about !== undefined) updateFields.about = about;
-      if (interests !== undefined) updateFields.interests = interests;
+      if (interestsArr !== undefined) updateFields.interests = interestsArr;
       const { data, error } = await supabase
         .from('users')
         .update(updateFields)
@@ -46,19 +61,7 @@ const createAuthRouter = () => {
       return res.json({ ok: true, user: data[0] });
     } catch (e) {
       console.error('Profile update exception:', e);
-      try {
-        return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
-      } catch (sendErr) {
-        console.error('Error sending error response:', sendErr);
-        res.setHeader('Content-Type', 'application/json');
-        res.status(500).send(JSON.stringify({ error: 'Failed to update profile', details: 'Unknown error' }));
-      }
-    }
-    // Fallback: if nothing was sent, send a generic error
-    if (!res.headersSent) {
-      console.error('No response sent from /profile route');
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).send(JSON.stringify({ error: 'No response sent from /profile route' }));
+      return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
     }
   });
 
