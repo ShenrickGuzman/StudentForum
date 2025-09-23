@@ -15,6 +15,9 @@ const categories = [
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
+  const [cat, setCat] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
