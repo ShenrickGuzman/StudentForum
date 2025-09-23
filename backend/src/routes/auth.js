@@ -23,6 +23,7 @@ const createAuthRouter = () => {
 
   // Update user profile (avatar, about, interests, etc.)
   router.put('/profile', requireAuth, async (req, res) => {
+    console.log('Profile update endpoint hit');
     const { avatar, about, interests } = req.body || {};
     try {
       const updateFields = {};
@@ -47,7 +48,7 @@ const createAuthRouter = () => {
       console.error('Profile update exception:', e);
       return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
     }
-    // Fallback: always return JSON if somehow reached
+    // Final fallback: always return JSON if somehow reached
     return res.status(500).json({ error: 'Unknown error in profile update' });
   });
 
