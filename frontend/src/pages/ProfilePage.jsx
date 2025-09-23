@@ -71,7 +71,7 @@ export default function ProfilePage() {
     const res = await fetch('/api/auth/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ avatar: avatarUrl, about, interests })
+      body: JSON.stringify({ id: user.id, avatar: avatarUrl, about, interests })
     });
     let data = null;
     try {
