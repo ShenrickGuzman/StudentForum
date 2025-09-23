@@ -70,8 +70,8 @@ const authRouter = (await import('./src/routes/auth.js')).default;
 app.use('/api/auth', authRouter());
 import createPostsRouter from './src/routes/posts.js';
 app.use('/api/posts', createPostsRouter());
-const uploadRouter = (await import('./src/routes/upload.js')).default();
-app.use('/api/upload', uploadRouter);
+const uploadRouter = (await import('./src/routes/upload.js')).default;
+app.use('/api/upload', uploadRouter());
 
 // Start
 // Global error handler to catch all uncaught errors and always return JSON
