@@ -1,3 +1,11 @@
+// Health/auth status check route for frontend
+app.get('/api/auth/check-status', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.json({ ok: true });
+});
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
