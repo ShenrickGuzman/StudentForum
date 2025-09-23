@@ -80,7 +80,7 @@ app.use('/uploads', (req, res, next) => {
 app.use('/api/auth', (await import('./src/routes/auth.js')).default());
 import createPostsRouter from './src/routes/posts.js';
 app.use('/api/posts', createPostsRouter());
-app.use('/api/upload', (await import('./src/routes/upload.js')).default);
+app.use('/api/upload', (await import('./src/routes/upload.js')).default());
 
 // Start
 // Global error handler to catch all uncaught errors and always return JSON
