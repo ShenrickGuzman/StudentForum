@@ -48,8 +48,6 @@ const createAuthRouter = () => {
       console.error('Profile update exception:', e);
       return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
     }
-    // Final fallback: always return JSON if somehow reached
-    return res.status(500).json({ error: 'Unknown error in profile update' });
   });
 
   const isAdmin = (req, res, next) => {
