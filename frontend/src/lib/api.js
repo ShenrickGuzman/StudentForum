@@ -8,9 +8,7 @@ function withApiPath(url) {
 
 // Render sets REACT_APP_API_URL via render.yaml, fallback to window.location.origin for static hosting
 const rawBase =
-  (typeof import.meta !== 'undefined' ? import.meta.env?.VITE_API_URL : undefined)
-  || process.env.REACT_APP_API_URL
-  || (typeof window !== 'undefined' ? window.location.origin : undefined);
+  'https://studentforum-backend.onrender.com';
 
 const api = axios.create({ baseURL: withApiPath(rawBase) });
 
