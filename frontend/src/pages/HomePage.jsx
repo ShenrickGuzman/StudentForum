@@ -15,7 +15,7 @@ const categories = [
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
-  // ...existing code...
+
   // Mobile only: Rules and New Post buttons
   const mobileActionButtons = user ? (
     <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
@@ -36,9 +36,6 @@ function HomePage() {
       <div className="my-3" />
     </div>
   ) : null;
-  const [cat, setCat] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
