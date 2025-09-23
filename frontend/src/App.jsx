@@ -24,8 +24,9 @@ function NavBar() {
           <span className="inline">📚 Students Forum</span>
         </Link>
         <nav className="ml-auto flex items-center gap-2">
-          <Link to="/new" className="bg-green-400 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">New Post</Link>
-          <Link to="/rules" className="bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">Rules</Link>
+          {/* Desktop only: New Post and Rules */}
+          <Link to="/new" className="hidden sm:inline bg-green-400 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">New Post</Link>
+          <Link to="/rules" className="hidden sm:inline bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">Rules</Link>
           {user && (
             <div className="relative group">
               <button className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun focus:outline-none">
