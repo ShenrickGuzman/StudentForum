@@ -41,18 +41,18 @@ router.post('/', upload.single('file'), async (req, res) => {
 
 // POST /api/upload/avatar (avatar upload)
 router.post('/avatar', upload.single('file'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
-  // Validate type
-  if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
-    return res.status(400).json({ error: 'Only JPEG and PNG images are allowed.' });
-  }
-  // Validate size (max 2MB)
-  if (req.file.size > 2 * 1024 * 1024) {
-    return res.status(400).json({ error: 'Image size must be less than 2MB.' });
-  }
   try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    // Validate type
+    if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+      return res.status(400).json({ error: 'Only JPEG and PNG images are allowed.' });
+    }
+    // Validate size (max 2MB)
+    if (req.file.size > 2 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Image size must be less than 2MB.' });
+    }
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'avatars' },
@@ -63,10 +63,10 @@ router.post('/avatar', upload.single('file'), async (req, res) => {
       );
       stream.end(req.file.buffer);
     });
-    res.json({ url: result.secure_url });
+    return res.json({ url: result.secure_url });
   } catch (error) {
     console.error('Avatar upload error:', error);
-    res.status(500).json({ error: 'Avatar upload failed' });
+    return res.status(500).json({ error: 'Avatar upload failed', details: error?.message || error });
   }
 });
 
