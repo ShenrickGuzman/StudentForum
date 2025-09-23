@@ -9,6 +9,11 @@ CREATE TABLE IF NOT EXISTS users (
   deleted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+-- Add profile fields
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS about TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT[];
+
 -- Ensure case-insensitive uniqueness for usernames
 CREATE UNIQUE INDEX IF NOT EXISTS users_name_lower_idx ON users ((lower(name)));
 
