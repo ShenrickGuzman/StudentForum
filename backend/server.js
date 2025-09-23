@@ -11,6 +11,12 @@ dotenv.config();
 
 
 const app = express();
+
+// Detailed request logging middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+});
 const port = process.env.PORT || 5000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,6 +80,11 @@ app.use('/uploads', (req, res, next) => {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(uploadsPath));
+
+// Health check route
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'StudentForum backend is running!' });
+});
 
 // Auth and feature routes
 const authRouter = (await import('./src/routes/auth.js')).default;
