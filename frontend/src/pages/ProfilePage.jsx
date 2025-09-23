@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
-  avatar: '/default-avatar.png',
+  avatar: '/Cute-Cat.png',
   name: 'Your Name',
   about: '',
   interests: [],
@@ -165,3 +165,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
