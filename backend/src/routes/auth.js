@@ -42,11 +42,13 @@ const createAuthRouter = () => {
         console.error('No user data returned after update:', data);
         return res.status(500).json({ error: 'Failed to update profile: no user data returned' });
       }
-      res.json({ ok: true, user: data[0] });
+      return res.json({ ok: true, user: data[0] });
     } catch (e) {
       console.error('Profile update exception:', e);
-      res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
+      return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
     }
+    // Fallback: always return JSON if somehow reached
+    return res.status(500).json({ error: 'Unknown error in profile update' });
   });
 
   const isAdmin = (req, res, next) => {
