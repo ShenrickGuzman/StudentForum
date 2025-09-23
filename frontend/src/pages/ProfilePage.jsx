@@ -25,13 +25,33 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar);
   const [successMsg, setSuccessMsg] = useState('');
 
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
+    const [avatarError, setAvatarError] = useState('');
+
+
+    const handleAvatarChange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        // Validate type
+        if (!['image/jpeg', 'image/png'].includes(file.type)) {
+          setAvatarError('Only JPEG and PNG images are allowed.');
+          return;
+        }
+        // Validate size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          setAvatarError('Image size must be less than 2MB.');
+          return;
+        }
+        setAvatarError('');
+        setAvatarFile(file);
+        setAvatarPreview(URL.createObjectURL(file));
+      }
+    };
+
+    const handleRemoveAvatar = () => {
+      setAvatarFile(null);
+      setAvatarPreview(defaultProfile.avatar);
+      setProfile({ ...profile, avatar: defaultProfile.avatar });
+    };
 
   const handleSave = async () => {
     let avatarUrl = profile.avatar;
@@ -73,10 +93,25 @@ export default function ProfilePage() {
           <div className="relative mb-4">
             <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-32 h-32 rounded-full border-4 border-white shadow-xl transition-transform duration-300 hover:scale-105" />
             {editing && (
-              <label className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-3 cursor-pointer shadow-lg border-2 border-white">
-                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                <span role="img" aria-label="upload" className="text-xl">📤</span>
-              </label>
+              <>
+                <label className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-3 cursor-pointer shadow-lg border-2 border-white">
+                  <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleAvatarChange} />
+                  <span role="img" aria-label="upload" className="text-xl">📤</span>
+                </label>
+                <button
+                  type="button"
+                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 cursor-pointer shadow-lg border-2 border-white"
+                  onClick={handleRemoveAvatar}
+                  title="Remove avatar"
+                >
+                  <span role="img" aria-label="remove" className="text-lg">❌</span>
+                </button>
+              </>
+            )}
+            {avatarError && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-[-2.5rem] bg-red-400 text-white px-4 py-2 rounded shadow-lg text-sm animate-fadeIn">
+                {avatarError}
+              </div>
             )}
           </div>
           <h2 className="text-4xl font-extrabold text-white drop-shadow mb-2 tracking-wide animate-fadeInUp">{profile.name}</h2>
@@ -165,4 +200,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
