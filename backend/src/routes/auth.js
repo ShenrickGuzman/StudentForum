@@ -23,24 +23,24 @@ const createAuthRouter = () => {
 
   // Update user profile (avatar, about, interests, etc.)
   router.put('/profile', requireAuth, async (req, res) => {
-    console.log('Profile update endpoint hit');
-    const { avatar, about, interests } = req.body || {};
-    // Basic validation
-    if (avatar && typeof avatar !== 'string') {
-      return res.status(400).json({ error: 'Invalid avatar URL' });
-    }
-    if (about && typeof about !== 'string') {
-      return res.status(400).json({ error: 'Invalid about text' });
-    }
-    if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
-      return res.status(400).json({ error: 'Invalid interests format' });
-    }
-    // Convert interests to array if comma-separated string
-    let interestsArr = interests;
-    if (typeof interests === 'string') {
-      interestsArr = interests.split(',').map(i => i.trim()).filter(Boolean);
-    }
     try {
+      console.log('Profile update endpoint hit');
+      const { avatar, about, interests } = req.body || {};
+      // Basic validation
+      if (avatar && typeof avatar !== 'string') {
+        return res.status(400).json({ error: 'Invalid avatar URL' });
+      }
+      if (about && typeof about !== 'string') {
+        return res.status(400).json({ error: 'Invalid about text' });
+      }
+      if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
+        return res.status(400).json({ error: 'Invalid interests format' });
+      }
+      // Convert interests to array if comma-separated string
+      let interestsArr = interests;
+      if (typeof interests === 'string') {
+        interestsArr = interests.split(',').map(i => i.trim()).filter(Boolean);
+      }
       const updateFields = {};
       if (avatar !== undefined) updateFields.avatar = avatar;
       if (about !== undefined) updateFields.about = about;
