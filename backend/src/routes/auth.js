@@ -21,31 +21,33 @@ const createAuthRouter = () => {
 
   const router = express.Router();
 
-  // Update user profile (avatar, about, interests, etc.)
-  router.put('/profile', async (req, res) => {
+  // Reworked: Update user profile (avatar, about, interests, etc.) with improved logging and error handling
+  router.put('/profile', requireAuth, async (req, res) => {
+    console.log('--- Profile Update Request ---');
+    console.log('Headers:', req.headers);
+    console.log('Body:', req.body);
     try {
-      console.log('Profile update endpoint hit');
-      console.log('Request body:', req.body);
       const { id, avatar, about, interests } = req.body || {};
       if (!id) {
-        console.log('Missing user ID in request body');
+        console.warn('Missing user ID in request body');
         return res.status(400).json({ error: 'User ID is required in request body.' });
       }
-      // Basic validation
+      // Validate avatar
       if (avatar && typeof avatar !== 'string') {
-        console.log('Invalid avatar URL');
+        console.warn('Invalid avatar URL');
         return res.status(400).json({ error: 'Invalid avatar URL' });
       }
+      // Validate about
       if (about && typeof about !== 'string') {
-        console.log('Invalid about text');
+        console.warn('Invalid about text');
         return res.status(400).json({ error: 'Invalid about text' });
       }
+      // Validate interests
+      let interestsArr = interests;
       if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
-        console.log('Invalid interests format');
+        console.warn('Invalid interests format');
         return res.status(400).json({ error: 'Invalid interests format' });
       }
-      // Convert interests to array if comma-separated string
-      let interestsArr = interests;
       if (typeof interests === 'string') {
         interestsArr = interests.split(',').map(i => i.trim()).filter(Boolean);
       }
@@ -54,11 +56,22 @@ const createAuthRouter = () => {
       if (about !== undefined) updateFields.about = about;
       if (interestsArr !== undefined) updateFields.interests = interestsArr;
       console.log('Update fields:', updateFields);
-      const { data, error } = await supabase
-        .from('users')
-        .update(updateFields)
-        .eq('id', id)
-        .select('id, name, avatar, about, interests');
+      // Log before DB call
+      console.log('Calling Supabase update...');
+      let dbResponse;
+      try {
+        dbResponse = await supabase
+          .from('users')
+          .update(updateFields)
+          .eq('id', id)
+          .select('id, name, avatar, about, interests');
+      } catch (dbErr) {
+        console.error('Supabase update threw exception:', dbErr);
+        return res.status(500).json({ error: 'Database error during profile update', details: dbErr && dbErr.message ? dbErr.message : dbErr });
+      }
+      const { data, error } = dbResponse || {};
+      // Log after DB call
+      console.log('Supabase response:', dbResponse);
       if (error) {
         console.error('Supabase update error:', error);
         return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
@@ -67,7 +80,7 @@ const createAuthRouter = () => {
         console.error('No user data returned after update:', data);
         return res.status(500).json({ error: 'Failed to update profile: no user data returned' });
       }
-      console.log('Profile updated:', data[0]);
+      console.log('Profile updated successfully:', data[0]);
       return res.json({ ok: true, user: data[0] });
     } catch (e) {
       console.error('Profile update exception:', e);
