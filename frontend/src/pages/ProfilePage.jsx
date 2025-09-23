@@ -10,7 +10,6 @@ const defaultProfile = {
   stats: {
     posts: 42,
     likes: 156,
-    rating: 4.8,
     comments: 89,
   },
   about: "Hey there! I'm a passionate student who loves learning new things and connecting with fellow students. Always up for a good discussion! 🌟",
@@ -26,7 +25,11 @@ export default function ProfilePage() {
     major: user.major || defaultProfile.major,
     year: user.year || defaultProfile.year,
     location: user.location || defaultProfile.location,
-    stats: defaultProfile.stats,
+    stats: {
+      posts: user.posts || defaultProfile.stats.posts,
+      likes: user.likes || defaultProfile.stats.likes,
+      comments: user.comments || defaultProfile.stats.comments,
+    },
     about: user.about || defaultProfile.about,
     interests: user.interests || defaultProfile.interests,
   } : defaultProfile);
@@ -127,10 +130,6 @@ export default function ProfilePage() {
             <div className="bg-pink-300/80 rounded-xl px-4 py-2 text-center text-white font-bold shadow-md">
               <div className="text-lg">{profile.stats.likes}</div>
               <div className="text-xs">Likes</div>
-            </div>
-            <div className="bg-purple-300/80 rounded-xl px-4 py-2 text-center text-white font-bold shadow-md">
-              <div className="text-lg">{profile.stats.rating}</div>
-              <div className="text-xs">Rating</div>
             </div>
             <div className="bg-yellow-300/80 rounded-xl px-4 py-2 text-center text-white font-bold shadow-md">
               <div className="text-lg">{profile.stats.comments}</div>
