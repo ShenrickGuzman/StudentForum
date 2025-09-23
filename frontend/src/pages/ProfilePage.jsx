@@ -58,7 +58,7 @@ export default function ProfilePage() {
     if (avatarFile) {
       const formData = new FormData();
       formData.append('file', avatarFile);
-      const res = await fetch('/api/upload/avatar', { method: 'POST', body: formData });
+  const res = await fetch('https://studentforum-backend.onrender.com/api/upload/avatar', { method: 'POST', body: formData });
       let data = null;
       try {
         data = await res.json();
@@ -68,7 +68,7 @@ export default function ProfilePage() {
       }
       if (data && data.url) avatarUrl = data.url;
     }
-    const res = await fetch('/api/auth/profile', {
+    const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ id: user.id, avatar: avatarUrl, about, interests })
