@@ -148,13 +148,13 @@ export default function ProfilePage() {
             {editing ? (
               <textarea
                 className="w-full p-4 rounded-2xl border-2 border-purple-200 focus:border-purple-400 focus:outline-none text-lg bg-white/70 shadow-inner transition-all"
-                value={about}
-                onChange={e => setAbout(e.target.value)}
+                value={aboutMe}
+                onChange={e => setAboutMe(e.target.value)}
                 rows={4}
               />
             ) : (
               <div className="bg-purple-50 p-5 rounded-2xl text-gray-700 text-lg shadow-inner animate-fadeIn">
-                {profile.about}
+                {profile.about_me}
               </div>
             )}
           </div>
@@ -165,13 +165,13 @@ export default function ProfilePage() {
             {editing ? (
               <input
                 className="w-full p-4 rounded-2xl border-2 border-green-200 focus:border-green-400 focus:outline-none text-lg mb-3 bg-white/70 shadow-inner transition-all"
-                value={interests.join(', ')}
-                onChange={e => setInterests(e.target.value.split(',').map(i => i.trim()))}
+                value={hobbies}
+                onChange={e => setHobbies(e.target.value)}
                 placeholder="Comma separated interests"
               />
             ) : (
               <div className="flex flex-wrap gap-4 animate-fadeIn">
-                {(Array.isArray(profile.interests) ? profile.interests : (profile.interests ? profile.interests.split(',') : [])).map((interest, idx) => (
+                {(profile.hobbies_interests ? profile.hobbies_interests.split(',') : []).map((interest, idx) => (
                   <span key={idx} className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-semibold shadow">
                     {interest}
                   </span>
