@@ -25,18 +25,23 @@ const createAuthRouter = () => {
   router.put('/profile', async (req, res) => {
     try {
       console.log('Profile update endpoint hit');
+      console.log('Request body:', req.body);
       const { id, avatar, about, interests } = req.body || {};
       if (!id) {
+        console.log('Missing user ID in request body');
         return res.status(400).json({ error: 'User ID is required in request body.' });
       }
       // Basic validation
       if (avatar && typeof avatar !== 'string') {
+        console.log('Invalid avatar URL');
         return res.status(400).json({ error: 'Invalid avatar URL' });
       }
       if (about && typeof about !== 'string') {
+        console.log('Invalid about text');
         return res.status(400).json({ error: 'Invalid about text' });
       }
       if (interests && !Array.isArray(interests) && typeof interests !== 'string') {
+        console.log('Invalid interests format');
         return res.status(400).json({ error: 'Invalid interests format' });
       }
       // Convert interests to array if comma-separated string
@@ -48,6 +53,7 @@ const createAuthRouter = () => {
       if (avatar !== undefined) updateFields.avatar = avatar;
       if (about !== undefined) updateFields.about = about;
       if (interestsArr !== undefined) updateFields.interests = interestsArr;
+      console.log('Update fields:', updateFields);
       const { data, error } = await supabase
         .from('users')
         .update(updateFields)
@@ -61,6 +67,7 @@ const createAuthRouter = () => {
         console.error('No user data returned after update:', data);
         return res.status(500).json({ error: 'Failed to update profile: no user data returned' });
       }
+      console.log('Profile updated:', data[0]);
       return res.json({ ok: true, user: data[0] });
     } catch (e) {
       console.error('Profile update exception:', e);
