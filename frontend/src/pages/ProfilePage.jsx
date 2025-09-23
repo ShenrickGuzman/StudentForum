@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
-  avatar: '/avatar-grad-hat.png', // Use correct public path
+  avatar: '/Cute-Cat.png', // Use correct public path
   name: 'SHEN',
-  major: 'Computer Science',
-  year: '3rd Year',
-  location: 'Campus Dorms',
+  // ...existing code...
   stats: {
     posts: 42,
     likes: 156,
@@ -22,9 +20,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState(user ? {
     avatar: user.avatar || defaultProfile.avatar,
     name: user.name,
-    major: user.major || defaultProfile.major,
-    year: user.year || defaultProfile.year,
-    location: user.location || defaultProfile.location,
+  // ...existing code...
     stats: {
       posts: user.posts || defaultProfile.stats.posts,
       likes: user.likes || defaultProfile.stats.likes,
@@ -78,9 +74,7 @@ export default function ProfilePage() {
           avatar: avatarUrl,
           about,
           interests,
-          major: profile.major,
-          year: profile.year,
-          location: profile.location,
+          // ...existing code...
         }),
       });
       const data = await res.json();
@@ -119,8 +113,7 @@ export default function ProfilePage() {
             )}
           </div>
           <h2 className="text-3xl font-extrabold text-white drop-shadow mb-1 tracking-wide">{profile.name}</h2>
-          <div className="text-white/90 font-medium text-lg mb-1">{profile.major} • {profile.year}</div>
-          <div className="text-white/80 text-sm mb-2">🏠 {profile.location}</div>
+          {/* ...existing code... */}
           {/* Stats */}
           <div className="absolute top-4 right-4 flex gap-4">
             <div className="bg-blue-300/80 rounded-xl px-4 py-2 text-center text-white font-bold shadow-md">
