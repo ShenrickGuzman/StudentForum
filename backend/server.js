@@ -87,8 +87,8 @@ app.get('/', (req, res) => {
 });
 
 // Auth and feature routes
-const authRouter = (await import('./src/routes/auth.js')).default;
-app.use('/api/auth', authRouter);
+const createAuthRouter = (await import('./src/routes/auth.js')).default;
+app.use('/api/auth', createAuthRouter());
 const postsRouter = (await import('./src/routes/posts.js')).default;
 app.use('/api/posts', postsRouter);
 const uploadRouter = (await import('./src/routes/upload.js')).default;
