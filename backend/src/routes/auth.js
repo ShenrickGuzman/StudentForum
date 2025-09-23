@@ -46,7 +46,19 @@ const createAuthRouter = () => {
       return res.json({ ok: true, user: data[0] });
     } catch (e) {
       console.error('Profile update exception:', e);
-      return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
+      try {
+        return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
+      } catch (sendErr) {
+        console.error('Error sending error response:', sendErr);
+        res.setHeader('Content-Type', 'application/json');
+        res.status(500).send(JSON.stringify({ error: 'Failed to update profile', details: 'Unknown error' }));
+      }
+    }
+    // Fallback: if nothing was sent, send a generic error
+    if (!res.headersSent) {
+      console.error('No response sent from /profile route');
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send(JSON.stringify({ error: 'No response sent from /profile route' }));
     }
   });
 
