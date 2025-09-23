@@ -25,7 +25,10 @@ const createAuthRouter = () => {
   router.put('/profile', async (req, res) => {
     try {
       console.log('Profile update endpoint hit');
-      const { avatar, about, interests } = req.body || {};
+      const { id, avatar, about, interests } = req.body || {};
+      if (!id) {
+        return res.status(400).json({ error: 'User ID is required in request body.' });
+      }
       // Basic validation
       if (avatar && typeof avatar !== 'string') {
         return res.status(400).json({ error: 'Invalid avatar URL' });
@@ -48,7 +51,7 @@ const createAuthRouter = () => {
       const { data, error } = await supabase
         .from('users')
         .update(updateFields)
-        .eq('id', req.user.id)
+        .eq('id', id)
         .select('id, name, avatar, about, interests');
       if (error) {
         console.error('Supabase update error:', error);
