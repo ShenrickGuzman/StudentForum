@@ -83,6 +83,12 @@ app.use('/api/posts', createPostsRouter());
 app.use('/api/upload', (await import('./src/routes/upload.js')).default);
 
 // Start
+// Global error handler to catch all uncaught errors and always return JSON
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err);
+  res.status(500).json({ error: 'Internal server error', details: err && err.message ? err.message : err });
+});
+
 app.listen(port, () => {
   console.log(`Backend running on port ${port}`);
 });
