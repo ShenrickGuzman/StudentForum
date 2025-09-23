@@ -67,11 +67,11 @@ app.use('/uploads', (req, res, next) => {
 
 // Auth and feature routes
 const authRouter = (await import('./src/routes/auth.js')).default;
-app.use('/api/auth', authRouter());
+app.use('/api/auth', authRouter);
 const postsRouter = (await import('./src/routes/posts.js')).default;
-app.use('/api/posts', postsRouter());
+app.use('/api/posts', postsRouter);
 const uploadRouter = (await import('./src/routes/upload.js')).default;
-app.use('/api/upload', uploadRouter());
+app.use('/api/upload', uploadRouter);
 
 // Start
 // Global error handler to catch all uncaught errors and always return JSON
