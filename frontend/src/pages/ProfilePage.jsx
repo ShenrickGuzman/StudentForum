@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [interests, setInterests] = useState(profile.interests);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -50,6 +51,8 @@ export default function ProfilePage() {
     if (data.ok && data.user) {
       setProfile({ ...profile, ...data.user });
       login(token, { ...user, ...data.user });
+      setSuccessMsg('Profile updated successfully!');
+      setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
       setAvatarFile(null);
     } else {
