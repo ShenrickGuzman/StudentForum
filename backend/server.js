@@ -68,8 +68,8 @@ app.use('/uploads', (req, res, next) => {
 // Auth and feature routes
 const authRouter = (await import('./src/routes/auth.js')).default;
 app.use('/api/auth', authRouter());
-import createPostsRouter from './src/routes/posts.js';
-app.use('/api/posts', createPostsRouter());
+const postsRouter = (await import('./src/routes/posts.js')).default;
+app.use('/api/posts', postsRouter());
 const uploadRouter = (await import('./src/routes/upload.js')).default;
 app.use('/api/upload', uploadRouter());
 
