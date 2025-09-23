@@ -17,6 +17,19 @@ import RequireAdminAuth from './components/RequireAdminAuth';
 function NavBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!profileMenuOpen) return;
+    function handleClick(e) {
+      if (!e.target.closest('.profile-menu-trigger') && !e.target.closest('.profile-menu-dropdown')) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [profileMenuOpen]);
+
   return (
     <header className="sticky top-0 z-20 bg-gradient-to-r from-primary/80 to-secondary/80 shadow-cartoon border-b-4 border-accent/40">
       <div className="max-w-5xl mx-auto flex items-center gap-4 py-2 px-2 md:px-4">
@@ -28,16 +41,23 @@ function NavBar() {
           <Link to="/new" className="hidden sm:inline bg-green-400 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">New Post</Link>
           <Link to="/rules" className="hidden sm:inline bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">Rules</Link>
           {user && (
-            <div className="relative group">
-              <button className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun focus:outline-none">
+            <div className="relative">
+              <button
+                className="profile-menu-trigger flex items-center gap-1 px-3 py-1 rounded-full bg-white/70 text-dark/80 font-bold text-base shadow-fun focus:outline-none"
+                onClick={() => setProfileMenuOpen((open) => !open)}
+                aria-haspopup="true"
+                aria-expanded={profileMenuOpen}
+              >
                 <span className="text-lg">👤</span> {user.name}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
               </button>
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50 hidden group-hover:block">
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => navigate('/profile')}>View Profile</button>
-                <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => navigate('/settings')}>Settings</button>
-                <button className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100" onClick={logout}>Logout</button>
-              </div>
+              {profileMenuOpen && (
+                <div className="profile-menu-dropdown absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 z-50">
+                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setProfileMenuOpen(false); navigate('/profile'); }}>View Profile</button>
+                  <button className="w-full text-left px-4 py-2 hover:bg-gray-100" onClick={() => { setProfileMenuOpen(false); navigate('/settings'); }}>Settings</button>
+                  <button className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100" onClick={() => { setProfileMenuOpen(false); logout(); }}>Logout</button>
+                </div>
+              )}
             </div>
           )}
         </nav>
