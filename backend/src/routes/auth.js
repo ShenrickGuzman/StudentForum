@@ -27,13 +27,16 @@ const createAuthRouter = () => {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, avatar, about, interests, badge, role')
+  .select('id, name, avatar, about, interests, badges, role')
         .eq('id', req.user.id)
         .single();
       if (error || !data) return res.status(404).json({ error: 'Profile not found' });
       // If user is admin, always show ADMIN badge
       if (data && data.role === 'admin') {
-        data.badge = 'ADMIN';
+        data.badges = Array.isArray(data.badges) ? data.badges : [];
+        if (!data.badges.includes('ADMIN')) {
+          data.badges.push('ADMIN');
+        }
       }
       return res.json({ profile: data });
     } catch (e) {
@@ -118,7 +121,7 @@ const createAuthRouter = () => {
         .from('users')
         .update(updateFields)
         .eq('id', req.user.id)
-        .select('id, avatar, about, interests, badge');
+  .select('id, avatar, about, interests, badges');
       if (error) return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
       if (!data || !data.length) return res.status(500).json({ error: 'No profile data returned after update' });
       return res.json({ ok: true, profile: data[0] });
