@@ -67,20 +67,20 @@ const createAuthRouter = () => {
       }
       console.log('Upload data:', data);
       // Get public URL
-      const { publicURL } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
-      console.log('publicURL:', publicURL);
+      const { publicUrl } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+      console.log('publicUrl:', publicUrl);
       // Update profile_picture column
       const { data: updateData, error: updateError } = await supabase
         .from('users')
-        .update({ avatar: publicURL || '/Cute-Cat.png' })
+        .update({ avatar: publicUrl || '/Cute-Cat.png' })
         .eq('id', req.user.id)
         .select('id, avatar');
       if (updateError) {
         console.error('Supabase profile update error:', updateError);
         return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
       }
-      console.log('Profile update data:', updateData);
-      return res.json({ ok: true, profile_picture: publicURL });
+  console.log('Profile update data:', updateData);
+  return res.json({ ok: true, profile_picture: publicUrl });
     } catch (e) {
       console.error('Profile picture upload error (catch):', e);
       return res.status(500).json({ error: 'Failed to upload profile picture', details: e && e.message ? e.message : e });
