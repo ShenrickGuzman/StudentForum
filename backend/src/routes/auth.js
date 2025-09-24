@@ -112,8 +112,6 @@ const createAuthRouter = () => {
           updateFields.interests = [];
         }
       }
-      // Set default avatar if not present
-      updateFields.avatar = updateFields.avatar || '/Cute-Cat.png';
       const { data, error } = await supabase
         .from('users')
         .update(updateFields)
