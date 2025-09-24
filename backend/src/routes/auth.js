@@ -7,7 +7,22 @@ import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
 
-// Add a badge to a user (admin only, supports multiple badges)
+  // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
+  const requireAuth = (req, res, next) => {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      next();
+    } catch {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  };
+
+  const router = express.Router();
+
+  // Add a badge to a user (admin only, supports multiple badges)
   router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { badge } = req.body || {};
@@ -43,21 +58,6 @@ const createAuthRouter = () => {
       return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
     }
   });
-
-  // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
-  const requireAuth = (req, res, next) => {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-    try {
-      req.user = jwt.verify(token, process.env.JWT_SECRET);
-      next();
-    } catch {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  };
-
-  const router = express.Router();
 
   // Get current user's profile
   router.get('/profile', requireAuth, async (req, res) => {
