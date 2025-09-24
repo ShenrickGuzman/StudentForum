@@ -4,6 +4,31 @@ import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function AdminPage() {
+  
+   // Lock a post
+  const handleLock = async (id) => {
+    try {
+      await api.post(`/posts/${id}/lock`);
+      setPendingActionMsg('🔒 Post locked!');
+      loadPendingPosts && loadPendingPosts();
+      loadPosts && loadPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to lock post');
+    }
+  };
+
+  // Unlock a post
+  const handleUnlock = async (id) => {
+    try {
+      await api.post(`/posts/${id}/unlock`);
+      setPendingActionMsg('🔓 Post unlocked!');
+      loadPendingPosts && loadPendingPosts();
+      loadPosts && loadPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to unlock post');
+    }
+  };
+
   // Pin a post
   const handlePin = async (id) => {
     try {
