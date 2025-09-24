@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
@@ -102,6 +103,8 @@ export default function AdminPage() {
   // --- User Management state ---
   const [showUsers, setShowUsers] = useState(false);
   const [users, setUsers] = useState([]);
+  const [badgeEdit, setBadgeEdit] = useState({}); // { [userId]: badgeText }
+  const [badgeLoading, setBadgeLoading] = useState({}); // { [userId]: boolean }
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState('');
   const [userActionMsg, setUserActionMsg] = useState('');
@@ -117,6 +120,23 @@ export default function AdminPage() {
       setUsersError(e?.response?.data?.error || 'Failed to load users');
     } finally {
       setUsersLoading(false);
+    }
+  };
+
+  // Set or remove badge for a user
+  const handleSetBadge = async (userId) => {
+    setBadgeLoading(b => ({ ...b, [userId]: true }));
+    setUserActionMsg('');
+    try {
+      const badge = badgeEdit[userId] || '';
+      await api.post(`/auth/users/${userId}/badge`, { badge });
+      setUserActionMsg(badge ? `🏅 Badge set!` : 'Badge removed.');
+      setBadgeEdit(b => ({ ...b, [userId]: '' }));
+      loadUsers();
+    } catch (e) {
+      setUserActionMsg(e?.response?.data?.error || 'Failed to update badge');
+    } finally {
+      setBadgeLoading(b => ({ ...b, [userId]: false }));
     }
   };
 
@@ -339,8 +359,24 @@ export default function AdminPage() {
                   <span className="text-2xl">👤</span>
                   <span className="font-bold text-lg text-dark">{u.name}</span>
                   <span className="text-base text-gray-500">{u.email}</span>
+                  {/* Badge display */}
+                  {u.badge && <span className="ml-2 px-3 py-1 rounded-full bg-yellow-200 border border-yellow-400 text-yellow-900 font-bold text-xs uppercase tracking-wider">{u.badge}</span>}
                 </div>
-                <div className="flex gap-2 mt-2 md:mt-0">
+                <div className="flex flex-col gap-2 mt-2 md:mt-0 items-end">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      className="rounded-xl px-3 py-1 border-2 border-yellow-400 w-32 text-sm focus:ring-2 focus:ring-yellow-200 outline-none transition-all bg-white"
+                      placeholder="Set badge..."
+                      value={badgeEdit[u.id] ?? ''}
+                      onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))}
+                      disabled={badgeLoading[u.id]}
+                    />
+                    <button
+                      className="fun-btn px-3 py-1 text-sm"
+                      onClick={() => handleSetBadge(u.id)}
+                      disabled={badgeLoading[u.id]}
+                    >{badgeLoading[u.id] ? 'Saving...' : 'Set'}</button>
+                  </div>
                   <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete 🗑️</button>
                 </div>
               </div>
