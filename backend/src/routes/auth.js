@@ -59,7 +59,8 @@ const createAuthRouter = () => {
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.buffer, {
         cacheControl: '3600',
-        upsert: true
+        upsert: true,
+        contentType: file.mimetype || 'image/png'
       });
       if (error) {
         console.error('Supabase Storage upload error:', error);
