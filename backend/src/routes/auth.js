@@ -44,10 +44,10 @@ const createAuthRouter = () => {
       const { publicURL } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
       // Update profile_picture column
       const { data: updateData, error: updateError } = await supabase
-        .from('profiles')
-        .update({ profile_picture: publicURL || '/Cute-Cat.png' })
+        .from('users')
+        .update({ avatar: publicURL || '/Cute-Cat.png' })
         .eq('id', req.user.id)
-        .select('id, profile_picture');
+        .select('id, avatar');
       if (updateError) {
         console.error('Supabase profile update error:', updateError);
         return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
@@ -65,15 +65,15 @@ const createAuthRouter = () => {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
       const { about_me, hobbies_interests } = req.body || {};
       const updateFields = {};
-      if (about_me !== undefined) updateFields.about_me = about_me;
-      if (hobbies_interests !== undefined) updateFields.hobbies_interests = hobbies_interests;
-      // Set default profile picture if not present
-      updateFields.profile_picture = updateFields.profile_picture || '/Cute-Cat.png';
+      if (about_me !== undefined) updateFields.about = about_me;
+      if (hobbies_interests !== undefined) updateFields.interests = hobbies_interests;
+      // Set default avatar if not present
+      updateFields.avatar = updateFields.avatar || '/Cute-Cat.png';
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .update(updateFields)
         .eq('id', req.user.id)
-        .select('id, profile_picture, about_me, hobbies_interests');
+        .select('id, avatar, about, interests');
       if (error) return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
       if (!data || !data.length) return res.status(500).json({ error: 'No profile data returned after update' });
       return res.json({ ok: true, profile: data[0] });
