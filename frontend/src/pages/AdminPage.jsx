@@ -366,7 +366,8 @@ export default function AdminPage() {
                         <span key={idx} className="px-3 py-1 rounded-full bg-yellow-200 border border-yellow-400 text-yellow-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
                           {badge}
                           <button
-                            className="ml-1 text-red-500 hover:text-red-700 font-bold text-xs"
+                            className="ml-2 text-red-500 hover:text-red-700 font-bold text-lg px-2 py-0.5 rounded-full border-2 border-red-300 bg-red-100/70 transition-all duration-150 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+                            style={{ minWidth: 32, minHeight: 32 }}
                             title={`Remove ${badge}`}
                             onClick={async () => {
                               setBadgeLoading(b => ({ ...b, [u.id]: true }));
