@@ -402,7 +402,7 @@ const createAuthRouter = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, email')
+        .select('id, name, email, badges')
         .eq('deleted', false)
         .order('created_at', { ascending: true });
       if (error) return res.status(500).json({ error: 'Failed to load users' });
