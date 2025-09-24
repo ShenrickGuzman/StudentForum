@@ -70,8 +70,14 @@ const createAuthRouter = () => {
       }
       console.log('Upload data:', data);
       // Get public URL
-      const { publicUrl } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
-      console.log('publicUrl:', publicUrl);
+  console.log('DEBUG: filePath for getPublicUrl:', filePath);
+  const publicUrlResult = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+  console.log('DEBUG: getPublicUrl result:', publicUrlResult);
+  const publicUrl = publicUrlResult.publicUrl;
+  // Hardcoded test for 1.jpg
+  const testUrlResult = supabase.storage.from('profile-pictures').getPublicUrl('1.jpg');
+  console.log('DEBUG: getPublicUrl for 1.jpg:', testUrlResult);
+  console.log('publicUrl:', publicUrl);
       // Update profile_picture column
       const { data: updateData, error: updateError } = await supabase
         .from('users')
