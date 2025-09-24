@@ -1,3 +1,39 @@
+  // Add a badge to a user (admin only, supports multiple badges)
+  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { badge } = req.body || {};
+    if (!badge || typeof badge !== 'string') {
+      return res.status(400).json({ error: 'Badge is required and must be a string.' });
+    }
+    try {
+      // Fetch current badges
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('badges')
+        .eq('id', id)
+        .single();
+      if (fetchError || !user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      let badges = user.badges || [];
+      if (!Array.isArray(badges)) badges = [];
+      if (!badges.includes(badge)) {
+        badges.push(badge);
+      }
+      const { data: updated, error: updateError } = await supabase
+        .from('users')
+        .update({ badges })
+        .eq('id', id)
+        .select('id, badges')
+        .single();
+      if (updateError) {
+        return res.status(500).json({ error: 'Failed to update badges', details: updateError.message || updateError });
+      }
+      return res.json({ ok: true, user: updated });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
+    }
+  });
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -31,11 +67,11 @@ const createAuthRouter = () => {
         .eq('id', req.user.id)
         .single();
       if (error || !data) return res.status(404).json({ error: 'Profile not found' });
-      // If user is admin, always show ADMIN badge
+      // If user is admin, always include 'ADMIN' in badges array
       if (data && data.role === 'admin') {
         data.badges = Array.isArray(data.badges) ? data.badges : [];
         if (!data.badges.includes('ADMIN')) {
-          data.badges.push('ADMIN');
+          data.badges = [...data.badges, 'ADMIN'];
         }
       }
       return res.json({ profile: data });
