@@ -103,6 +103,18 @@ export default function AdminPage() {
   // --- User Management state ---
   const [showUsers, setShowUsers] = useState(false);
   const [users, setUsers] = useState([]);
+  const [adminActionMsg, setAdminActionMsg] = useState('');
+  // Remove admin role from a user
+  const handleRemoveAdmin = async (userId) => {
+    setAdminActionMsg('');
+    try {
+      await api.post(`/auth/users/${userId}/remove-admin`);
+      setAdminActionMsg('Admin role removed!');
+      loadUsers();
+    } catch (e) {
+      setAdminActionMsg(e?.response?.data?.error || 'Failed to remove admin role');
+    }
+  };
   const [badgeEdit, setBadgeEdit] = useState({}); // { [userId]: badgeText }
   const [badgeLoading, setBadgeLoading] = useState({}); // { [userId]: boolean }
   const [usersLoading, setUsersLoading] = useState(false);
@@ -351,6 +363,7 @@ export default function AdminPage() {
           {usersLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading users...</div>}
           {usersError && <div className="text-error font-bold">{usersError}</div>}
           {userActionMsg && <div className="text-success font-bold animate-bouncex">{userActionMsg}</div>}
+          {adminActionMsg && <div className="text-success font-bold animate-bouncex">{adminActionMsg}</div>}
           <div className="flex flex-col gap-4 mt-4">
             {users.length === 0 && !usersLoading && <div className="text-gray-400 text-base">No registered users.</div>}
             {users.map(u => (
@@ -391,6 +404,13 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2 mt-2 md:mt-0 items-end">
+                  {/* Remove admin role button (only for admins, not self) */}
+                  {u.role === 'admin' && user?.id !== u.id && (
+                    <button
+                      className="fun-btn px-3 py-1 text-sm bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 mb-1"
+                      onClick={() => handleRemoveAdmin(u.id)}
+                    >Remove Admin</button>
+                  )}
                   <div className="flex gap-2 items-center">
                     <input
                       className="rounded-xl px-3 py-1 border-2 border-yellow-400 w-32 text-sm focus:ring-2 focus:ring-yellow-200 outline-none transition-all bg-white"
