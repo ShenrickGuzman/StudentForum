@@ -359,14 +359,41 @@ export default function AdminPage() {
                   <span className="text-2xl">👤</span>
                   <span className="font-bold text-lg text-dark">{u.name}</span>
                   <span className="text-base text-gray-500">{u.email}</span>
-                  {/* Badge display */}
-                  {u.badge && <span className="ml-2 px-3 py-1 rounded-full bg-yellow-200 border border-yellow-400 text-yellow-900 font-bold text-xs uppercase tracking-wider">{u.badge}</span>}
+                  {/* Badges display */}
+                  {Array.isArray(u.badges) && u.badges.length > 0 && (
+                    <div className="flex flex-wrap gap-1 ml-2">
+                      {u.badges.map((badge, idx) => (
+                        <span key={idx} className="px-3 py-1 rounded-full bg-yellow-200 border border-yellow-400 text-yellow-900 font-bold text-xs uppercase tracking-wider flex items-center gap-1">
+                          {badge}
+                          <button
+                            className="ml-1 text-red-500 hover:text-red-700 font-bold text-xs"
+                            title={`Remove ${badge}`}
+                            onClick={async () => {
+                              setBadgeLoading(b => ({ ...b, [u.id]: true }));
+                              setUserActionMsg('');
+                              try {
+                                // Remove badge from user
+                                await api.post(`/auth/users/${u.id}/badge`, { badge, remove: true });
+                                setUserActionMsg('Badge removed.');
+                                loadUsers();
+                              } catch (e) {
+                                setUserActionMsg(e?.response?.data?.error || 'Failed to remove badge');
+                              } finally {
+                                setBadgeLoading(b => ({ ...b, [u.id]: false }));
+                              }
+                            }}
+                            disabled={badgeLoading[u.id]}
+                          >×</button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2 mt-2 md:mt-0 items-end">
                   <div className="flex gap-2 items-center">
                     <input
                       className="rounded-xl px-3 py-1 border-2 border-yellow-400 w-32 text-sm focus:ring-2 focus:ring-yellow-200 outline-none transition-all bg-white"
-                      placeholder="Set badge..."
+                      placeholder="Add badge..."
                       value={badgeEdit[u.id] ?? ''}
                       onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))}
                       disabled={badgeLoading[u.id]}
@@ -375,7 +402,7 @@ export default function AdminPage() {
                       className="fun-btn px-3 py-1 text-sm"
                       onClick={() => handleSetBadge(u.id)}
                       disabled={badgeLoading[u.id]}
-                    >{badgeLoading[u.id] ? 'Saving...' : 'Set'}</button>
+                    >{badgeLoading[u.id] ? 'Saving...' : 'Add'}</button>
                   </div>
                   <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete 🗑️</button>
                 </div>
