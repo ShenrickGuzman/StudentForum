@@ -238,18 +238,28 @@ const createAuthRouter = () => {
     }
   });
 
-  // Grant admin role (admin only)
+  // Grant admin role (admin only, only if user is currently student)
   router.post('/make-admin', requireAuth, isAdmin, async (req, res) => {
     const { name } = req.body || {};
     if (!name) return res.status(400).json({ error: 'Username required' });
     try {
-      const { data, error } = await supabase
+      // Find user by name (case-insensitive)
+      const { data: user, error: findError } = await supabase
+        .from('users')
+        .select('id, name, role')
+        .ilike('name', name.trim());
+      if (findError || !user || user.length === 0) return res.status(404).json({ error: 'User not found' });
+      const targetUser = user[0];
+      if (targetUser.role === 'admin') return res.status(400).json({ error: 'User is already an admin' });
+      // Update role to admin
+      const { data: updated, error } = await supabase
         .from('users')
         .update({ role: 'admin' })
-        .eq('name', name.toLowerCase())
-        .select('id, name, role');
-      if (error || !data || !data.length) return res.status(404).json({ error: 'User not found' });
-      res.json({ ok: true, user: data[0] });
+        .eq('id', targetUser.id)
+        .select('id, name, role')
+        .single();
+      if (error || !updated) return res.status(500).json({ error: 'Failed to update user role' });
+      res.json({ ok: true, user: updated });
     } catch (e) {
       res.status(500).json({ error: 'Failed to grant admin role' });
     }
