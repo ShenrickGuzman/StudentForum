@@ -116,7 +116,7 @@ const createPostsRouter = () => {
     try {
       const { data: commentsRaw, error: commentsError } = await supabase
         .from('comments')
-        .select('*, users!comments_user_id_fkey(name, role, avatar)')
+        .select('*, users!comments_user_id_fkey(name, role, avatar, badges)')
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       if (commentsError) return res.status(500).json({ error: 'Failed to fetch comments' });
