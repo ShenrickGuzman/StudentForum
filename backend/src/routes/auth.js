@@ -15,7 +15,6 @@
       return res.status(500).json({ error: 'Failed to fetch profile', details: e && e.message ? e.message : e });
     }
   });
-// ...existing code...
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -388,7 +387,5 @@ const createAuthRouter = () => {
 };
 
 export default createAuthRouter;
-
-//ARIANAH
 
 
