@@ -54,7 +54,7 @@ const createAuthRouter = () => {
       }
       const file = req.file;
       const fileExt = file.originalname.split('.').pop();
-      const filePath = `profile-pictures/${req.user.id}.${fileExt}`;
+  const filePath = `${req.user.id}.${fileExt}`;
       console.log('Uploading file to:', filePath);
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.buffer, {
