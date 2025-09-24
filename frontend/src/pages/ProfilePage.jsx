@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
@@ -12,16 +12,32 @@ const defaultProfile = {
 
 export default function ProfilePage() {
   const { user, token } = useAuth();
-  const [profile, setProfile] = useState(user ? {
-    avatar: user.avatar || defaultProfile.avatar,
-    name: user.name,
-    about: user.about || defaultProfile.about,
-    interests: Array.isArray(user.interests) ? user.interests : (user.interests ? [user.interests] : []),
-    stats: user.stats || defaultProfile.stats
-  } : defaultProfile);
+  const [profile, setProfile] = useState(defaultProfile);
   const [editing, setEditing] = useState(false);
-  const [aboutMe, setAboutMe] = useState(profile.about);
-  const [hobbies, setHobbies] = useState(profile.interests.join(', '));
+  const [aboutMe, setAboutMe] = useState('');
+  const [hobbies, setHobbies] = useState('');
+  // Fetch latest profile from backend on mount
+  useEffect(() => {
+    async function fetchProfile() {
+      if (!token) return;
+      const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data && data.profile) {
+        setProfile({
+          avatar: data.profile.avatar || defaultProfile.avatar,
+          name: data.profile.name || defaultProfile.name,
+          about: data.profile.about || '',
+          interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
+          stats: data.profile.stats || defaultProfile.stats
+        });
+        setAboutMe(data.profile.about || '');
+        setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
+      }
+    }
+    fetchProfile();
+  }, [token]);
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
   const [successMsg, setSuccessMsg] = useState('');
@@ -72,11 +88,15 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     if (data && data.ok && data.profile) {
-      setProfile(p => ({
-        ...p,
-        about: data.profile.about,
+      setProfile({
+        avatar: data.profile.avatar || defaultProfile.avatar,
+        name: data.profile.name || defaultProfile.name,
+        about: data.profile.about || '',
         interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
-      }));
+        stats: data.profile.stats || defaultProfile.stats
+      });
+      setAboutMe(data.profile.about || '');
+      setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
       setSuccessMsg('Profile updated successfully!');
       setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
