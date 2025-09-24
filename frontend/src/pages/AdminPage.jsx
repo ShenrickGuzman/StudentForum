@@ -1,3 +1,26 @@
+  // Pin a post
+  const handlePin = async (id) => {
+    try {
+      await api.post(`/posts/${id}/pin`);
+      setPendingActionMsg('📌 Post pinned!');
+      loadPendingPosts && loadPendingPosts();
+      loadPosts && loadPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to pin post');
+    }
+  };
+
+  // Unpin a post
+  const handleUnpin = async (id) => {
+    try {
+      await api.post(`/posts/${id}/unpin`);
+      setPendingActionMsg('📌 Post unpinned!');
+      loadPendingPosts && loadPendingPosts();
+      loadPosts && loadPosts();
+    } catch (e) {
+      setPendingActionMsg(e?.response?.data?.error || 'Failed to unpin post');
+    }
+  };
 
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
