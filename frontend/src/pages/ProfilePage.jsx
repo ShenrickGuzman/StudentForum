@@ -8,7 +8,7 @@ const defaultProfile = {
   about: '',
   interests: [],
   stats: { posts: 0, likes: 0, comments: 0 },
-  badge: '' // e.g. 'ADMIN', 'DEVELOPER'
+  badges: [] // e.g. ['ADMIN', 'DEVELOPER']
 };
 
 export default function ProfilePage() {
@@ -32,7 +32,7 @@ export default function ProfilePage() {
           about: data.profile.about || '',
           interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
           stats: data.profile.stats || defaultProfile.stats,
-          badge: data.profile.badge || ''
+          badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : [])
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
@@ -96,7 +96,7 @@ export default function ProfilePage() {
         about: data.profile.about || '',
         interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
         stats: data.profile.stats || defaultProfile.stats,
-        badge: data.profile.badge || ''
+        badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : [])
       });
       setAboutMe(data.profile.about || '');
       setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
@@ -143,11 +143,18 @@ export default function ProfilePage() {
             )}
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-1 tracking-wide animate-fadeInUp">{profile.name}</h2>
-          {/* User Badge */}
-          {profile.badge && (
-            <div className={`inline-block px-4 py-1 rounded-full font-bold text-xs sm:text-sm mb-2 shadow-lg border-2 border-white uppercase tracking-widest ${profile.badge === 'ADMIN' ? 'bg-red-500 text-white' : profile.badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                 style={{letterSpacing:'0.15em'}}>
-              {profile.badge}
+          {/* User Badges */}
+          {Array.isArray(profile.badges) && profile.badges.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2 justify-center">
+              {profile.badges.map((badge, idx) => (
+                <div
+                  key={idx}
+                  className={`inline-block px-4 py-1 rounded-full font-bold text-xs sm:text-sm shadow-lg border-2 border-white uppercase tracking-widest ${badge === 'ADMIN' ? 'bg-red-500 text-white' : badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                  style={{ letterSpacing: '0.15em' }}
+                >
+                  {badge}
+                </div>
+              ))}
             </div>
           )}
           {/* Stats */}
