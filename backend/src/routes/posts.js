@@ -1,4 +1,29 @@
-  // Pin a post (admin only)
+
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import { supabase } from '../lib/supabaseClient.js';
+
+const requireAuth = (req, res, next) => {
+  const auth = req.headers.authorization || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+};
+
+const isAdmin = (req, res, next) => {
+  const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
+  if (req.user?.role === 'admin' || req.user?.role === 'teacher' || isShen) return next();
+  return res.status(403).json({ error: 'Forbidden' });
+};
+
+const createPostsRouter = () => {
+
+ // Pin a post (admin only)
   router.post('/:id/pin', requireAuth, isAdmin, async (req, res) => {
     try {
       const { error } = await supabase
@@ -25,29 +50,6 @@
       res.status(500).json({ error: 'Failed to unpin post' });
     }
   });
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import { supabase } from '../lib/supabaseClient.js';
-
-const requireAuth = (req, res, next) => {
-  const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
-    next();
-  } catch {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-};
-
-const isAdmin = (req, res, next) => {
-  const isShen = req.user?.name && req.user.name.trim().toLowerCase() === 'shen';
-  if (req.user?.role === 'admin' || req.user?.role === 'teacher' || isShen) return next();
-  return res.status(403).json({ error: 'Forbidden' });
-};
-
-const createPostsRouter = () => {
 
   const router = express.Router();
     // Approve post via /api/posts/:id/approve (admin only)
