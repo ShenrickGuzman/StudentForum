@@ -28,10 +28,10 @@ const createAuthRouter = () => {
 
   const router = express.Router();
 
-  // Add a badge to a user (admin only, supports multiple badges)
+  // Add or remove a badge to a user (admin only, supports multiple badges)
   router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
-    const { badge } = req.body || {};
+    const { badge, remove } = req.body || {};
     if (!badge || typeof badge !== 'string') {
       return res.status(400).json({ error: 'Badge is required and must be a string.' });
     }
@@ -47,8 +47,12 @@ const createAuthRouter = () => {
       }
       let badges = user.badges || [];
       if (!Array.isArray(badges)) badges = [];
-      if (!badges.includes(badge)) {
-        badges.push(badge);
+      if (remove) {
+        badges = badges.filter(b => b !== badge);
+      } else {
+        if (!badges.includes(badge)) {
+          badges.push(badge);
+        }
       }
       const { data: updated, error: updateError } = await supabase
         .from('users')
@@ -61,7 +65,7 @@ const createAuthRouter = () => {
       }
       return res.json({ ok: true, user: updated });
     } catch (e) {
-      return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
+      return res.status(500).json({ error: 'Failed to update badges', details: e && e.message ? e.message : e });
     }
   });
 
