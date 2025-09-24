@@ -7,7 +7,8 @@ const defaultProfile = {
   name: 'Your Name',
   about: '',
   interests: [],
-  stats: { posts: 0, likes: 0, comments: 0 }
+  stats: { posts: 0, likes: 0, comments: 0 },
+  badge: '' // e.g. 'ADMIN', 'DEVELOPER'
 };
 
 export default function ProfilePage() {
@@ -30,7 +31,8 @@ export default function ProfilePage() {
           name: data.profile.name || defaultProfile.name,
           about: data.profile.about || '',
           interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
-          stats: data.profile.stats || defaultProfile.stats
+          stats: data.profile.stats || defaultProfile.stats,
+          badge: data.profile.badge || ''
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
@@ -93,7 +95,8 @@ export default function ProfilePage() {
         name: data.profile.name || defaultProfile.name,
         about: data.profile.about || '',
         interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
-        stats: data.profile.stats || defaultProfile.stats
+        stats: data.profile.stats || defaultProfile.stats,
+        badge: data.profile.badge || ''
       });
       setAboutMe(data.profile.about || '');
       setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
@@ -139,7 +142,14 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-2 tracking-wide animate-fadeInUp">{profile.name}</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-1 tracking-wide animate-fadeInUp">{profile.name}</h2>
+          {/* User Badge */}
+          {profile.badge && (
+            <div className={`inline-block px-4 py-1 rounded-full font-bold text-xs sm:text-sm mb-2 shadow-lg border-2 border-white uppercase tracking-widest ${profile.badge === 'ADMIN' ? 'bg-red-500 text-white' : profile.badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
+                 style={{letterSpacing:'0.15em'}}>
+              {profile.badge}
+            </div>
+          )}
           {/* Stats */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center">
             <div className="bg-blue-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
