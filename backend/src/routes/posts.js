@@ -1,3 +1,30 @@
+  // Pin a post (admin only)
+  router.post('/:id/pin', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ pinned: true })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to pin post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to pin post' });
+    }
+  });
+
+  // Unpin a post (admin only)
+  router.post('/:id/unpin', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ pinned: false })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to unpin post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to unpin post' });
+    }
+  });
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../lib/supabaseClient.js';
