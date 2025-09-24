@@ -1,20 +1,3 @@
-  // Set or remove a user's badge (admin only)
-  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
-    const { id } = req.params;
-    const { badge } = req.body;
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .update({ badge: badge || null })
-        .eq('id', id)
-        .select('id, name, badge')
-        .single();
-      if (error || !data) return res.status(404).json({ error: 'User not found or badge update failed' });
-      res.json({ ok: true, user: data });
-    } catch (e) {
-      res.status(500).json({ error: 'Failed to update badge' });
-    }
-  });
   // ...existing code...
 // ...existing code...
 import express from 'express';
@@ -427,5 +410,3 @@ const createAuthRouter = () => {
 };
 
 export default createAuthRouter;
-
-
