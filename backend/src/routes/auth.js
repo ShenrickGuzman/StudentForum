@@ -44,11 +44,18 @@ const createAuthRouter = () => {
   const upload = multer();
   router.post('/profile/picture', requireAuth, upload.single('picture'), async (req, res) => {
     try {
-      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
-      if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+      if (!req.user || !req.user.id) {
+        console.error('No user or user id in request');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (!req.file) {
+        console.error('No file uploaded');
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
       const file = req.file;
       const fileExt = file.originalname.split('.').pop();
       const filePath = `profile-pictures/${req.user.id}.${fileExt}`;
+      console.log('Uploading file to:', filePath);
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.buffer, {
         cacheControl: '3600',
@@ -58,8 +65,10 @@ const createAuthRouter = () => {
         console.error('Supabase Storage upload error:', error);
         return res.status(500).json({ error: 'Failed to upload profile picture', details: error.message || error });
       }
+      console.log('Upload data:', data);
       // Get public URL
       const { publicURL } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+      console.log('publicURL:', publicURL);
       // Update profile_picture column
       const { data: updateData, error: updateError } = await supabase
         .from('users')
@@ -70,6 +79,7 @@ const createAuthRouter = () => {
         console.error('Supabase profile update error:', updateError);
         return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
       }
+      console.log('Profile update data:', updateData);
       return res.json({ ok: true, profile_picture: publicURL });
     } catch (e) {
       console.error('Profile picture upload error (catch):', e);
