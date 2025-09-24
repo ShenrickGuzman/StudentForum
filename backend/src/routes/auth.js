@@ -36,7 +36,10 @@ const createAuthRouter = () => {
         cacheControl: '3600',
         upsert: true
       });
-      if (error) return res.status(500).json({ error: 'Failed to upload profile picture', details: error.message || error });
+      if (error) {
+        console.error('Supabase Storage upload error:', error);
+        return res.status(500).json({ error: 'Failed to upload profile picture', details: error.message || error });
+      }
       // Get public URL
       const { publicURL } = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
       // Update profile_picture column
@@ -45,10 +48,13 @@ const createAuthRouter = () => {
         .update({ profile_picture: publicURL || '/Cute-Cat.png' })
         .eq('id', req.user.id)
         .select('id, profile_picture');
-      if (updateError) return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
+      if (updateError) {
+        console.error('Supabase profile update error:', updateError);
+        return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
+      }
       return res.json({ ok: true, profile_picture: publicURL });
     } catch (e) {
-      console.error('Profile picture upload error:', e);
+      console.error('Profile picture upload error (catch):', e);
       return res.status(500).json({ error: 'Failed to upload profile picture', details: e && e.message ? e.message : e });
     }
   });
