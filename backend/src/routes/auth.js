@@ -1,4 +1,5 @@
-  // Get current user's profile
+  // ...existing code...
+  // Get current user's profile (must be after router is defined)
   router.get('/profile', requireAuth, async (req, res) => {
     try {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
