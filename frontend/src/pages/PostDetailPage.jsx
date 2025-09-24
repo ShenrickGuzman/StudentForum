@@ -285,23 +285,29 @@ export default function PostDetailPage() {
                 {comments.length === 0 && (
                   <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
                 )}
-                {comments.map((comment) => (
-                  <CommentCard
-                    key={comment.id}
-                    avatar={comment.avatar ? <img src={comment.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" /> : '😊'}
-                    username={comment.author_name || 'User'}
-                    badges={comment.users?.badges || []}
-                    time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
-                    content={comment.content}
-                    canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
-                    onDelete={async () => {
-                      await api.delete(`/posts/comments/${comment.id}`);
-                      // Re-fetch comments after deleting
-                      const response = await api.get(`/posts/${id}/comments`);
-                      setComments(response.data);
-                    }}
-                  />
-                ))}
+                {comments.map((comment) => {
+                  let badges = Array.isArray(comment.users?.badges) ? [...comment.users.badges] : [];
+                  if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
+                    badges = [...badges, 'ADMIN'];
+                  }
+                  return (
+                    <CommentCard
+                      key={comment.id}
+                      avatar={comment.avatar ? <img src={comment.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" /> : '😊'}
+                      username={comment.author_name || 'User'}
+                      badges={badges}
+                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
+                      content={comment.content}
+                      canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
+                      onDelete={async () => {
+                        await api.delete(`/posts/comments/${comment.id}`);
+                        // Re-fetch comments after deleting
+                        const response = await api.get(`/posts/${id}/comments`);
+                        setComments(response.data);
+                      }}
+                    />
+                  );
+                })}
               </div>
               {post.locked ? (
                 <div className="flex flex-col items-center justify-center mt-6">
