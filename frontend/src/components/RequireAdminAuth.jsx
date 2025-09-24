@@ -10,10 +10,10 @@ export default function RequireAdminAuth({ children }) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
   
-  // Then check if the user is specifically "SHEN"
-  if (user?.name?.toLowerCase() !== 'shen') {
+  // Allow if user is admin, teacher, or name is 'shen' (case-insensitive)
+  const isAdmin = user?.role === 'admin' || user?.role === 'teacher' || user?.name?.toLowerCase() === 'shen';
+  if (!isAdmin) {
     return <Navigate to="/unauthorized" replace />;
   }
-  
   return children;
 }
