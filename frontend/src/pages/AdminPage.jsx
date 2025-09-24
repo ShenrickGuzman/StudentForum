@@ -404,8 +404,8 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2 mt-2 md:mt-0 items-end">
-                  {/* Remove admin role button (only for admins, not self) */}
-                  {u.role === 'admin' && user?.id !== u.id && (
+                  {/* Remove admin role button (visible for all users if current user is admin) */}
+                  {user?.role === 'admin' && (
                     <button
                       className="fun-btn px-3 py-1 text-sm bg-gradient-to-r from-red-400 to-orange-400 hover:from-red-500 hover:to-orange-500 mb-1"
                       onClick={() => handleRemoveAdmin(u.id)}
