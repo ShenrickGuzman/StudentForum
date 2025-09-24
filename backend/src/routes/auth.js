@@ -20,6 +20,12 @@ const createAuthRouter = () => {
     }
   };
 
+  const isAdmin = (req, res, next) => {
+    const nameLower = req.user?.name?.trim().toLowerCase();
+    if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
+    return res.status(403).json({ error: 'Forbidden' });
+  };
+
   const router = express.Router();
 
   // Add a badge to a user (admin only, supports multiple badges)
@@ -169,11 +175,43 @@ const createAuthRouter = () => {
     }
   });
 
-  const isAdmin = (req, res, next) => {
-    const nameLower = req.user?.name?.trim().toLowerCase();
-    if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
-    return res.status(403).json({ error: 'Forbidden' });
-  };
+
+// Add a badge to a user (admin only, supports multiple badges)
+  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { badge } = req.body || {};
+    if (!badge || typeof badge !== 'string') {
+      return res.status(400).json({ error: 'Badge is required and must be a string.' });
+    }
+    try {
+      // Fetch current badges
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('badges')
+        .eq('id', id)
+        .single();
+      if (fetchError || !user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      let badges = user.badges || [];
+      if (!Array.isArray(badges)) badges = [];
+      if (!badges.includes(badge)) {
+        badges.push(badge);
+      }
+      const { data: updated, error: updateError } = await supabase
+        .from('users')
+        .update({ badges })
+        .eq('id', id)
+        .select('id, badges')
+        .single();
+      if (updateError) {
+        return res.status(500).json({ error: 'Failed to update badges', details: updateError.message || updateError });
+      }
+      return res.json({ ok: true, user: updated });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
+    }
+  });
 
   // Grant admin role (admin only)
   router.post('/make-admin', requireAuth, isAdmin, async (req, res) => {
