@@ -1,3 +1,20 @@
+  // Set or remove a user's badge (admin only)
+  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { badge } = req.body;
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ badge: badge || null })
+        .eq('id', id)
+        .select('id, name, badge')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'User not found or badge update failed' });
+      res.json({ ok: true, user: data });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to update badge' });
+    }
+  });
   // ...existing code...
 // ...existing code...
 import express from 'express';
@@ -29,10 +46,14 @@ const createAuthRouter = () => {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
       const { data, error } = await supabase
         .from('users')
-        .select('id, name, avatar, about, interests')
+        .select('id, name, avatar, about, interests, badge, role')
         .eq('id', req.user.id)
         .single();
       if (error || !data) return res.status(404).json({ error: 'Profile not found' });
+      // If user is admin, always show ADMIN badge
+      if (data && data.role === 'admin') {
+        data.badge = 'ADMIN';
+      }
       return res.json({ profile: data });
     } catch (e) {
       console.error('Get profile error:', e);
@@ -116,7 +137,7 @@ const createAuthRouter = () => {
         .from('users')
         .update(updateFields)
         .eq('id', req.user.id)
-        .select('id, avatar, about, interests');
+        .select('id, avatar, about, interests, badge');
       if (error) return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
       if (!data || !data.length) return res.status(500).json({ error: 'No profile data returned after update' });
       return res.json({ ok: true, profile: data[0] });
