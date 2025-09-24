@@ -1,4 +1,4 @@
-
+ 
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../lib/supabaseClient.js';
@@ -23,6 +23,34 @@ const isAdmin = (req, res, next) => {
 
 const createPostsRouter = () => {
   const router = express.Router();
+
+ // Lock a post (admin only)
+  router.post('/:id/lock', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ locked: true })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to lock post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to lock post' });
+    }
+  });
+
+  // Unlock a post (admin only)
+  router.post('/:id/unlock', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .update({ locked: false })
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to unlock post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to unlock post' });
+    }
+  });
 
   // Pin a post (admin only)
   router.post('/:id/pin', requireAuth, isAdmin, async (req, res) => {
