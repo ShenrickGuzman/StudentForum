@@ -1,3 +1,19 @@
+  // Get current user's profile
+  router.get('/profile', requireAuth, async (req, res) => {
+    try {
+      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar, about, interests')
+        .eq('id', req.user.id)
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Profile not found' });
+      return res.json({ profile: data });
+    } catch (e) {
+      console.error('Get profile error:', e);
+      return res.status(500).json({ error: 'Failed to fetch profile', details: e && e.message ? e.message : e });
+    }
+  });
 // ...existing code...
 import express from 'express';
 import multer from 'multer';
