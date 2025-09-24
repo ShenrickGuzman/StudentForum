@@ -1,5 +1,6 @@
 // ...existing code...
 import express from 'express';
+import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { supabase } from '../lib/supabaseClient.js';
@@ -22,7 +23,8 @@ const createAuthRouter = () => {
   const router = express.Router();
 
   // Profile Picture Upload (Supabase Storage) and Profile Update
-  router.post('/profile/picture', requireAuth, async (req, res) => {
+  const upload = multer();
+  router.post('/profile/picture', requireAuth, upload.single('picture'), async (req, res) => {
     try {
       if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
       if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
