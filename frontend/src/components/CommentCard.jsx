@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 
-export default function CommentCard({ avatar, username, time, content, canDelete, onDelete }) {
+export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDeleteClick = () => {
@@ -25,6 +25,13 @@ export default function CommentCard({ avatar, username, time, content, canDelete
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-extrabold text-purple-800 text-base">{username}</span>
+          {Array.isArray(badges) && badges.length > 0 && (
+            <span className="flex gap-1 ml-2">
+              {badges.map((badge, idx) => (
+                <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+              ))}
+            </span>
+          )}
           <span className="text-gray-400 text-xs font-semibold">• {time}</span>
           {canDelete && (
             <button
