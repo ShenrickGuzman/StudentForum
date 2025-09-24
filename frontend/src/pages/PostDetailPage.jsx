@@ -289,15 +289,8 @@ export default function PostDetailPage() {
                   <CommentCard
                     key={comment.id}
                     avatar={comment.avatar ? <img src={comment.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" /> : '😊'}
-                    username={<>
-                      {comment.author_name || 'User'}
-                      {comment.author_role === 'admin' && (
-                        <span className="ml-2 px-2 py-1 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-400">ADMIN</span>
-                      )}
-                      {comment.author_role === 'dev' && (
-                        <span className="ml-2 px-2 py-1 rounded-full bg-blue-300 text-blue-900 text-xs font-bold border border-blue-400">DEV</span>
-                      )}
-                    </>}
+                    username={comment.author_name || 'User'}
+                    badges={comment.users?.badges || []}
                     time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
                     content={comment.content}
                     canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
