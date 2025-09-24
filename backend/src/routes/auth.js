@@ -69,6 +69,27 @@ const createAuthRouter = () => {
     }
   });
 
+// Remove admin role from a user (admin only)
+  router.post('/users/:id/remove-admin', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      // Prevent removing your own admin role
+      if (req.user.id == id) {
+        return res.status(400).json({ error: "You can't remove your own admin role." });
+      }
+      const { data, error } = await supabase
+        .from('users')
+        .update({ role: 'student' })
+        .eq('id', id)
+        .select('id, name, role')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'User not found or failed to update role' });
+      res.json({ ok: true, user: data });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to remove admin role' });
+    }
+  });
+
   // Get current user's profile
   router.get('/profile', requireAuth, async (req, res) => {
     try {
