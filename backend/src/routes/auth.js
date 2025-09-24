@@ -66,7 +66,15 @@ const createAuthRouter = () => {
       const { about_me, hobbies_interests } = req.body || {};
       const updateFields = {};
       if (about_me !== undefined) updateFields.about = about_me;
-      if (hobbies_interests !== undefined) updateFields.interests = hobbies_interests;
+      if (hobbies_interests !== undefined) {
+        if (Array.isArray(hobbies_interests)) {
+          updateFields.interests = hobbies_interests;
+        } else if (typeof hobbies_interests === 'string') {
+          updateFields.interests = hobbies_interests.split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          updateFields.interests = [];
+        }
+      }
       // Set default avatar if not present
       updateFields.avatar = updateFields.avatar || '/Cute-Cat.png';
       const { data, error } = await supabase
