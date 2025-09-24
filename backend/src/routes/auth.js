@@ -1,4 +1,13 @@
-  // Add a badge to a user (admin only, supports multiple badges)
+
+import express from 'express';
+import multer from 'multer';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { supabase } from '../lib/supabaseClient.js';
+
+const createAuthRouter = () => {
+
+// Add a badge to a user (admin only, supports multiple badges)
   router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
     const { id } = req.params;
     const { badge } = req.body || {};
@@ -34,13 +43,6 @@
       return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
     }
   });
-import express from 'express';
-import multer from 'multer';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { supabase } from '../lib/supabaseClient.js';
-
-const createAuthRouter = () => {
 
   // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
   const requireAuth = (req, res, next) => {
