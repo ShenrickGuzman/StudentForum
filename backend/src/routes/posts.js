@@ -285,7 +285,7 @@ const createPostsRouter = () => {
     }
   });
 
-  // Author cancels (deletes) their own pending post
+  // Author cancels (deletes) their own post (any status, cascade delete related data)
   router.delete('/:id/cancel', requireAuth, async (req, res) => {
     try {
       const { data: postData, error: postError } = await supabase
@@ -293,17 +293,75 @@ const createPostsRouter = () => {
         .select('user_id, status')
         .eq('id', req.params.id)
         .single();
-      if (postError || !postData) return res.status(404).json({ error: 'Not found' });
-      if (postData.user_id !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
-      // Allow user to delete their own post regardless of status
+      if (postError) {
+        console.error('Error fetching post for delete:', postError);
+        return res.status(500).json({ error: 'Database error fetching post', details: postError.message || postError });
+      }
+      if (!postData) {
+        return res.status(404).json({ error: 'Post not found' });
+      }
+      if (postData.user_id !== req.user.id) {
+        return res.status(403).json({ error: 'You are not the author of this post.' });
+      }
+
+      // 1. Get all comment IDs for this post
+      const { data: comments, error: commentsError } = await supabase
+        .from('comments')
+        .select('id')
+        .eq('post_id', req.params.id);
+      if (commentsError) {
+        console.error('Error fetching comments for post delete:', commentsError);
+        return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message || commentsError });
+      }
+      const commentIds = (comments || []).map(c => c.id);
+
+      // 2. Delete all comment reactions for these comments
+      if (commentIds.length > 0) {
+        const { error: delCommentReactionsError } = await supabase
+          .from('comment_reactions')
+          .delete()
+          .in('comment_id', commentIds);
+        if (delCommentReactionsError) {
+          console.error('Error deleting comment reactions:', delCommentReactionsError);
+          return res.status(500).json({ error: 'Failed to delete comment reactions', details: delCommentReactionsError.message || delCommentReactionsError });
+        }
+      }
+
+      // 3. Delete all comments for this post
+      if (commentIds.length > 0) {
+        const { error: delCommentsError } = await supabase
+          .from('comments')
+          .delete()
+          .in('id', commentIds);
+        if (delCommentsError) {
+          console.error('Error deleting comments:', delCommentsError);
+          return res.status(500).json({ error: 'Failed to delete comments', details: delCommentsError.message || delCommentsError });
+        }
+      }
+
+      // 4. Delete all post reactions for this post
+      const { error: delPostReactionsError } = await supabase
+        .from('post_reactions')
+        .delete()
+        .eq('post_id', req.params.id);
+      if (delPostReactionsError) {
+        console.error('Error deleting post reactions:', delPostReactionsError);
+        return res.status(500).json({ error: 'Failed to delete post reactions', details: delPostReactionsError.message || delPostReactionsError });
+      }
+
+      // 5. Delete the post itself
       const { error: deleteError } = await supabase
         .from('posts')
         .delete()
         .eq('id', req.params.id);
-      if (deleteError) return res.status(500).json({ error: 'Failed to cancel post' });
+      if (deleteError) {
+        console.error('Error deleting post:', deleteError);
+        return res.status(500).json({ error: 'Failed to delete post', details: deleteError.message || deleteError });
+      }
       res.json({ ok: true });
     } catch (e) {
-      res.status(500).json({ error: 'Failed to cancel post' });
+      console.error('Exception in post delete:', e);
+      res.status(500).json({ error: 'Exception occurred while deleting post', details: e && e.message ? e.message : e });
     }
   });
       const { data: commentsRaw, error: commentsError } = await supabase
