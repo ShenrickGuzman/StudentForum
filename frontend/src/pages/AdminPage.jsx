@@ -1,3 +1,9 @@
+
+import { useEffect, useState } from 'react';
+import api, { getAssetUrl } from '../lib/api';
+import { useAuth } from '../state/auth';
+
+export default function AdminPage() {
   // Pin a post
   const handlePin = async (id) => {
     try {
@@ -22,11 +28,6 @@
     }
   };
 
-import { useEffect, useState } from 'react';
-import api, { getAssetUrl } from '../lib/api';
-import { useAuth } from '../state/auth';
-
-export default function AdminPage() {
   // Delete a rejected post (user only)
   const handleDeleteRejectedPost = async (id) => {
     setPendingActionMsg('');
