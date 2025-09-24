@@ -3,25 +3,25 @@ import React, { useState } from 'react';
 import { useAuth } from '../state/auth';
 
 const defaultProfile = {
-  profile_picture: '/Cute-Cat.png',
+  avatar: '/Cute-Cat.png',
   name: 'Your Name',
-  about_me: '',
-  hobbies_interests: '',
+  about: '',
+  interests: [],
   stats: { posts: 0, likes: 0, comments: 0 }
 };
 
 export default function ProfilePage() {
   const { user, token } = useAuth();
   const [profile, setProfile] = useState(user ? {
-    profile_picture: user.profile_picture || defaultProfile.profile_picture,
+    avatar: user.avatar || defaultProfile.avatar,
     name: user.name,
-    about_me: user.about_me || defaultProfile.about_me,
-    hobbies_interests: user.hobbies_interests || defaultProfile.hobbies_interests,
+    about: user.about || defaultProfile.about,
+    interests: Array.isArray(user.interests) ? user.interests : (user.interests ? [user.interests] : []),
     stats: user.stats || defaultProfile.stats
   } : defaultProfile);
   const [editing, setEditing] = useState(false);
-  const [aboutMe, setAboutMe] = useState(profile.about_me);
-  const [hobbies, setHobbies] = useState(profile.hobbies_interests);
+  const [aboutMe, setAboutMe] = useState(profile.about);
+  const [hobbies, setHobbies] = useState(profile.interests.join(', '));
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
   const [successMsg, setSuccessMsg] = useState('');
@@ -49,15 +49,15 @@ export default function ProfilePage() {
     const data = await res.json();
     if (data && data.profile_picture) {
       setAvatarPreview(data.profile_picture);
-      setProfile(p => ({ ...p, profile_picture: data.profile_picture }));
+      setProfile(p => ({ ...p, avatar: data.profile_picture }));
     } else {
       alert((data && data.error) || 'Failed to upload profile picture.');
     }
   };
 
   const handleRemoveAvatar = () => {
-    setAvatarPreview(defaultProfile.profile_picture);
-    setProfile(p => ({ ...p, profile_picture: defaultProfile.profile_picture }));
+  setAvatarPreview(defaultProfile.avatar);
+  setProfile(p => ({ ...p, avatar: defaultProfile.avatar }));
   };
 
   // Save About Me and Hobbies & Interests
@@ -72,7 +72,11 @@ export default function ProfilePage() {
     });
     const data = await res.json();
     if (data && data.ok && data.profile) {
-      setProfile(p => ({ ...p, ...data.profile }));
+      setProfile(p => ({
+        ...p,
+        about: data.profile.about,
+        interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
+      }));
       setSuccessMsg('Profile updated successfully!');
       setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
@@ -154,7 +158,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div className="bg-purple-50 p-5 rounded-2xl text-gray-700 text-lg shadow-inner animate-fadeIn">
-                {profile.about_me}
+                {profile.about}
               </div>
             )}
           </div>
@@ -171,7 +175,7 @@ export default function ProfilePage() {
               />
             ) : (
               <div className="flex flex-wrap gap-4 animate-fadeIn">
-                {(profile.hobbies_interests ? profile.hobbies_interests.split(',') : []).map((interest, idx) => (
+                {(Array.isArray(profile.interests) ? profile.interests : []).map((interest, idx) => (
                   <span key={idx} className="bg-green-100 text-green-700 px-5 py-2 rounded-full font-semibold shadow">
                     {interest}
                   </span>
