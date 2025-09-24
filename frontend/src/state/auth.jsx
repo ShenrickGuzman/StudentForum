@@ -17,27 +17,44 @@ export function AuthContextProvider({ children }) {
   }, [token, user]);
 
   // Polling to check if user account has been deleted
+  // And always fetch latest user profile if token changes
   useEffect(() => {
-    if (!token || !user) return;
-    
-    const checkUserStatus = async () => {
+    if (!token) return;
+
+    // Fetch latest user profile and update state
+    const fetchProfile = async () => {
       try {
-        await api.get('/auth/check-status');
+        const res = await api.get('/auth/profile');
+        if (res.data && res.data.profile) {
+          setUser(res.data.profile);
+        }
       } catch (error) {
-        if (error?.response?.status === 401 && 
-            error?.response?.data?.error === 'Account deleted') {
-          // User has been deleted, log them out and redirect
+        // If account deleted, log out and redirect
+        if (error?.response?.status === 401 && error?.response?.data?.error === 'Account deleted') {
           setToken(null);
           setUser(null);
           window.location.replace('/account-deleted');
         }
       }
     };
-    
-    // Check every 3 seconds
+
+    fetchProfile();
+
+    // Also poll for account deletion every 3 seconds
+    const checkUserStatus = async () => {
+      try {
+        await api.get('/auth/check-status');
+      } catch (error) {
+        if (error?.response?.status === 401 && error?.response?.data?.error === 'Account deleted') {
+          setToken(null);
+          setUser(null);
+          window.location.replace('/account-deleted');
+        }
+      }
+    };
     const interval = setInterval(checkUserStatus, 3000);
     return () => clearInterval(interval);
-  }, [token, user]);
+  }, [token]);
 
   const value = useMemo(() => ({
     token,
