@@ -22,8 +22,9 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  const router = express.Router();
 
- // Pin a post (admin only)
+  // Pin a post (admin only)
   router.post('/:id/pin', requireAuth, isAdmin, async (req, res) => {
     try {
       const { error } = await supabase
@@ -50,8 +51,6 @@ const createPostsRouter = () => {
       res.status(500).json({ error: 'Failed to unpin post' });
     }
   });
-
-  const router = express.Router();
     // Approve post via /api/posts/:id/approve (admin only)
     router.post('/:id/approve', requireAuth, isAdmin, async (req, res) => {
       try {
