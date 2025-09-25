@@ -52,7 +52,8 @@ function NavBar() {
                   <img
                     src={user.avatar.startsWith('http') ? user.avatar : `${window.location.origin}/${user.avatar}`}
                     alt={user.name}
-                    className="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300"
+                    className="w-10 h-10 rounded-full object-cover mr-2 border-2 border-primary shadow"
+                    style={{ background: '#fff' }}
                     onError={e => { e.target.style.display = 'none'; }}
                   />
                 ) : (
