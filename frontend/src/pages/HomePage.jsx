@@ -234,7 +234,17 @@ function HomePage() {
                 <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
                 <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                  <span>👤</span> {p.author_name}
+                  {p.avatar ? (
+                    <img
+                      src={getAssetUrl(p.avatar)}
+                      alt={p.author_name}
+                      className="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300"
+                      onError={e => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span>👤</span>
+                  )}
+                  {p.author_name}
                 </div>
                 {/* Status label for pending/rejected posts */}
                 {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
