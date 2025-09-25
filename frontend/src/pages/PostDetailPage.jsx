@@ -160,18 +160,18 @@ export default function PostDetailPage() {
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
-                {post.avatar ? (
-                  <img src={post.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" />
+                {post.users?.avatar ? (
+                  <img src={post.users.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" />
                 ) : (
                   <span className="material-icons">👤</span>
                 )}
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
-                  {post.author_name}
+                  {post.users?.name || post.author_name}
                   {(() => {
-                    let badges = Array.isArray(post.badges) ? [...post.badges] : [];
-                    if (post.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                    let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
+                    if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
                     return badges.map((badge, idx) => (
                       <span key={idx} className="ml-1 px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
                     ));
