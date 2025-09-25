@@ -5,13 +5,13 @@ import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 const categories = [
-  { key: 'Academics', label: '📚 Academics', color: 'bg-primary/30' },
-  { key: 'Arts', label: '🎨 Arts', color: 'bg-pink-400/30' },
-  { key: 'Sports', label: '� Sports', color: 'bg-green-400/30' },
-  { key: 'Music', label: '🎵 Music', color: 'bg-blue-400/30' },
-  { key: 'Technology', label: '💻 Technology', color: 'bg-gray-400/30' },
-  { key: 'Ideas', label: '💡 Ideas & Suggestions', color: 'bg-accent/30' },
-  { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-success/30' },
+  { key: 'Academics', label: '📚 Academics', color: 'bg-blue-500' },
+  { key: 'Arts', label: '🎨 Arts', color: 'bg-pink-500' },
+  { key: 'Sports', label: '🏅 Sports', color: 'bg-green-500' },
+  { key: 'Music', label: '🎵 Music', color: 'bg-purple-500' },
+  { key: 'Technology', label: '💻 Technology', color: 'bg-gray-600' },
+  { key: 'Ideas', label: '💡 Ideas & Suggestions', color: 'bg-yellow-400 text-yellow-900' },
+  { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-indigo-500' },
 ];
 
 
