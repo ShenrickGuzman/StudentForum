@@ -238,13 +238,20 @@ function HomePage() {
                     <img
                       src={getAssetUrl(p.avatar)}
                       alt={p.author_name}
-                      className="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300"
+                      className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300"
                       onError={e => { e.target.style.display = 'none'; }}
                     />
                   ) : (
                     <span>👤</span>
                   )}
-                  {p.author_name}
+                  <span className="font-bold text-gray-700">{p.author_name}</span>
+                  {Array.isArray(p.badges) && p.badges.length > 0 && (
+                    <span className="flex gap-1 ml-2">
+                      {p.badges.map((badge, idx) => (
+                        <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                      ))}
+                    </span>
+                  )}
                 </div>
                 {/* Status label for pending/rejected posts */}
                 {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
