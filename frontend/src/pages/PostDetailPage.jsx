@@ -167,14 +167,15 @@ export default function PostDetailPage() {
                 )}
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg text-gray-800 leading-tight">
+                <span className="font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
                   {post.author_name}
-                  {post.author_role === 'admin' && (
-                    <span className="ml-2 px-2 py-1 rounded-full bg-yellow-300 text-yellow-900 text-xs font-bold border border-yellow-400">ADMIN</span>
-                  )}
-                  {post.author_role === 'dev' && (
-                    <span className="ml-2 px-2 py-1 rounded-full bg-blue-300 text-blue-900 text-xs font-bold border border-blue-400">DEV</span>
-                  )}
+                  {(() => {
+                    let badges = Array.isArray(post.badges) ? [...post.badges] : [];
+                    if (post.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                    return badges.map((badge, idx) => (
+                      <span key={idx} className="ml-1 px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                    ));
+                  })()}
                 </span>
                 <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
