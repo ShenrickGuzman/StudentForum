@@ -20,7 +20,14 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   return (
     <div className="flex gap-3 items-start bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative">
       <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden">
-        {React.isValidElement(avatar) ? avatar : <span>{avatar}</span>}
+        {React.isValidElement(avatar) ? avatar : (
+          <img
+            src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
+            alt="avatar"
+            className="w-12 h-12 rounded-full object-cover"
+            onError={e => { e.target.src = '/Cute-Cat.png'; }}
+          />
+        )}
       </div>
       <div className="flex-1">
         <div className="flex items-center gap-2 mb-1">
