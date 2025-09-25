@@ -302,7 +302,7 @@ const createPostsRouter = () => {
     try {
       const { data: postData, error: postError } = await supabase
         .from('posts')
-        .select('*, users(name)')
+        .select('*, users(name, avatar, role, badges)')
         .eq('id', req.params.id)
         .single();
       if (postError || !postData) return res.status(404).json({ error: 'Post not found' });
