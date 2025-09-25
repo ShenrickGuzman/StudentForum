@@ -144,12 +144,7 @@ function HomePage() {
         </div>
         <div className="flex gap-4 flex-wrap justify-center mt-6">
           {categories.map(c => (
-            <span key={c.key} className={`px-6 py-2 rounded-full font-bold text-white shadow-lg text-base ${
-              c.key === 'Academics' ? 'bg-blue-500' :
-              c.key === 'Class Life' ? 'bg-green-500' :
-              c.key === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
-              'bg-purple-600'
-            }`}>
+            <span key={c.key} className={`px-6 py-2 rounded-full font-bold shadow-lg text-base ${c.color}`}>
               {c.label}
             </span>
           ))}
@@ -225,12 +220,7 @@ function HomePage() {
               <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
               <div className="flex flex-col flex-1">
                 <div className="text-sm font-bold mb-1">
-                  <span className={`px-3 py-1 rounded-full text-white text-xs shadow ${
-                    p.category === 'Academics' ? 'bg-blue-500' :
-                    p.category === 'Class Life' ? 'bg-green-500' :
-                    p.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
-                    'bg-purple-600'
-                  }`}>
+                  <span className={`px-3 py-1 rounded-full text-xs shadow ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
                     {categories.find(c => c.key === p.category)?.label || p.category}
                   </span>
                 </div>
