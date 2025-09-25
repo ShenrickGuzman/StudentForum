@@ -234,16 +234,12 @@ function HomePage() {
                 <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
                 <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                  {p.avatar ? (
-                    <img
-                      src={getAssetUrl(p.avatar)}
-                      alt={p.author_name}
-                      className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300"
-                      onError={e => { e.target.style.display = 'none'; }}
-                    />
-                  ) : (
-                    <span>👤</span>
-                  )}
+                  <img
+                    src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                    alt={p.author_name}
+                    className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300"
+                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                  />
                   <span className="font-bold text-gray-700">{p.author_name}</span>
                   {(() => {
                     let badges = Array.isArray(p.badges) ? [...p.badges] : [];
