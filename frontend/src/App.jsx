@@ -48,7 +48,17 @@ function NavBar() {
                 aria-haspopup="true"
                 aria-expanded={profileMenuOpen}
               >
-                <span className="text-lg">👤</span> {user.name}
+                {user.avatar ? (
+                  <img
+                    src={user.avatar.startsWith('http') ? user.avatar : `${window.location.origin}/${user.avatar}`}
+                    alt={user.name}
+                    className="w-6 h-6 rounded-full object-cover mr-2 border border-gray-300"
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                ) : (
+                  <span className="text-lg">👤</span>
+                )}
+                {user.name}
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
               </button>
               {profileMenuOpen && (
