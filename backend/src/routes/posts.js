@@ -261,7 +261,7 @@ const createPostsRouter = () => {
     const { q, category, status, admin } = req.query;
     let query = supabase
       .from('posts')
-      .select('*, users(name)')
+      .select('*, users(name, avatar, role, badges)')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -289,8 +289,14 @@ const createPostsRouter = () => {
     try {
       const { data, error } = await query;
       if (error) return res.status(500).json({ error: 'Failed to fetch posts' });
-      // Add author_name for compatibility
-      const posts = data.map(p => ({ ...p, author_name: p.users?.name || null }));
+      // Add author_name, avatar, role, badges for compatibility
+      const posts = data.map(p => ({
+        ...p,
+        author_name: p.users?.name || null,
+        avatar: p.users?.avatar || null,
+        author_role: p.users?.role || null,
+        badges: p.users?.badges || []
+      }));
       res.json(posts);
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch posts' });
