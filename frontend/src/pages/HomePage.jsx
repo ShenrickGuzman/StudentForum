@@ -5,13 +5,13 @@ import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 const categories = [
-  { key: 'Academics', label: '📚 Academics', color: 'bg-blue-500' },
-  { key: 'Arts', label: '🎨 Arts', color: 'bg-pink-500' },
-  { key: 'Sports', label: '🏅 Sports', color: 'bg-green-500' },
-  { key: 'Music', label: '🎵 Music', color: 'bg-purple-500' },
-  { key: 'Technology', label: '💻 Technology', color: 'bg-gray-600' },
-  { key: 'Ideas', label: '💡 Ideas & Suggestions', color: 'bg-yellow-400 text-yellow-900' },
-  { key: 'Random', label: '🗨️ Random Thoughts', color: 'bg-indigo-500' },
+  { key: 'Academics', label: '📚 Academics', color: 'bg-gradient-to-r from-pink-400 to-pink-500 text-white border-4 border-yellow-300' },
+  { key: 'Arts', label: '🎨 Arts', color: 'bg-gradient-to-r from-orange-300 to-orange-400 text-white border-4 border-yellow-300' },
+  { key: 'Sports', label: '🏅 Sports', color: 'bg-gradient-to-r from-green-400 to-teal-400 text-white border-4 border-yellow-300' },
+  { key: 'Music', label: '🎵 Music', color: 'bg-gradient-to-r from-purple-400 to-purple-500 text-white border-4 border-yellow-300' },
+  { key: 'Technology', label: '💻 Technology', color: 'bg-gradient-to-r from-cyan-400 to-blue-400 text-white border-4 border-yellow-300' },
+  { key: 'Ideas', label: '💡 Ideas', color: 'bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 border-4 border-yellow-300' },
+  { key: 'Random', label: '✨ Random', color: 'bg-gradient-to-r from-purple-400 to-indigo-400 text-white border-4 border-yellow-300' },
 ];
 
 
@@ -144,7 +144,7 @@ function HomePage() {
         </div>
         <div className="flex gap-4 flex-wrap justify-center mt-6">
           {categories.map(c => (
-            <span key={c.key} className={`px-6 py-2 rounded-full font-bold shadow-lg text-base ${c.color}`}>
+            <span key={c.key} className={`px-6 py-4 rounded-xl font-extrabold shadow-lg text-lg flex items-center gap-2 ${c.color}`}> 
               {c.label}
             </span>
           ))}
@@ -220,7 +220,7 @@ function HomePage() {
               <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
               <div className="flex flex-col flex-1">
                 <div className="text-sm font-bold mb-1">
-                  <span className={`px-3 py-1 rounded-full text-xs shadow ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
                     {categories.find(c => c.key === p.category)?.label || p.category}
                   </span>
                 </div>
