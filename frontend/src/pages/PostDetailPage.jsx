@@ -160,11 +160,12 @@ export default function PostDetailPage() {
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
-                {post.users?.avatar ? (
-                  <img src={post.users.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" />
-                ) : (
-                  <span className="material-icons">👤</span>
-                )}
+                <img
+                  src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
+                  alt="avatar"
+                  className="w-12 h-12 rounded-full object-cover"
+                  onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
@@ -294,7 +295,12 @@ export default function PostDetailPage() {
                   return (
                     <CommentCard
                       key={comment.id}
-                      avatar={comment.avatar ? <img src={comment.avatar} alt="avatar" className="w-12 h-12 rounded-full object-cover" /> : '😊'}
+                      avatar={<img
+                        src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
+                        alt="avatar"
+                        className="w-12 h-12 rounded-full object-cover"
+                        onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                      />}
                       username={comment.author_name || 'User'}
                       badges={badges}
                       time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
