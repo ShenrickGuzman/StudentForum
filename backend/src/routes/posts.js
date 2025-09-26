@@ -22,7 +22,10 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
-  // Get post count for a user
+  
+  const router = express.Router();
+
+// Get post count for a user
   router.get('/count', requireAuth, async (req, res) => {
     const userId = req.query.user_id || req.user.id;
     try {
@@ -51,7 +54,6 @@ const createPostsRouter = () => {
       res.status(500).json({ error: 'Failed to fetch comment count' });
     }
   });
-  const router = express.Router();
 
  // Lock a post (admin only)
   router.post('/:id/lock', requireAuth, isAdmin, async (req, res) => {
