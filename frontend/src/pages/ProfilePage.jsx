@@ -20,6 +20,19 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [aboutMe, setAboutMe] = useState('');
   const [hobbies, setHobbies] = useState('');
+  // Like button handler
+  const handleLikeProfile = async () => {
+    if (!token || likedToday || !profile || !profile.name || !profile.id) return;
+    try {
+      await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setLikedToday(true);
+      setLikeCount(likeCount + 1);
+    } catch {}
+  };
+
   // Fetch latest profile from backend on mount
   useEffect(() => {
     // Fetch like count and like status
@@ -73,18 +86,6 @@ export default function ProfilePage() {
       setLoading(false);
     }
     fetchProfileAndStats();
-  // Like button handler
-  const handleLikeProfile = async () => {
-    if (!token || likedToday || !profile || !profile.name || !profile.id) return;
-    try {
-      await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setLikedToday(true);
-      setLikeCount(likeCount + 1);
-    } catch {}
-  };
   }, [token]);
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
