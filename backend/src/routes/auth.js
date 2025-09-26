@@ -54,22 +54,28 @@ const createAuthRouter = () => {
     const today = new Date().toISOString().slice(0, 10);
     try {
       // Get total likes for this profile
-      const { count, error: countError } = await supabase
+      const { data: countData, count, error: countError } = await supabase
         .from('profile_likes')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' })
         .eq('user_id', profileId);
-      if (countError) return res.status(500).json({ error: 'Failed to get like count' });
+      if (countError) {
+        console.error('Supabase like count error:', countError);
+        return res.status(500).json({ error: 'Failed to get like count', details: countError.message || countError });
+      }
       // Check if current user liked this profile today
       const { data: likeData, error: likeError } = await supabase
         .from('profile_likes')
         .select('id')
         .eq('user_id', profileId)
         .eq('liked_by', likerId)
-        .eq('created_at', today)
-        .single();
-      if (likeError && likeError.code !== 'PGRST116') return res.status(500).json({ error: 'Failed to check like status' });
-      res.json({ count: count || 0, likedToday: !!likeData });
+        .eq('created_at', today);
+      if (likeError) {
+        console.error('Supabase like status error:', likeError);
+        return res.status(500).json({ error: 'Failed to check like status', details: likeError.message || likeError });
+      }
+      res.json({ count: count || 0, likedToday: Array.isArray(likeData) && likeData.length > 0 });
     } catch (e) {
+      console.error('Failed to get like info:', e);
       res.status(500).json({ error: 'Failed to get like info', details: e && e.message ? e.message : e });
     }
   });
