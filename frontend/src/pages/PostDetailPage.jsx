@@ -183,7 +183,7 @@ export default function PostDetailPage() {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
+                <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight flex flex-wrap items-center gap-2">
                   {post.users?.name || post.author_name}
                   <Link to={`/profile/${post.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">
                     View Profile
@@ -196,7 +196,9 @@ export default function PostDetailPage() {
                     ));
                   })()}
                 </span>
-                <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                <span className="text-gray-400 text-xs font-semibold mt-1">
+                  {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                </span>
               </div>
             </div>
             <span className={`px-4 py-1 rounded-full text-sm shadow font-extrabold font-cartoon tracking-wide drop-shadow-lg mt-2 ${categories.find(c => c.key === post.category)?.color || 'bg-gray-400 text-white'}`}>
