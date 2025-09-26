@@ -164,20 +164,21 @@ function HomePage() {
 
       {/* Search & New Post (mobile) */}
       <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
-        <div className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60">
+        <form
+          className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
+          onSubmit={e => {
+            e.preventDefault();
+            setQ(searchInput);
+          }}
+        >
           <span className="text-xl text-gray-400 mr-2">🔍</span>
           <input
             className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
             placeholder="Search posts, topics, or ask anything..."
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                setQ(searchInput);
-              }
-            }}
           />
-        </div>
+        </form>
         <select
           className="rounded-2xl px-4 py-3 border-2 border-white/60 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white/80 shadow-lg"
           value={cat}
