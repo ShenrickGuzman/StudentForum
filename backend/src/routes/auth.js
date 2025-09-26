@@ -30,8 +30,9 @@ const createAuthRouter = () => {
 
 // Like a user profile (once per day)
   router.post('/profile/:id/like', requireAuth, async (req, res) => {
-    const profileId = req.params.id;
-    const likerId = req.user.id;
+  // Both profileId and likerId are UUIDs
+  const profileId = req.params.id;
+  const likerId = req.user.id;
     try {
       // Try to insert a like for today
       const { error } = await supabase
@@ -49,9 +50,10 @@ const createAuthRouter = () => {
 
   // Get like count and whether current user liked this profile today
   router.get('/profile/:id/likes', requireAuth, async (req, res) => {
-    const profileId = req.params.id;
-    const likerId = req.user.id;
-    const today = new Date().toISOString().slice(0, 10);
+  // Both profileId and likerId are UUIDs
+  const profileId = req.params.id;
+  const likerId = req.user.id;
+  const today = new Date().toISOString().slice(0, 10);
     try {
       // Get total likes for this profile
       const { data: countData, count, error: countError } = await supabase
