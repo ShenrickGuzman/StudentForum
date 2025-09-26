@@ -22,14 +22,16 @@ function HomePage() {
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [userSearchLoading, setUserSearchLoading] = useState(false);
   const [userSearchError, setUserSearchError] = useState('');
+  const [userSearchTriggered, setUserSearchTriggered] = useState(false);
 
   // Search users by name
   const API_BASE = process.env.REACT_APP_API_BASE_URL || '';
   const handleUserSearch = async (e) => {
-    e.preventDefault();
-    if (!userSearchInput.trim()) return;
-    setUserSearchLoading(true);
-    setUserSearchError('');
+  e.preventDefault();
+  if (!userSearchInput.trim()) return;
+  setUserSearchTriggered(true);
+  setUserSearchLoading(true);
+  setUserSearchError('');
     try {
       const token = user?.token;
       const res = await fetch(
@@ -294,7 +296,7 @@ function HomePage() {
         </div>
       )}
       {/* User not found feedback */}
-      {(!userSearchLoading && !userSearchError && userSearchInput.trim() && userSearchResults.length === 0) && (
+      {(userSearchTriggered && !userSearchLoading && !userSearchError && userSearchInput.trim() && userSearchResults.length === 0) && (
         <div className="text-center text-red-500 font-bold mb-4">User not found</div>
       )}
 
