@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import RulesPopup from '../components/RulesPopup';
 import { Link, useNavigate } from 'react-router-dom';
 import api, { getAssetUrl } from '../lib/api';
@@ -16,6 +17,28 @@ const categories = [
 
 
 function HomePage() {
+  // ...existing code...
+  const [userSearchInput, setUserSearchInput] = useState('');
+  const [userSearchResults, setUserSearchResults] = useState([]);
+  const [userSearchLoading, setUserSearchLoading] = useState(false);
+  const [userSearchError, setUserSearchError] = useState('');
+
+  // Search users by name
+  const handleUserSearch = async (e) => {
+    e.preventDefault();
+    if (!userSearchInput.trim()) return;
+    setUserSearchLoading(true);
+    setUserSearchError('');
+    try {
+      const res = await fetch(`/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`);
+      const data = await res.json();
+      setUserSearchResults(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setUserSearchError('Failed to search users');
+      setUserSearchResults([]);
+    }
+    setUserSearchLoading(false);
+  };
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -162,7 +185,7 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Search & New Post (mobile) */}
+      {/* Search & New Post (mobile) + User Search */}
       <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
         <form
           className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
@@ -171,13 +194,26 @@ function HomePage() {
             setQ(searchInput);
           }}
         >
-          <span className="text-xl text-gray-400 mr-2">🔍</span>
+          <span className="text-xl text-gray-400 mr-2">50d</span>
           <input
             className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
             placeholder="Search posts, topics, or ask anything..."
             value={searchInput}
             onChange={e => setSearchInput(e.target.value)}
           />
+        </form>
+        <form
+          className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
+          onSubmit={handleUserSearch}
+        >
+          <span className="text-xl text-gray-400 mr-2">464</span>
+          <input
+            className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
+            placeholder="Search users by name..."
+            value={userSearchInput}
+            onChange={e => setUserSearchInput(e.target.value)}
+          />
+          <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">Search</button>
         </form>
         <select
           className="rounded-2xl px-4 py-3 border-2 border-white/60 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white/80 shadow-lg"
@@ -201,7 +237,7 @@ function HomePage() {
           title="Refresh posts to see new content"
         >
           <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`}>
-            {refreshing ? '🔄' : '🔄'}
+            {refreshing ? '504' : '504'}
           </span>
           <span className="ml-2">
             {refreshing ? 'Refreshing...' : 'Refresh Forum'}
@@ -212,9 +248,33 @@ function HomePage() {
           className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all mt-2"
           onClick={() => navigate('/new')}
         >
-          ✨ New Post
+          528 New Post
         </button>
       </div>
+
+      {/* User Search Results */}
+      {userSearchLoading && (
+        <div className="text-center text-purple-500 font-bold mb-4">Searching users...</div>
+      )}
+      {userSearchError && (
+        <div className="text-center text-red-500 font-bold mb-4">{userSearchError}</div>
+      )}
+      {userSearchResults.length > 0 && (
+        <div className="max-w-3xl mx-auto mb-8">
+          <div className="bg-white/90 rounded-2xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-purple-700 mb-4">User Results</h3>
+            <ul className="divide-y divide-purple-100">
+              {userSearchResults.map(u => (
+                <li key={u.id} className="py-3 flex items-center gap-4">
+                  <img src={u.avatar || '/Cute-Cat.png'} alt={u.name} className="w-10 h-10 rounded-full border border-gray-300 object-cover" />
+                  <span className="font-bold text-lg text-gray-700">{u.name}</span>
+                  <Link to={`/profile/${u.id}`} className="ml-auto px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">View Profile</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Posts */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 z-10 relative">
