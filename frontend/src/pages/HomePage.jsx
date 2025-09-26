@@ -109,7 +109,17 @@ function HomePage() {
   }
 
   if (posts.length === 0) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500 text-2xl">No posts found.</div>;
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-gray-500 text-2xl bg-gradient-to-br from-pink-100 to-yellow-100">
+        <div>No posts found.</div>
+        <button
+          className="mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold shadow-lg hover:from-green-500 hover:to-blue-600 transition-all text-lg"
+          onClick={() => window.location.href = '/'}
+        >
+          ⬅️ Return to Forums
+        </button>
+      </div>
+    );
   }
 
   return (
