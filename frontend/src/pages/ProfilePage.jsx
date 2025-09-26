@@ -186,6 +186,8 @@ export default function ProfilePage() {
       </div>
     );
   }
+  // Only allow editing if viewing own profile
+  const isOwnProfile = user && profile && String(user.id) === String(profile.id);
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
       <div className="w-full max-w-4xl min-h-[600px] rounded-[2.5rem] shadow-2xl bg-white/80 backdrop-blur-lg p-0 overflow-hidden relative border-4 border-pink-200 flex flex-col items-center transition-all duration-300 sm:mt-8 mt-2">
@@ -198,7 +200,7 @@ export default function ProfilePage() {
         <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 px-4 sm:px-8 md:px-16 py-8 sm:py-12 flex flex-col items-center relative rounded-b-[2.5rem] shadow-lg w-full">
           <div className="relative mb-4">
             <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-8 border-white shadow-2xl transition-transform duration-300 hover:scale-110 bg-white object-cover" />
-            {editing && (
+            {editing && isOwnProfile && (
               <>
                 <label className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white">
                   <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleAvatarChange} />
@@ -261,13 +263,15 @@ export default function ProfilePage() {
               <div className="text-xs sm:text-base">Comments</div>
             </div>
           </div>
-          {/* Edit Button */}
-          <button
-            className="mt-6 sm:mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-xl transition-all text-lg sm:text-xl animate-fadeIn"
-            onClick={() => setEditing(true)}
-          >
-            ✏️ Edit Profile
-          </button>
+          {/* Edit Button: Only show for own profile */}
+          {isOwnProfile && (
+            <button
+              className="mt-6 sm:mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-xl transition-all text-lg sm:text-xl animate-fadeIn"
+              onClick={() => setEditing(true)}
+            >
+              ✏️ Edit Profile
+            </button>
+          )}
         </div>
         {/* About Me & Interests */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-10 p-4 sm:p-8 md:p-12 w-full">
@@ -275,7 +279,7 @@ export default function ProfilePage() {
             <h3 className="flex items-center text-2xl sm:text-3xl font-bold text-purple-700 mb-3 sm:mb-4 animate-fadeInUp">
               <span className="mr-2">👤</span> About Me
             </h3>
-            {editing ? (
+            {editing && isOwnProfile ? (
               <textarea
                 className="w-full p-4 sm:p-6 rounded-2xl border-2 border-purple-200 focus:border-purple-400 focus:outline-none text-base sm:text-xl bg-white/80 shadow-inner transition-all min-h-[80px] sm:min-h-[120px]"
                 value={aboutMe}
@@ -292,7 +296,7 @@ export default function ProfilePage() {
             <h3 className="flex items-center text-2xl sm:text-3xl font-bold text-green-700 mb-3 sm:mb-4 animate-fadeInUp">
               <span className="mr-2">💚</span> Interests & Hobbies
             </h3>
-            {editing ? (
+            {editing && isOwnProfile ? (
               <input
                 className="w-full p-4 sm:p-6 rounded-2xl border-2 border-green-200 focus:border-green-400 focus:outline-none text-base sm:text-xl mb-3 bg-white/80 shadow-inner transition-all"
                 value={hobbies}
@@ -310,8 +314,8 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
-        {/* Save/Cancel Buttons */}
-        {editing && (
+        {/* Save/Cancel Buttons: Only show for own profile */}
+        {editing && isOwnProfile && (
           <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-6 mt-4 sm:mt-6 mb-4 sm:mb-8 w-full px-4 sm:px-12 animate-fadeInUp">
             <button
               className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-lg text-lg sm:text-xl"
