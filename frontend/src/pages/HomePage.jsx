@@ -31,7 +31,15 @@ function HomePage() {
     setUserSearchLoading(true);
     setUserSearchError('');
     try {
-      const res = await fetch(`${API_BASE}/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`);
+      const token = user?.token;
+      const res = await fetch(
+        `${API_BASE}/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`,
+        {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : ''
+          }
+        }
+      );
       const data = await res.json();
       setUserSearchResults(Array.isArray(data) ? data : []);
     } catch (err) {
