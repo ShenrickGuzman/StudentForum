@@ -1,6 +1,6 @@
 
 
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
@@ -294,32 +294,46 @@ export default function PostDetailPage() {
                   if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
                     badges = [...badges, 'ADMIN'];
                   }
+                  // ...existing code...
+                  const [showProfileBtn, setShowProfileBtn] = useState(false);
                   return (
                     <CommentCard
                       key={comment.id}
                       avatar={
-                        <div className="relative group flex items-center">
-                          <Link to={`/profile/${comment.user_id}`}>
+                        <div className="relative flex items-center">
+                          <button
+                            className="bg-transparent border-none p-0 cursor-pointer"
+                            onClick={() => setShowProfileBtn(show => !show)}
+                            style={{ background: 'none' }}
+                          >
                             <img
                               src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
                               alt="avatar"
                               className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-purple-400 transition-all"
                               onError={e => { e.target.src = '/Cute-Cat.png'; }}
                             />
-                          </Link>
-                          <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                            View Profile
-                          </Link>
+                          </button>
+                          {showProfileBtn && (
+                            <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
+                              View Profile
+                            </Link>
+                          )}
                         </div>
                       }
                       username={
-                        <div className="relative group inline-block">
-                          <Link to={`/profile/${comment.user_id}`} className="hover:text-purple-600 transition-all">
+                        <div className="relative inline-block">
+                          <button
+                            className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
+                            onClick={() => setShowProfileBtn(show => !show)}
+                            style={{ background: 'none' }}
+                          >
                             {comment.author_name || 'User'}
-                          </Link>
-                          <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                            View Profile
-                          </Link>
+                          </button>
+                          {showProfileBtn && (
+                            <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
+                              View Profile
+                            </Link>
+                          )}
                         </div>
                       }
                       badges={badges}
