@@ -6,6 +6,51 @@ import bcrypt from 'bcryptjs';
 import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
+  // Like a user profile (once per day)
+  router.post('/profile/:id/like', requireAuth, async (req, res) => {
+    const profileId = req.params.id;
+    const likerId = req.user.id;
+    try {
+      // Try to insert a like for today
+      const { error } = await supabase
+        .from('profile_likes')
+        .insert([{ user_id: profileId, liked_by: likerId, created_at: new Date().toISOString().slice(0, 10) }]);
+      if (error && error.code !== '23505') {
+        // 23505 is unique violation (already liked today)
+        return res.status(500).json({ error: 'Failed to like profile', details: error.message || error });
+      }
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to like profile', details: e && e.message ? e.message : e });
+    }
+  });
+
+  // Get like count and whether current user liked this profile today
+  router.get('/profile/:id/likes', requireAuth, async (req, res) => {
+    const profileId = req.params.id;
+    const likerId = req.user.id;
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+      // Get total likes for this profile
+      const { count, error: countError } = await supabase
+        .from('profile_likes')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', profileId);
+      if (countError) return res.status(500).json({ error: 'Failed to get like count' });
+      // Check if current user liked this profile today
+      const { data: likeData, error: likeError } = await supabase
+        .from('profile_likes')
+        .select('id')
+        .eq('user_id', profileId)
+        .eq('liked_by', likerId)
+        .eq('created_at', today)
+        .single();
+      if (likeError && likeError.code !== 'PGRST116') return res.status(500).json({ error: 'Failed to check like status' });
+      res.json({ count: count || 0, likedToday: !!likeData });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to get like info', details: e && e.message ? e.message : e });
+    }
+  });
 
   // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
   const requireAuth = (req, res, next) => {
