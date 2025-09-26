@@ -1,9 +1,20 @@
 
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 import CommentCard from '../components/CommentCard';
+
+const categories = [
+  { key: 'Academics', label: '📚 Academics', color: 'bg-gradient-to-r from-pink-400 to-pink-500 text-white' },
+  { key: 'Arts', label: '🎨 Arts', color: 'bg-gradient-to-r from-orange-300 to-orange-400 text-white' },
+  { key: 'Sports', label: '🏅 Sports', color: 'bg-gradient-to-r from-green-400 to-teal-400 text-white' },
+  { key: 'Music', label: '🎵 Music', color: 'bg-gradient-to-r from-purple-400 to-purple-500 text-white' },
+  { key: 'Technology', label: '💻 Technology', color: 'bg-gradient-to-r from-cyan-400 to-blue-400 text-white' },
+  { key: 'Ideas', label: '💡 Ideas', color: 'bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900' },
+  { key: 'Random', label: '✨ Random', color: 'bg-gradient-to-r from-purple-400 to-indigo-400 text-white' },
+];
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -181,17 +192,8 @@ export default function PostDetailPage() {
                 <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
-            <span className={`px-4 py-1 rounded-full text-white text-sm shadow font-extrabold font-cartoon tracking-wide border-2 border-white drop-shadow-lg mt-2 ${
-              post.category === 'Academics' ? 'bg-blue-400' :
-              post.category === 'Arts' ? 'bg-rose-400' :
-              post.category === 'Music' ? 'bg-indigo-400' :
-              post.category === 'Sports' ? 'bg-emerald-400' :
-              post.category === 'Technology' ? 'bg-cyan-400' :
-              post.category === 'Ideas' ? 'bg-yellow-400 text-yellow-900' :
-              post.category === 'Random' ? 'bg-purple-400' :
-              'bg-purple-600'
-            }`}>
-              {post.category}
+            <span className={`px-4 py-1 rounded-full text-sm shadow font-extrabold font-cartoon tracking-wide drop-shadow-lg mt-2 ${categories.find(c => c.key === post.category)?.color || 'bg-gray-400 text-white'}`}>
+              {categories.find(c => c.key === post.category)?.label || post.category}
             </span>
           </div>
           {/* Title & Status */}
