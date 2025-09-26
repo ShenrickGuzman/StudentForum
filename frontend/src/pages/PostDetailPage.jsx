@@ -30,6 +30,8 @@ export default function PostDetailPage() {
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
   // Track which comment's profile button is shown
   const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
+  // Track if forum author's profile button is shown
+  const [showAuthorProfileBtn, setShowAuthorProfileBtn] = useState(false);
 
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
@@ -144,8 +146,6 @@ export default function PostDetailPage() {
   // Helper: show status label
   const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
   const isAuthor = user && post.user_id === user.id;
-  // Track if forum author's profile button is shown
-  const [showAuthorProfileBtn, setShowAuthorProfileBtn] = useState(false);
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
