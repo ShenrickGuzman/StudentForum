@@ -23,6 +23,7 @@ export default function ProfilePage() {
   // Like button handler
   const handleLikeProfile = async () => {
     if (!token || likedToday || !profile || !profile.name || !profile.id) return;
+    // profile.id should be a UUID string
     try {
       await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
         method: 'POST',
@@ -38,6 +39,7 @@ export default function ProfilePage() {
     // Fetch like count and like status
     async function fetchLikes(profileId) {
       if (!token || !profileId) return;
+      // profileId should be a UUID string
       try {
         const res = await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profileId}/likes`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -77,11 +79,12 @@ export default function ProfilePage() {
           about: data.profile.about || '',
           interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
           stats,
-          badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : [])
+          badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : []),
+          id: data.profile.id // ensure UUID is set
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
-        fetchLikes(data.profile.id);
+        fetchLikes(data.profile.id); // pass UUID
       }
       setLoading(false);
     }
