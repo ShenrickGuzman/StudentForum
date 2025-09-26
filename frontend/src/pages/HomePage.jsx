@@ -187,34 +187,45 @@ function HomePage() {
 
       {/* Search & New Post (mobile) + User Search */}
       <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
-        <form
-          className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
-          onSubmit={e => {
-            e.preventDefault();
-            setQ(searchInput);
-          }}
-        >
-          <span className="text-xl text-gray-400 mr-2">50d</span>
-          <input
-            className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
-            placeholder="Search posts, topics, or ask anything..."
-            value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
-          />
-        </form>
-        <form
-          className="flex-1 flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
-          onSubmit={handleUserSearch}
-        >
-          <span className="text-xl text-gray-400 mr-2">464</span>
-          <input
-            className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
-            placeholder="Search users by name..."
-            value={userSearchInput}
-            onChange={e => setUserSearchInput(e.target.value)}
-          />
-          <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">Search</button>
-        </form>
+        {/* Forum Search */}
+        <div className="w-full md:w-1/2 mb-2 md:mb-0">
+          <label className="block text-sm font-bold text-gray-600 mb-1" htmlFor="forum-search">Forum Search</label>
+          <form
+            className="flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
+            onSubmit={e => {
+              e.preventDefault();
+              setQ(searchInput);
+            }}
+          >
+            <span className="text-xl text-gray-400 mr-2" role="img" aria-label="search">🔍</span>
+            <input
+              id="forum-search"
+              className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
+              placeholder="Search forum posts or topics..."
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+            />
+            <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-blue-400 text-white font-bold">Search</button>
+          </form>
+        </div>
+        {/* User Search */}
+        <div className="w-full md:w-1/2">
+          <label className="block text-sm font-bold text-gray-600 mb-1" htmlFor="user-search">User Search</label>
+          <form
+            className="flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
+            onSubmit={handleUserSearch}
+          >
+            <span className="text-xl text-gray-400 mr-2" role="img" aria-label="user">👤</span>
+            <input
+              id="user-search"
+              className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
+              placeholder="Search users by name..."
+              value={userSearchInput}
+              onChange={e => setUserSearchInput(e.target.value)}
+            />
+            <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">Search</button>
+          </form>
+        </div>
         <select
           className="rounded-2xl px-4 py-3 border-2 border-white/60 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white/80 shadow-lg"
           value={cat}
@@ -236,9 +247,7 @@ function HomePage() {
           }`}
           title="Refresh posts to see new content"
         >
-          <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`}>
-            {refreshing ? '504' : '504'}
-          </span>
+          <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`} role="img" aria-label="refresh">🔄</span>
           <span className="ml-2">
             {refreshing ? 'Refreshing...' : 'Refresh Forum'}
           </span>
@@ -248,7 +257,7 @@ function HomePage() {
           className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all mt-2"
           onClick={() => navigate('/new')}
         >
-          528 New Post
+          <span role="img" aria-label="new">✨</span> New Post
         </button>
       </div>
 
