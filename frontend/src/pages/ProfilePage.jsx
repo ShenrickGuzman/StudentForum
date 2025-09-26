@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../state/auth';
 import { useParams } from 'react-router-dom';
@@ -50,10 +49,6 @@ export default function ProfilePage() {
     }
     async function fetchProfileAndStats() {
       setLoading(true);
-      if (!token) {
-        setLoading(false);
-        return;
-      }
       let profileUrl;
       let isOwnProfile = false;
       if (routeProfileId) {
@@ -63,22 +58,18 @@ export default function ProfilePage() {
         profileUrl = 'https://studentforum-backend.onrender.com/api/auth/profile';
         isOwnProfile = true;
       }
-      const res = await fetch(profileUrl, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Only send Authorization header if token exists
+      const fetchOptions = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
+      const res = await fetch(profileUrl, fetchOptions);
       const data = await res.json();
       let stats = { posts: 0, likes: 0, comments: 0 };
       if (data && data.profile) {
         // Fetch post count
-        const postRes = await fetch('https://studentforum-backend.onrender.com/api/posts/count', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const postRes = await fetch('https://studentforum-backend.onrender.com/api/posts/count', token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
         const postData = await postRes.json();
         stats.posts = postData.count || 0;
         // Fetch comment count
-        const commentRes = await fetch('https://studentforum-backend.onrender.com/api/posts/comments/count', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        const commentRes = await fetch('https://studentforum-backend.onrender.com/api/posts/comments/count', token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
         const commentData = await commentRes.json();
         stats.comments = commentData.count || 0;
         setProfile({
@@ -92,7 +83,7 @@ export default function ProfilePage() {
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
-        fetchLikes(data.profile.id);
+        if (token) fetchLikes(data.profile.id);
       }
       setLoading(false);
     }
@@ -321,5 +312,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-//ARIANAH
