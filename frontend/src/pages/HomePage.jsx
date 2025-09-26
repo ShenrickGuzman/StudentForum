@@ -17,8 +17,6 @@ const categories = [
 
 
 function HomePage() {
-  // Track which post's author profile button is shown
-  const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
   // ...existing code...
   const [userSearchInput, setUserSearchInput] = useState('');
   const [userSearchResults, setUserSearchResults] = useState([]);
@@ -330,41 +328,18 @@ function HomePage() {
                 <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
                 <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                  <div className="relative flex items-center">
-                    <button
-                      className="bg-transparent border-none p-0 cursor-pointer mr-2"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setShowProfileBtnFor(showProfileBtnFor === p.id ? null : p.id);
-                      }}
-                      style={{ background: 'none' }}
-                    >
+                  <div className="flex items-center">
+                    <Link to={`/profile/${p.user_id}`} className="mr-2">
                       <img
                         src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
                         alt={p.author_name}
                         className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
                         onError={e => { e.target.src = '/Cute-Cat.png'; }}
                       />
-                    </button>
-                    <button
-                      className="font-bold text-gray-700 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
-                      onClick={e => {
-                        e.stopPropagation();
-                        setShowProfileBtnFor(showProfileBtnFor === p.id ? null : p.id);
-                      }}
-                      style={{ background: 'none' }}
-                    >
+                    </Link>
+                    <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
                       {p.author_name}
-                    </button>
-                    {showProfileBtnFor === p.id && (
-                      <Link
-                        to={`/profile/${p.user_id}`}
-                        className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        View Profile
-                      </Link>
-                    )}
+                    </Link>
                   </div>
                   {(() => {
                     let badges = Array.isArray(p.badges) ? [...p.badges] : [];
