@@ -342,7 +342,7 @@ export default function PostDetailPage() {
                         </div>
                       }
                       badges={badges}
-                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: false, month: 'short', day: 'numeric' }) : ''}
+                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
