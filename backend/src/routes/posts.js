@@ -29,12 +29,12 @@ const createPostsRouter = () => {
   router.get('/count', requireAuth, async (req, res) => {
     const userId = req.query.user_id || req.user.id;
     try {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('posts')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
       if (error) return res.status(500).json({ error: 'Failed to fetch post count' });
-      res.json({ count: data && typeof data.count === 'number' ? data.count : 0 });
+      res.json({ count: typeof count === 'number' ? count : 0 });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch post count' });
     }
@@ -44,12 +44,12 @@ const createPostsRouter = () => {
   router.get('/comments/count', requireAuth, async (req, res) => {
     const userId = req.query.user_id || req.user.id;
     try {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from('comments')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId);
       if (error) return res.status(500).json({ error: 'Failed to fetch comment count' });
-      res.json({ count: data && typeof data.count === 'number' ? data.count : 0 });
+      res.json({ count: typeof count === 'number' ? count : 0 });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch comment count' });
     }
