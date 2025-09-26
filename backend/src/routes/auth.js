@@ -28,7 +28,7 @@ const createAuthRouter = () => {
   const router = express.Router();
 
 // Get public profile by user ID (for viewing other users)
-  router.get('/profile/:id', requireAuth, async (req, res) => {
+  router.get('/profile/:id', async (req, res) => {
     const userId = parseInt(req.params.id, 10);
     if (!userId) return res.status(400).json({ error: 'Invalid user ID' });
     try {
