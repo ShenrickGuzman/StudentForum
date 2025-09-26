@@ -12,6 +12,8 @@ const defaultProfile = {
 };
 
 export default function ProfilePage() {
+  const [likeCount, setLikeCount] = useState(0);
+  const [likedToday, setLikedToday] = useState(false);
   const { user, token } = useAuth();
   const [profile, setProfile] = useState(defaultProfile);
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,18 @@ export default function ProfilePage() {
   const [hobbies, setHobbies] = useState('');
   // Fetch latest profile from backend on mount
   useEffect(() => {
+    // Fetch like count and like status
+    async function fetchLikes(profileId) {
+      if (!token || !profileId) return;
+      try {
+        const res = await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profileId}/likes`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setLikeCount(data.count || 0);
+        setLikedToday(!!data.likedToday);
+      } catch {}
+    }
     async function fetchProfileAndStats() {
       setLoading(true);
       if (!token) {
@@ -44,7 +58,6 @@ export default function ProfilePage() {
         });
         const commentData = await commentRes.json();
         stats.comments = commentData.count || 0;
-        // Likes can be implemented similarly if needed
         setProfile({
           avatar: data.profile.avatar || defaultProfile.avatar,
           name: data.profile.name || defaultProfile.name,
@@ -55,10 +68,23 @@ export default function ProfilePage() {
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
+        fetchLikes(data.profile.id);
       }
       setLoading(false);
     }
     fetchProfileAndStats();
+  // Like button handler
+  const handleLikeProfile = async () => {
+    if (!token || likedToday || !profile || !profile.name || !profile.id) return;
+    try {
+      await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setLikedToday(true);
+      setLikeCount(likeCount + 1);
+    } catch {}
+  };
   }, [token]);
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
@@ -187,15 +213,26 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
-          {/* Stats */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center">
+          {/* Stats + Like Button */}
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center items-center">
             <div className="bg-blue-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
               <div className="text-lg sm:text-2xl">{profile.stats.posts}</div>
               <div className="text-xs sm:text-base">Posts</div>
             </div>
             <div className="bg-pink-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
-              <div className="text-lg sm:text-2xl">{profile.stats.likes}</div>
+              <div className="text-lg sm:text-2xl">{likeCount}</div>
               <div className="text-xs sm:text-base">Likes</div>
+              {/* Like Button (not for own profile) */}
+              {user && profile && user.id !== profile.id && (
+                <button
+                  className={`mt-2 px-4 py-2 rounded-full font-bold shadow transition-all text-base ${likedToday ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-pink-400 to-yellow-400 text-white hover:scale-105'}`}
+                  onClick={handleLikeProfile}
+                  disabled={likedToday}
+                  title={likedToday ? 'You already liked this profile today' : 'Like this profile'}
+                >
+                  {likedToday ? 'Liked Today' : '👍 Like'}
+                </button>
+              )}
             </div>
             <div className="bg-yellow-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
               <div className="text-lg sm:text-2xl">{profile.stats.comments}</div>
