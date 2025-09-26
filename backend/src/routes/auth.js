@@ -28,6 +28,48 @@ const createAuthRouter = () => {
 
   const router = express.Router();
 
+// Get public profile by user ID (for viewing other users)
+  router.get('/profile/:id', requireAuth, async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    if (!userId) return res.status(400).json({ error: 'Invalid user ID' });
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar, about, interests, badges, role')
+        .eq('id', userId)
+        .eq('deleted', false)
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Profile not found' });
+      // If user is admin, always include 'ADMIN' in badges array
+      if (data && data.role === 'admin') {
+        data.badges = Array.isArray(data.badges) ? data.badges : [];
+        if (!data.badges.includes('ADMIN')) {
+          data.badges = [...data.badges, 'ADMIN'];
+        }
+      }
+      return res.json({ profile: data });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to fetch profile', details: e && e.message ? e.message : e });
+    }
+  });
+  // Search users by name (for homepage user search)
+  router.get('/search-users', requireAuth, async (req, res) => {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json([]);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar')
+        .ilike('name', `%${q}%`)
+        .eq('deleted', false)
+        .limit(10);
+      if (error) return res.status(500).json({ error: 'Failed to search users' });
+      res.json(data || []);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to search users', details: e && e.message ? e.message : e });
+    }
+  });
+
 // Like a user profile (once per day)
   // Both profileId and likerId are int8 (integer) IDs
   router.post('/profile/:id/like', requireAuth, async (req, res) => {
