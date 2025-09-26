@@ -14,13 +14,18 @@ const defaultProfile = {
 export default function ProfilePage() {
   const { user, token } = useAuth();
   const [profile, setProfile] = useState(defaultProfile);
+  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [aboutMe, setAboutMe] = useState('');
   const [hobbies, setHobbies] = useState('');
   // Fetch latest profile from backend on mount
   useEffect(() => {
     async function fetchProfileAndStats() {
-      if (!token) return;
+      setLoading(true);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
       const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -51,6 +56,7 @@ export default function ProfilePage() {
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
       }
+      setLoading(false);
     }
     fetchProfileAndStats();
   }, [token]);
@@ -122,6 +128,16 @@ export default function ProfilePage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200">
+        <div className="text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun rounded-3xl">
+          <span className="text-4xl mb-2 animate-spin">💬</span>
+          Loading Profile...
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
       <div className="w-full max-w-4xl min-h-[600px] rounded-[2.5rem] shadow-2xl bg-white/80 backdrop-blur-lg p-0 overflow-hidden relative border-4 border-pink-200 flex flex-col items-center transition-all duration-300 sm:mt-8 mt-2">
