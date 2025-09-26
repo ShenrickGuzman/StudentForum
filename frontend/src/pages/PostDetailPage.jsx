@@ -174,34 +174,20 @@ export default function PostDetailPage() {
           {/* Header Row: User info left, category right */}
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
-              <div className="relative flex items-center">
-                <button
-                  className="bg-transparent border-none p-0 cursor-pointer"
-                  onClick={() => setShowAuthorProfileBtn(!showAuthorProfileBtn)}
-                  style={{ background: 'none' }}
-                >
-                  <img
-                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                    alt="avatar"
-                    className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-purple-400 transition-all"
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                </button>
-                {showAuthorProfileBtn && (
-                  <Link to={`/profile/${post.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                    View Profile
-                  </Link>
-                )}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
+                <img
+                  src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
+                  alt="avatar"
+                  className="w-12 h-12 rounded-full object-cover"
+                  onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                />
               </div>
               <div className="flex flex-col">
-                <span className="relative font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
-                  <button
-                    className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
-                    onClick={() => setShowAuthorProfileBtn(!showAuthorProfileBtn)}
-                    style={{ background: 'none' }}
-                  >
-                    {post.users?.name || post.author_name}
-                  </button>
+                <span className="font-extrabold text-lg text-gray-800 leading-tight flex items-center gap-1">
+                  {post.users?.name || post.author_name}
+                  <Link to={`/profile/${post.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">
+                    View Profile
+                  </Link>
                   {(() => {
                     let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
                     if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
@@ -209,11 +195,6 @@ export default function PostDetailPage() {
                       <span key={idx} className="ml-1 px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
                     ));
                   })()}
-                  {showAuthorProfileBtn && (
-                    <Link to={`/profile/${post.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                      View Profile
-                    </Link>
-                  )}
                 </span>
                 <span className="text-gray-400 text-xs font-semibold mt-0.5">{post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
