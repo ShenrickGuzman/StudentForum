@@ -21,6 +21,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [aboutMe, setAboutMe] = useState('');
   const [hobbies, setHobbies] = useState('');
+  const [profileError, setProfileError] = useState('');
   // Like button handler
   const handleLikeProfile = async () => {
     if (!token || likedToday || !profile || !profile.name || !profile.id) return;
@@ -49,6 +50,7 @@ export default function ProfilePage() {
     }
     async function fetchProfileAndStats() {
       setLoading(true);
+      setProfileError('');
       let profileUrl;
       let isOwnProfile = false;
       if (routeProfileId) {
@@ -58,12 +60,16 @@ export default function ProfilePage() {
         profileUrl = 'https://studentforum-backend.onrender.com/api/auth/profile';
         isOwnProfile = true;
       }
-      // Only send Authorization header if token exists
       const fetchOptions = token ? { headers: { 'Authorization': `Bearer ${token}` } } : {};
-      const res = await fetch(profileUrl, fetchOptions);
-      const data = await res.json();
-      let stats = { posts: 0, likes: 0, comments: 0 };
-      if (data && data.profile) {
+      try {
+        const res = await fetch(profileUrl, fetchOptions);
+        const data = await res.json();
+        if (!data || !data.profile) {
+          setProfileError(data && data.error ? data.error : 'Profile not found');
+          setLoading(false);
+          return;
+        }
+        let stats = { posts: 0, likes: 0, comments: 0 };
         // Fetch post count
         const postRes = await fetch('https://studentforum-backend.onrender.com/api/posts/count', token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
         const postData = await postRes.json();
@@ -84,8 +90,11 @@ export default function ProfilePage() {
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
         if (token) fetchLikes(data.profile.id);
+        setLoading(false);
+      } catch (err) {
+        setProfileError('Failed to load profile');
+        setLoading(false);
       }
-      setLoading(false);
     }
     fetchProfileAndStats();
   }, [token, routeProfileId, user]);
@@ -163,6 +172,16 @@ export default function ProfilePage() {
         <div className="text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun rounded-3xl">
           <span className="text-4xl mb-2 animate-spin">💬</span>
           Loading Profile...
+        </div>
+      </div>
+    );
+  }
+  if (profileError) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200">
+        <div className="text-3xl font-extrabold text-red-600 bg-white/90 px-10 py-6 shadow-fun rounded-3xl">
+          <span className="text-4xl mb-2">❌</span>
+          {profileError}
         </div>
       </div>
     );
