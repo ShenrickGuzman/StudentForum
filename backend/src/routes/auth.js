@@ -52,7 +52,7 @@ const createAuthRouter = () => {
     }
   });
   // Search users by name (for homepage user search)
-  router.get('/search-users', requireAuth, async (req, res) => {
+  router.get('/search-users', async (req, res) => {
     const q = (req.query.q || '').trim();
     console.log('User search query:', q);
     if (!q) return res.json([]);
