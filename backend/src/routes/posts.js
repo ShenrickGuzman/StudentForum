@@ -22,6 +22,35 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  // Get post count for a user
+  router.get('/count', requireAuth, async (req, res) => {
+    const userId = req.query.user_id || req.user.id;
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      if (error) return res.status(500).json({ error: 'Failed to fetch post count' });
+      res.json({ count: data && typeof data.count === 'number' ? data.count : 0 });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch post count' });
+    }
+  });
+
+  // Get comment count for a user
+  router.get('/comments/count', requireAuth, async (req, res) => {
+    const userId = req.query.user_id || req.user.id;
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      if (error) return res.status(500).json({ error: 'Failed to fetch comment count' });
+      res.json({ count: data && typeof data.count === 'number' ? data.count : 0 });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch comment count' });
+    }
+  });
   const router = express.Router();
 
  // Lock a post (admin only)
