@@ -54,6 +54,7 @@ const createAuthRouter = () => {
   // Search users by name (for homepage user search)
   router.get('/search-users', requireAuth, async (req, res) => {
     const q = (req.query.q || '').trim();
+    console.log('User search query:', q);
     if (!q) return res.json([]);
     try {
       let data, error;
@@ -72,10 +73,18 @@ const createAuthRouter = () => {
           .like('name', `%${q}%`)
           .eq('deleted', false)
           .limit(10));
+        // Fallback: filter in JS for case-insensitive match
+        if (Array.isArray(data)) {
+          data = data.filter(u => u.name && u.name.toLowerCase().includes(q.toLowerCase()));
+        }
       }
-      if (error) return res.status(500).json({ error: 'Failed to search users', details: error.message || error });
+      if (error) {
+        console.error('User search error:', error);
+        return res.status(500).json({ error: 'Failed to search users', details: error.message || error });
+      }
       res.json(data || []);
     } catch (e) {
+      console.error('User search exception:', e);
       res.status(500).json({ error: 'Failed to search users', details: e && e.message ? e.message : e });
     }
   });
