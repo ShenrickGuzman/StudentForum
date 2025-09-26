@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../state/auth';
+import { useParams } from 'react-router-dom';
 
 const defaultProfile = {
   avatar: '/Cute-Cat.png',
@@ -12,6 +13,7 @@ const defaultProfile = {
 };
 
 export default function ProfilePage() {
+  const { id: routeProfileId } = useParams();
   const [likeCount, setLikeCount] = useState(0);
   const [likedToday, setLikedToday] = useState(false);
   const { user, token } = useAuth();
@@ -23,7 +25,6 @@ export default function ProfilePage() {
   // Like button handler
   const handleLikeProfile = async () => {
     if (!token || likedToday || !profile || !profile.name || !profile.id) return;
-    // profile.id should be a UUID string
     try {
       await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
         method: 'POST',
@@ -34,12 +35,10 @@ export default function ProfilePage() {
     } catch {}
   };
 
-  // Fetch latest profile from backend on mount
+  // Fetch profile and like info (own or other user)
   useEffect(() => {
-    // Fetch like count and like status
     async function fetchLikes(profileId) {
       if (!token || !profileId) return;
-      // profileId should be a UUID string
       try {
         const res = await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profileId}/likes`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -55,7 +54,16 @@ export default function ProfilePage() {
         setLoading(false);
         return;
       }
-      const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
+      let profileUrl;
+      let isOwnProfile = false;
+      if (routeProfileId) {
+        profileUrl = `https://studentforum-backend.onrender.com/api/auth/profile/${routeProfileId}`;
+        isOwnProfile = user && String(user.id) === String(routeProfileId);
+      } else {
+        profileUrl = 'https://studentforum-backend.onrender.com/api/auth/profile';
+        isOwnProfile = true;
+      }
+      const res = await fetch(profileUrl, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -80,16 +88,16 @@ export default function ProfilePage() {
           interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
           stats,
           badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : []),
-          id: data.profile.id // ensure UUID is set
+          id: data.profile.id
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
-        fetchLikes(data.profile.id); // pass UUID
+        fetchLikes(data.profile.id);
       }
       setLoading(false);
     }
     fetchProfileAndStats();
-  }, [token]);
+  }, [token, routeProfileId, user]);
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
   const [successMsg, setSuccessMsg] = useState('');
@@ -227,7 +235,7 @@ export default function ProfilePage() {
               <div className="text-lg sm:text-2xl">{likeCount}</div>
               <div className="text-xs sm:text-base">Likes</div>
               {/* Like Button (not for own profile) */}
-              {user && profile && user.id !== profile.id && (
+              {user && profile && String(user.id) !== String(profile.id) && (
                 <button
                   className={`mt-2 px-4 py-2 rounded-full font-bold shadow transition-all text-base ${likedToday ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-pink-400 to-yellow-400 text-white hover:scale-105'}`}
                   onClick={handleLikeProfile}
