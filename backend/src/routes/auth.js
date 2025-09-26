@@ -1,4 +1,3 @@
-
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -57,13 +56,24 @@ const createAuthRouter = () => {
     const q = (req.query.q || '').trim();
     if (!q) return res.json([]);
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, name, avatar')
-        .ilike('name', `%${q}%`)
-        .eq('deleted', false)
-        .limit(10);
-      if (error) return res.status(500).json({ error: 'Failed to search users' });
+      let data, error;
+      // Try ilike (Postgres), fallback to like (MySQL)
+      if (typeof supabase.from('users').ilike === 'function') {
+        ({ data, error } = await supabase
+          .from('users')
+          .select('id, name, avatar')
+          .ilike('name', `%${q}%`)
+          .eq('deleted', false)
+          .limit(10));
+      } else {
+        ({ data, error } = await supabase
+          .from('users')
+          .select('id, name, avatar')
+          .like('name', `%${q}%`)
+          .eq('deleted', false)
+          .limit(10));
+      }
+      if (error) return res.status(500).json({ error: 'Failed to search users', details: error.message || error });
       res.json(data || []);
     } catch (e) {
       res.status(500).json({ error: 'Failed to search users', details: e && e.message ? e.message : e });
