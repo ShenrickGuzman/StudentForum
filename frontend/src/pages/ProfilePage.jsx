@@ -70,12 +70,12 @@ export default function ProfilePage() {
           return;
         }
         let stats = { posts: 0, likes: 0, comments: 0 };
-        // Fetch post count
-        const postRes = await fetch('https://studentforum-backend.onrender.com/api/posts/count', token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
+        // Fetch post count for the viewed profile
+        const postRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/count?userId=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
         const postData = await postRes.json();
         stats.posts = postData.count || 0;
-        // Fetch comment count
-        const commentRes = await fetch('https://studentforum-backend.onrender.com/api/posts/comments/count', token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
+        // Fetch comment count for the viewed profile
+        const commentRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/comments/count?userId=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
         const commentData = await commentRes.json();
         stats.comments = commentData.count || 0;
         setProfile({
