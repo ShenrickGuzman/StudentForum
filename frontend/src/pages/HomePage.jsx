@@ -1,3 +1,39 @@
+// UserProfilePreview component for post user display
+function UserProfilePreview({ userId, avatar, name }) {
+  const [showBtn, setShowBtn] = useState(false);
+  const navigate = useNavigate();
+  return (
+    <div className="relative flex items-center">
+      <button
+        className="mr-2 bg-transparent border-none p-0 cursor-pointer"
+        onClick={() => setShowBtn(show => !show)}
+        style={{ background: 'none' }}
+      >
+        <img
+          src={avatar}
+          alt={name}
+          className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
+          onError={e => { e.target.src = '/Cute-Cat.png'; }}
+        />
+      </button>
+      <button
+        className="font-bold text-gray-700 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
+        onClick={() => setShowBtn(show => !show)}
+        style={{ background: 'none' }}
+      >
+        {name}
+      </button>
+      {showBtn && (
+        <button
+          className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg"
+          onClick={() => navigate(`/profile/${userId}`)}
+        >
+          View Profile
+        </button>
+      )}
+    </div>
+  );
+}
 import { useEffect, useState } from 'react';
 // import { Link } from 'react-router-dom';
 import RulesPopup from '../components/RulesPopup';
