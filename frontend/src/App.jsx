@@ -87,7 +87,8 @@ function AppShell() {
         <Route path="/post/:id" element={<RequireAuth><PostDetailPage /></RequireAuth>} />
         <Route path="/new" element={<RequireAuth><NewPostPage /></RequireAuth>} />
         <Route path="/admin" element={<RequireAdminAuth><AdminPage /></RequireAdminAuth>} />
-  <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+        <Route path="/profile/:id" element={<ProfilePage />} />
+        <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         {/* Add a settings page route if you create one */}
         <Route path="/settings" element={<RequireAuth><div className="p-8 text-2xl">Settings Page (Coming Soon)</div></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
