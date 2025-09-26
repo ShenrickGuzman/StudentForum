@@ -18,6 +18,7 @@ const categories = [
 function HomePage() {
   const [posts, setPosts] = useState([]);
   const [q, setQ] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [cat, setCat] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -158,8 +159,13 @@ function HomePage() {
           <input
             className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
             placeholder="Search posts, topics, or ask anything..."
-            value={q}
-            onChange={e => setQ(e.target.value)}
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                setQ(searchInput);
+              }
+            }}
           />
         </div>
         <select
