@@ -182,24 +182,34 @@ export default function PostDetailPage() {
                   onError={e => { e.target.src = '/Cute-Cat.png'; }}
                 />
               </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight flex flex-wrap items-center gap-2">
-                  {post.users?.name || post.author_name}
-                  <Link to={`/profile/${post.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">
+                <div className="flex flex-col items-center gap-2 w-full">
+                  <div className="w-20 h-20 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden mx-auto">
+                    <img
+                      src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
+                      alt="avatar"
+                      className="w-full h-full rounded-full object-cover"
+                      onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                    />
+                  </div>
+                  <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight text-center mt-2">
+                    {post.users?.name || post.author_name}
+                  </span>
+                  <Link to={`/profile/${post.user_id}`} className="px-4 py-2 rounded-xl bg-purple-400 text-white font-bold text-xs mt-2 w-fit mx-auto">
                     View Profile
                   </Link>
-                  {(() => {
-                    let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
-                    if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                    return badges.map((badge, idx) => (
-                      <span key={idx} className="ml-1 px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                    ));
-                  })()}
-                </span>
-                <span className="text-gray-400 text-xs font-semibold mt-1">
-                  {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
-                </span>
-              </div>
+                  <span className="flex flex-wrap gap-2 justify-center mt-2">
+                    {(() => {
+                      let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
+                      if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                      return badges.map((badge, idx) => (
+                        <span key={idx} className="px-3 py-1 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                      ));
+                    })()}
+                  </span>
+                  <span className="text-gray-400 text-xs font-semibold mt-2 text-center">
+                    {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </span>
+                </div>
             </div>
             <span className={`px-4 py-1 rounded-full text-sm shadow font-extrabold font-cartoon tracking-wide drop-shadow-lg mt-2 ${categories.find(c => c.key === post.category)?.color || 'bg-gray-400 text-white'}`}>
               {categories.find(c => c.key === post.category)?.label || post.category}
