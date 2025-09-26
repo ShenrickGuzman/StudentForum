@@ -293,6 +293,10 @@ function HomePage() {
           </div>
         </div>
       )}
+      {/* User not found feedback */}
+      {(!userSearchLoading && !userSearchError && userSearchInput.trim() && userSearchResults.length === 0) && (
+        <div className="text-center text-red-500 font-bold mb-4">User not found</div>
+      )}
 
       {/* Posts */}
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 z-10 relative">
