@@ -1,375 +1,641 @@
-import { useEffect, useState } from 'react';
-// import { Link } from 'react-router-dom';
-import RulesPopup from '../components/RulesPopup';
-import { Link, useNavigate } from 'react-router-dom';
-import api, { getAssetUrl } from '../lib/api';
-import { useAuth } from '../state/auth';
+import express from 'express';
+import multer from 'multer';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { supabase } from '../lib/supabaseClient.js';
 
-const categories = [
-  { key: 'Academics', label: '📚 Academics', color: 'bg-gradient-to-r from-pink-400 to-pink-500 text-white' },
-  { key: 'Arts', label: '🎨 Arts', color: 'bg-gradient-to-r from-orange-300 to-orange-400 text-white' },
-  { key: 'Sports', label: '🏅 Sports', color: 'bg-gradient-to-r from-green-400 to-teal-400 text-white' },
-  { key: 'Music', label: '🎵 Music', color: 'bg-gradient-to-r from-purple-400 to-purple-500 text-white' },
-  { key: 'Technology', label: '💻 Technology', color: 'bg-gradient-to-r from-cyan-400 to-blue-400 text-white' },
-  { key: 'Ideas', label: '💡 Ideas', color: 'bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900' },
-  { key: 'Random', label: '✨ Random', color: 'bg-gradient-to-r from-purple-400 to-indigo-400 text-white' },
-];
+const createAuthRouter = () => {
 
-
-function HomePage() {
-  // ...existing code...
-  const [userSearchInput, setUserSearchInput] = useState('');
-  const [userSearchResults, setUserSearchResults] = useState([]);
-  const [userSearchLoading, setUserSearchLoading] = useState(false);
-  const [userSearchError, setUserSearchError] = useState('');
-
-  // Search users by name
-  const API_BASE = process.env.REACT_APP_API_BASE_URL || '';
-  const handleUserSearch = async (e) => {
-    e.preventDefault();
-    if (!userSearchInput.trim()) return;
-    setUserSearchLoading(true);
-    setUserSearchError('');
+  // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
+  const requireAuth = (req, res, next) => {
+    const auth = req.headers.authorization || '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
     try {
-      const token = user?.token;
-      const res = await fetch(
-        `${API_BASE}/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`,
-        {
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : ''
-          }
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      next();
+    } catch {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  };
+
+  const isAdmin = (req, res, next) => {
+    const nameLower = req.user?.name?.trim().toLowerCase();
+    if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
+    return res.status(403).json({ error: 'Forbidden' });
+  };
+
+  const router = express.Router();
+
+// Get public profile by user ID (for viewing other users)
+  router.get('/profile/:id', requireAuth, async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    if (!userId) return res.status(400).json({ error: 'Invalid user ID' });
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, avatar, about, interests, badges, role')
+        .eq('id', userId)
+        .eq('deleted', false)
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Profile not found' });
+      // If user is admin, always include 'ADMIN' in badges array
+      if (data && data.role === 'admin') {
+        data.badges = Array.isArray(data.badges) ? data.badges : [];
+        if (!data.badges.includes('ADMIN')) {
+          data.badges = [...data.badges, 'ADMIN'];
         }
-      );
-      const data = await res.json();
-      setUserSearchResults(Array.isArray(data) ? data : []);
-    } catch (err) {
-      setUserSearchError('Failed to search users');
-      setUserSearchResults([]);
-    }
-    setUserSearchLoading(false);
-  };
-  const [posts, setPosts] = useState([]);
-  const [q, setQ] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [cat, setCat] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [showRules, setShowRules] = useState(false);
-
-  // Mobile only: Rules button
-  const mobileActionButtons = user ? (
-    <div className="block sm:hidden w-full max-w-3xl mx-auto px-2 mt-4 mb-2 z-20">
-      <div className="flex flex-col gap-3">
-        <button
-          className="w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-yellow-400 to-pink-400 text-white shadow-lg hover:from-yellow-500 hover:to-pink-500 transition-all"
-          onClick={() => setShowRules(true)}
-        >
-          📜 Rules
-        </button>
-      </div>
-      <div className="my-3" />
-    </div>
-  ) : null;
-
-  const [error, setError] = useState('');
-  const loadPosts = async () => {
-    const params = {};
-    if (q) params.q = q;
-    if (cat) params.category = cat;
-    try {
-      const response = await api.get('/posts', { params });
-      setPosts(Array.isArray(response.data) ? response.data : []);
-      setError('');
-    } catch (error) {
-      console.error('Failed to load posts:', error);
-      // Fallback to fetch if api.get fails
-      try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        setPosts(Array.isArray(data) ? data : []);
-        setError('');
-      } catch (e) {
-        setError('Failed to load posts');
-        setPosts([]);
       }
+      return res.json({ profile: data });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to fetch profile', details: e && e.message ? e.message : e });
     }
-  };
+  });
+  // Search users by name (for homepage user search)
+  router.get('/search-users', async (req, res) => {
+    const q = (req.query.q || '').trim();
+    console.log('User search query:', q);
+    if (!q) return res.json([]);
+    try {
+      let data, error;
+      // Try ilike (Postgres), fallback to like (MySQL)
+      if (typeof supabase.from('users').ilike === 'function') {
+        ({ data, error } = await supabase
+          .from('users')
+          .select('id, name, avatar')
+          .ilike('name', `%${q}%`)
+          .eq('deleted', false)
+          .limit(10));
+      } else {
+        ({ data, error } = await supabase
+          .from('users')
+          .select('id, name, avatar')
+          .like('name', `%${q}%`)
+          .eq('deleted', false)
+          .limit(10));
+        // Fallback: filter in JS for case-insensitive match
+        if (Array.isArray(data)) {
+          data = data.filter(u => u.name && u.name.toLowerCase().includes(q.toLowerCase()));
+        }
+      }
+      if (error) {
+        console.error('User search error:', error);
+        return res.status(500).json({ error: 'Failed to search users', details: error.message || error });
+      }
+      res.json(data || []);
+    } catch (e) {
+      console.error('User search exception:', e);
+      res.status(500).json({ error: 'Failed to search users', details: e && e.message ? e.message : e });
+    }
+  });
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadPosts();
-    setRefreshing(false);
-  };
+// Like a user profile (once per day)
+  // Both profileId and likerId are int8 (integer) IDs
+  router.post('/profile/:id/like', requireAuth, async (req, res) => {
+    const profileId = parseInt(req.params.id, 10);
+    const likerId = parseInt(req.user.id, 10);
+    try {
+      // Try to insert a like for today
+      const { error } = await supabase
+        .from('profile_likes')
+        .insert([{ user_id: profileId, liked_by: likerId, created_at: new Date().toISOString().slice(0, 10) }]);
+      if (error && error.code !== '23505') {
+        // 23505 is unique violation (already liked today)
+        return res.status(500).json({ error: 'Failed to like profile', details: error.message || error });
+      }
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to like profile', details: e && e.message ? e.message : e });
+    }
+  });
 
-  useEffect(() => {
-    setLoading(true);
-    loadPosts().finally(() => setLoading(false));
-  }, [q, cat]);
+  // Get like count and whether current user liked this profile today
+  router.get('/profile/:id/likes', requireAuth, async (req, res) => {
+  // Both profileId and likerId are int8 (integer) IDs
+  const profileId = parseInt(req.params.id, 10);
+  const likerId = parseInt(req.user.id, 10);
+  const today = new Date().toISOString().slice(0, 10);
+    try {
+      // Get total likes for this profile
+      const { data: countData, count, error: countError } = await supabase
+        .from('profile_likes')
+        .select('id', { count: 'exact' })
+        .eq('user_id', profileId);
+      if (countError) {
+        console.error('Supabase like count error:', countError);
+        return res.status(500).json({ error: 'Failed to get like count', details: countError.message || countError });
+      }
+      // Check if current user liked this profile today
+      const { data: likeData, error: likeError } = await supabase
+        .from('profile_likes')
+        .select('id')
+        .eq('user_id', profileId)
+        .eq('liked_by', likerId)
+        .eq('created_at', today);
+      if (likeError) {
+        console.error('Supabase like status error:', likeError);
+        return res.status(500).json({ error: 'Failed to check like status', details: likeError.message || likeError });
+      }
+      res.json({ count: count || 0, likedToday: Array.isArray(likeData) && likeData.length > 0 });
+    } catch (e) {
+      console.error('Failed to get like info:', e);
+      res.status(500).json({ error: 'Failed to get like info', details: e && e.message ? e.message : e });
+    }
+  });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100 relative overflow-hidden">
-        {/* Animated pastel circles */}
-        <div className="absolute inset-0 z-0 pointer-events-none select-none">
-          <span className="absolute left-8 top-8 w-24 h-24 rounded-full bg-yellow-200 opacity-30 animate-pulse"></span>
-          <span className="absolute right-10 top-24 w-16 h-16 rounded-full bg-green-200 opacity-20 animate-bounce"></span>
-          <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20 animate-pulse"></span>
-          <span className="absolute right-1/3 top-1/2 w-20 h-20 rounded-full bg-blue-200 opacity-20 animate-bounce"></span>
-          <span className="absolute left-10 bottom-24 w-16 h-16 rounded-full bg-purple-200 opacity-20 animate-pulse"></span>
-          <span className="absolute right-8 bottom-8 w-28 h-28 rounded-full bg-yellow-100 opacity-30 animate-bounce"></span>
-        </div>
-        <div className="relative z-10 flex flex-col items-center">
-          {/* Fun animated spinner */}
-          <div className="mb-6">
-            <div className="w-20 h-20 rounded-full border-8 border-pink-300 border-t-yellow-300 border-b-blue-300 animate-spin shadow-lg flex items-center justify-center">
-              <span className="text-4xl">🎈</span>
-            </div>
-          </div>
-          <div className="cartoon-card text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun flex flex-col items-center gap-2 rounded-3xl">
-            <span className="text-4xl mb-2">🎉 Loading Forums...</span>
-            <span className="text-lg text-pink-400 font-bold flex items-center gap-2">Please wait <span className="animate-bounce">💬</span> <span className="animate-pulse">✨</span></span>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Add or remove a badge to a user (admin only, supports multiple badges)
+  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { badge, remove } = req.body || {};
+    if (!badge || typeof badge !== 'string') {
+      return res.status(400).json({ error: 'Badge is required and must be a string.' });
+    }
+    try {
+      // Fetch current badges
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('badges')
+        .eq('id', id)
+        .single();
+      if (fetchError || !user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      let badges = user.badges || [];
+      if (!Array.isArray(badges)) badges = [];
+      if (remove) {
+        badges = badges.filter(b => b !== badge);
+      } else {
+        if (!badges.includes(badge)) {
+          badges.push(badge);
+        }
+      }
+      const { data: updated, error: updateError } = await supabase
+        .from('users')
+        .update({ badges })
+        .eq('id', id)
+        .select('id, badges')
+        .single();
+      if (updateError) {
+        return res.status(500).json({ error: 'Failed to update badges', details: updateError.message || updateError });
+      }
+      return res.json({ ok: true, user: updated });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to update badges', details: e && e.message ? e.message : e });
+    }
+  });
 
-  if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500 text-2xl">{error}</div>;
-  }
+// Remove admin role from a user (admin only)
+  router.post('/users/:id/remove-admin', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      // Prevent removing your own admin role
+      if (req.user.id == id) {
+        return res.status(400).json({ error: "You can't remove your own admin role." });
+      }
+      const { data, error } = await supabase
+        .from('users')
+        .update({ role: 'student' })
+        .eq('id', id)
+        .select('id, name, role')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'User not found or failed to update role' });
+      res.json({ ok: true, user: data });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to remove admin role' });
+    }
+  });
 
-  if (posts.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-gray-500 text-2xl bg-gradient-to-br from-pink-100 to-yellow-100">
-        <div>No posts found.</div>
-        <button
-          className="mt-8 px-6 py-3 rounded-2xl bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold shadow-lg hover:from-green-500 hover:to-blue-600 transition-all text-lg"
-          onClick={() => window.location.href = '/'}
-        >
-          ⬅️ Return to Forums
-        </button>
-      </div>
-    );
-  }
+  // Get current user's profile
+  router.get('/profile', requireAuth, async (req, res) => {
+    try {
+      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
+      const { data, error } = await supabase
+        .from('users')
+  .select('id, name, avatar, about, interests, badges, role')
+        .eq('id', req.user.id)
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Profile not found' });
+      // If user is admin, always include 'ADMIN' in badges array
+      if (data && data.role === 'admin') {
+        data.badges = Array.isArray(data.badges) ? data.badges : [];
+        if (!data.badges.includes('ADMIN')) {
+          data.badges = [...data.badges, 'ADMIN'];
+        }
+      }
+      return res.json({ profile: data });
+    } catch (e) {
+      console.error('Get profile error:', e);
+      return res.status(500).json({ error: 'Failed to fetch profile', details: e && e.message ? e.message : e });
+    }
+  });
 
-  return (
-    <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
-      <RulesPopup open={showRules} onAgree={() => setShowRules(false)} onClose={() => setShowRules(false)} onDontShowAgain={() => {}} />
-      {/* Floating pastel circles */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
-        <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
-        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
-        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
-        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
-        <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
-      </div>
-      {/* Mobile only: Rules and New Post buttons */}
-      {mobileActionButtons}
+  // Profile Picture Upload (Supabase Storage) and Profile Update
+  const upload = multer();
+  router.post('/profile/picture', requireAuth, upload.single('picture'), async (req, res) => {
+    try {
+      if (!req.user || !req.user.id) {
+        console.error('No user or user id in request');
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      if (!req.file) {
+        console.error('No file uploaded');
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+      const file = req.file;
+      const fileExt = file.originalname.split('.').pop();
+  const filePath = `${req.user.id}.${fileExt}`;
+      console.log('Uploading file to:', filePath);
+      // Upload to Supabase Storage
+      const allowedTypes = ['image/png', 'image/jpeg'];
+      const contentType = allowedTypes.includes(file.mimetype) ? file.mimetype : 'image/png';
+      const { data, error } = await supabase.storage.from('profile-pictures').upload(filePath, file.buffer, {
+        cacheControl: '3600',
+        upsert: true,
+        contentType
+      });
+      if (error) {
+        console.error('Supabase Storage upload error:', error);
+        return res.status(500).json({ error: 'Failed to upload profile picture', details: error.message || error });
+      }
+      console.log('Upload data:', data);
+      // Get public URL
+  console.log('DEBUG: filePath for getPublicUrl:', filePath);
+  const publicUrlResult = supabase.storage.from('profile-pictures').getPublicUrl(filePath);
+  console.log('DEBUG: getPublicUrl result:', publicUrlResult);
+  const publicUrl = publicUrlResult.data.publicUrl;
+  // Hardcoded test for 1.jpg
+  const testUrlResult = supabase.storage.from('profile-pictures').getPublicUrl('1.jpg');
+  console.log('DEBUG: getPublicUrl for 1.jpg:', testUrlResult);
+  console.log('publicUrl:', publicUrl);
+      // Update profile_picture column
+      const { data: updateData, error: updateError } = await supabase
+        .from('users')
+        .update({ avatar: publicUrl || '/Cute-Cat.png' })
+        .eq('id', req.user.id)
+        .select('id, avatar');
+      if (updateError) {
+        console.error('Supabase profile update error:', updateError);
+        return res.status(500).json({ error: 'Failed to update profile picture', details: updateError.message || updateError });
+      }
+  console.log('Profile update data:', updateData);
+  return res.json({ ok: true, profile_picture: publicUrl });
+    } catch (e) {
+      console.error('Profile picture upload error (catch):', e);
+      return res.status(500).json({ error: 'Failed to upload profile picture', details: e && e.message ? e.message : e });
+    }
+  });
 
-      {/* Hero Section */}
-      <div className="flex flex-col items-center mb-10 z-10 relative">
-        <div className="w-full flex justify-center">
-          <div className="bg-white rounded-3xl shadow-2xl px-10 py-8 max-w-2xl flex flex-col items-center border-4 border-purple-200">
-            <div className="text-5xl mb-2">🎓</div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-purple-700 mb-2 text-center drop-shadow-lg" style={{letterSpacing: '0.03em'}}>
-              Welcome to Students Forum!
-            </h1>
-            <p className="text-lg md:text-xl font-semibold text-gray-700 text-center max-w-xl mb-2 drop-shadow-lg bg-white/80 rounded-xl px-4 py-2 border border-purple-100" style={{fontWeight: 600}}>
-              A playful place to share ideas, ask questions, and connect with your classmates. Jump in and join the conversation!
-            </p>
-            <div className="flex gap-2 text-2xl mb-2">
-              <span>📚</span><span>✨</span><span>🎯</span><span>🧩</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex gap-4 flex-wrap justify-center mt-6">
-          {categories.map(c => (
-            <span key={c.key} className={`px-6 py-4 rounded-xl font-extrabold shadow-lg text-lg flex items-center gap-2 ${c.color}`}> 
-              {c.label}
-            </span>
-          ))}
-        </div>
-      </div>
+  // Update About Me and Hobbies & Interests
+  router.put('/profile', requireAuth, async (req, res) => {
+    try {
+      if (!req.user || !req.user.id) return res.status(401).json({ error: 'Unauthorized' });
+      const { about_me, hobbies_interests } = req.body || {};
+      const updateFields = {};
+      if (about_me !== undefined) updateFields.about = about_me;
+      if (hobbies_interests !== undefined) {
+        if (Array.isArray(hobbies_interests)) {
+          updateFields.interests = hobbies_interests;
+        } else if (typeof hobbies_interests === 'string') {
+          updateFields.interests = hobbies_interests.split(',').map(s => s.trim()).filter(Boolean);
+        } else {
+          updateFields.interests = [];
+        }
+      }
+      const { data, error } = await supabase
+        .from('users')
+        .update(updateFields)
+        .eq('id', req.user.id)
+  .select('id, avatar, about, interests, badges');
+      if (error) return res.status(500).json({ error: 'Failed to update profile', details: error.message || error });
+      if (!data || !data.length) return res.status(500).json({ error: 'No profile data returned after update' });
+      return res.json({ ok: true, profile: data[0] });
+    } catch (e) {
+      console.error('Profile update error:', e);
+      return res.status(500).json({ error: 'Failed to update profile', details: e && e.message ? e.message : e });
+    }
+  });
 
-      {/* Search & New Post (mobile) + User Search */}
-      <div className="flex flex-col md:flex-row gap-3 items-center mb-8 z-10 relative max-w-3xl mx-auto">
-        {/* Forum Search */}
-        <div className="w-full md:w-1/2 mb-2 md:mb-0">
-          <label className="block text-sm font-bold text-gray-600 mb-1" htmlFor="forum-search">Forum Search</label>
-          <form
-            className="flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
-            onSubmit={e => {
-              e.preventDefault();
-              setQ(searchInput);
-            }}
-          >
-            <span className="text-xl text-gray-400 mr-2" role="img" aria-label="search">🔍</span>
-            <input
-              id="forum-search"
-              className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
-              placeholder="Search forum posts or topics..."
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-            />
-            <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-blue-400 text-white font-bold">Search</button>
-          </form>
-        </div>
-        {/* User Search */}
-        <div className="w-full md:w-1/2">
-          <label className="block text-sm font-bold text-gray-600 mb-1" htmlFor="user-search">User Search</label>
-          <form
-            className="flex items-center bg-white/80 rounded-2xl shadow-lg px-4 py-3 border-2 border-white/60"
-            onSubmit={handleUserSearch}
-          >
-            <span className="text-xl text-gray-400 mr-2" role="img" aria-label="user">👤</span>
-            <input
-              id="user-search"
-              className="flex-1 bg-transparent outline-none text-lg text-gray-700 placeholder-gray-400"
-              placeholder="Search users by name..."
-              value={userSearchInput}
-              onChange={e => setUserSearchInput(e.target.value)}
-            />
-            <button type="submit" className="ml-2 px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">Search</button>
-          </form>
-        </div>
-        <select
-          className="rounded-2xl px-4 py-3 border-2 border-white/60 text-lg focus:ring-2 focus:ring-pink-200 outline-none transition-all bg-white/80 shadow-lg"
-          value={cat}
-          onChange={e => setCat(e.target.value)}
-        >
-          <option value="">All Categories</option>
-          {categories.map(c => (
-            <option key={c.key} value={c.key}>{c.label}</option>
-          ))}
-        </select>
-        {/* Refresh Button */}
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className={`rounded-2xl px-4 py-3 font-bold shadow-lg transition-all duration-200 border-2 border-white/60 ${
-            refreshing 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white hover:scale-105 active:scale-95'
-          }`}
-          title="Refresh posts to see new content"
-        >
-          <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`} role="img" aria-label="refresh">🔄</span>
-          <span className="ml-2">
-            {refreshing ? 'Refreshing...' : 'Refresh Forum'}
-          </span>
-        </button>
-        {/* Mobile only: New Post button under Refresh Forum button */}
-        <button
-          className="block sm:hidden w-full rounded-2xl px-6 py-3 font-bold bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-lg hover:from-green-500 hover:to-blue-600 transition-all mt-2"
-          onClick={() => navigate('/new')}
-        >
-          <span role="img" aria-label="new">✨</span> New Post
-        </button>
-      </div>
 
-      {/* User Search Results */}
-      {userSearchLoading && (
-        <div className="text-center text-purple-500 font-bold mb-4">Searching users...</div>
-      )}
-      {userSearchError && (
-        <div className="text-center text-red-500 font-bold mb-4">{userSearchError}</div>
-      )}
-      {userSearchResults.length > 0 && (
-        <div className="max-w-3xl mx-auto mb-8">
-          <div className="bg-white/90 rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold text-purple-700 mb-4">User Results</h3>
-            <ul className="divide-y divide-purple-100">
-              {userSearchResults.map(u => (
-                <li key={u.id} className="py-3 flex items-center gap-4">
-                  <img src={u.avatar || '/Cute-Cat.png'} alt={u.name} className="w-10 h-10 rounded-full border border-gray-300 object-cover" />
-                  <span className="font-bold text-lg text-gray-700">{u.name}</span>
-                  <Link to={`/profile/${u.id}`} className="ml-auto px-4 py-2 rounded-xl bg-purple-400 text-white font-bold">View Profile</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+// Add a badge to a user (admin only, supports multiple badges)
+  router.post('/users/:id/badge', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { badge } = req.body || {};
+    if (!badge || typeof badge !== 'string') {
+      return res.status(400).json({ error: 'Badge is required and must be a string.' });
+    }
+    try {
+      // Fetch current badges
+      const { data: user, error: fetchError } = await supabase
+        .from('users')
+        .select('badges')
+        .eq('id', id)
+        .single();
+      if (fetchError || !user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      let badges = user.badges || [];
+      if (!Array.isArray(badges)) badges = [];
+      if (!badges.includes(badge)) {
+        badges.push(badge);
+      }
+      const { data: updated, error: updateError } = await supabase
+        .from('users')
+        .update({ badges })
+        .eq('id', id)
+        .select('id, badges')
+        .single();
+      if (updateError) {
+        return res.status(500).json({ error: 'Failed to update badges', details: updateError.message || updateError });
+      }
+      return res.json({ ok: true, user: updated });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to add badge', details: e && e.message ? e.message : e });
+    }
+  });
 
-      {/* Posts */}
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 z-10 relative">
-        {posts.length === 0 && (
-          <div className="bg-white/90 rounded-2xl shadow-lg text-center text-xl text-gray-400 col-span-full py-8">
-            No posts yet. Be the first to start a conversation!
-          </div>
-        )}
-        {posts.map(p => {
-          // Only show pending/rejected posts to their author
-          if ((p.status === 'pending' || p.status === 'rejected') && (!user || user.id !== p.user_id)) {
-            return null;
-          }
-          return (
-            <Link
-              to={`/post/${p.id}`}
-              key={p.id}
-              className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-row gap-4 relative p-6"
-            >
-              <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-              <div className="flex flex-col flex-1">
-                <div className="text-sm font-bold mb-1">
-                  <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
-                    {categories.find(c => c.key === p.category)?.label || p.category}
-                  </span>
-                </div>
-                <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
-                <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
-                <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                  <img
-                    src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
-                    alt={p.author_name}
-                    className="w-8 h-8 rounded-full object-cover mr-2 border border-gray-300"
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                  <span className="font-bold text-gray-700">{p.author_name}</span>
-                  {(() => {
-                    let badges = Array.isArray(p.badges) ? [...p.badges] : [];
-                    if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                    return badges.length > 0 ? (
-                      <span className="flex gap-1 ml-2">
-                        {badges.map((badge, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                        ))}
-                      </span>
-                    ) : null;
-                  })()}
-                </div>
-                {/* Status label for pending/rejected posts */}
-                {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
-                  <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${
-                    p.status === 'pending' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'
-                  }`}>
-                    {p.status === 'pending'
-                      ? 'Pending: waiting for admin approval'
-                      : 'Rejected: not approved by admin'}
-                  </div>
-                )}
-              </div>
-              {p.image_url && (
-                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden">
-                  <img
-                    src={getAssetUrl(p.image_url)}
-                    alt="Post image"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+  // Grant admin role (admin only, only if user is currently student)
+  router.post('/make-admin', requireAuth, isAdmin, async (req, res) => {
+    const { name } = req.body || {};
+    if (!name) return res.status(400).json({ error: 'Username required' });
+    try {
+      // Find user by name (case-insensitive)
+      const { data: user, error: findError } = await supabase
+        .from('users')
+        .select('id, name, role')
+        .ilike('name', name.trim());
+      if (findError || !user || user.length === 0) return res.status(404).json({ error: 'User not found' });
+      const targetUser = user[0];
+      if (targetUser.role === 'admin') return res.status(400).json({ error: 'User is already an admin' });
+      // Update role to admin
+      const { data: updated, error } = await supabase
+        .from('users')
+        .update({ role: 'admin' })
+        .eq('id', targetUser.id)
+        .select('id, name, role')
+        .single();
+      if (error || !updated) return res.status(500).json({ error: 'Failed to update user role' });
+      res.json({ ok: true, user: updated });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to grant admin role' });
+    }
+  });
 
-export default HomePage;
+  // Updated signup route to allow reuse of deleted usernames/emails
+  router.post('/signup', async (req, res) => {
+  const { name, password, email } = req.body || {};
+  const nameLower = name.trim().toLowerCase();
+  const nameDisplay = name.trim();
+    if (!name || !password || !email) {
+      return res.status(400).json({ error: 'Username, password and email are required' });
+    }
+    if (name.length < 3) return res.status(400).json({ error: 'Username must be at least 3 characters' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
+    if (!gmailRegex.test(email)) return res.status(400).json({ error: 'Only valid @gmail.com addresses are allowed' });
+    try {
+      // Check conflicts in users (only non-deleted) and signup_requests
+      const { data: userConflict } = await supabase
+        .from('users')
+        .select('id')
+        .or(`name.ilike.${nameLower},email.ilike.${email.toLowerCase()}`)
+        .eq('deleted', false);
+      const { data: requestConflict } = await supabase
+        .from('signup_requests')
+        .select('id')
+        .or(`name.ilike.${nameLower},email.ilike.${email.toLowerCase()}`);
+      if ((userConflict && userConflict.length) || (requestConflict && requestConflict.length)) {
+        return res.status(409).json({ error: 'Username or email already taken or pending' });
+      }
+      const passwordHash = await bcrypt.hash(password, 10);
+      // Special logic for SHEN
+      if (nameLower === 'shen') {
+        // Create user directly and make admin
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .insert([{ name: nameDisplay, email, password_hash: passwordHash, role: 'admin', deleted: false }])
+          .select('id, name, role, email')
+          .single();
+        if (userError || !userData) return res.status(500).json({ error: 'Signup failed for SHEN' });
+        const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ status: 'approved', token, user: userData });
+      }
+      // Normal signup request flow
+      const { error: signupError } = await supabase
+        .from('signup_requests')
+        .insert([{ name: nameDisplay, email, password_hash: passwordHash }]);
+      if (signupError) return res.status(500).json({ error: 'Signup request failed' });
+      res.json({ status: 'pending', message: 'Signup request submitted. Awaiting admin approval.' });
+    } catch (e) {
+      if (e?.code === '23505') return res.status(409).json({ error: 'Username or email already taken or pending' });
+      res.status(500).json({ error: 'Signup request failed' });
+    }
+  });
+
+  // List pending signup requests (admin only)
+  router.get('/signup-requests', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .select('id, name, email, created_at, status')
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: 'Failed to load signup requests' });
+      res.json(data);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to load signup requests' });
+    }
+  });
+
+  // Approve a request -> create user, delete request, return user info
+  router.post('/signup-requests/:id/approve', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      // Get signup request
+      const { data: rqData, error: rqError } = await supabase
+        .from('signup_requests')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (rqError || !rqData) return res.status(404).json({ error: 'Request not found' });
+      if (rqData.status === 'declined') return res.status(400).json({ error: 'Request already declined' });
+      if (rqData.status === 'approved') return res.status(400).json({ error: 'Request already approved' });
+      // Create user (preserve display case, but enforce lowercase for uniqueness)
+      const nameDisplay = rqData.name.trim();
+      const emailLower = rqData.email.trim().toLowerCase();
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .insert([{ name: nameDisplay, email: emailLower, password_hash: rqData.password_hash, role: 'student', deleted: false }])
+        .select('id, name, role, email')
+        .single();
+      if (userError) {
+        // Unique constraint violation (already exists)
+        if (userError.code === '23505' || userError.message?.toLowerCase().includes('duplicate')) {
+          // Find conflicting user(s)
+          const { data: conflictUsers } = await supabase
+            .from('users')
+            .select('id, name, email')
+            .or(`name.ilike.${nameDisplay.toLowerCase()},email.ilike.${emailLower}`)
+            .eq('deleted', false);
+          return res.status(409).json({ error: 'Username or email already exists', details: userError.message, conflicts: conflictUsers });
+        }
+        // Log full error for debugging
+        return res.status(500).json({ error: 'Failed to create user', details: userError.message || userError });
+      }
+      if (!userData) return res.status(500).json({ error: 'No user data returned' });
+      // Update signup request status
+      const { error: updateError } = await supabase
+        .from('signup_requests')
+        .update({ status: 'approved' })
+        .eq('id', id);
+      if (updateError) return res.status(500).json({ error: 'Failed to update request status' });
+      const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.json({ approved: true, token, user: userData });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to approve request' });
+    }
+  });
+
+  // Decline a request
+  router.post('/signup-requests/:id/decline', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .update({ status: 'declined' })
+        .eq('id', id)
+        .eq('status', 'pending')
+        .select('id')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Request not found or already processed' });
+      res.json({ declined: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to decline request' });
+    }
+  });
+
+
+  // Polling endpoint for a specific username/email to see status & retrieve token if approved
+  router.get('/signup-status', async (req, res) => {
+    const { name } = req.query;
+    if (!name) return res.status(400).json({ error: 'Name required' });
+  const nameTrimmed = name.trim();
+    try {
+      // Check if user exists (approved, case-insensitive)
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id, name, role')
+        .ilike('name', nameTrimmed)
+        .single();
+      if (userData) {
+        const u = userData;
+        const token = jwt.sign({ id: u.id, role: u.role, name: u.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        return res.json({ status: 'approved', token, user: u });
+      }
+      // Check signup request (case-insensitive)
+      const { data: reqData } = await supabase
+        .from('signup_requests')
+        .select('status')
+        .ilike('name', nameTrimmed)
+        .single();
+      if (!reqData) return res.json({ status: 'not_found' });
+      return res.json({ status: reqData.status });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch status' });
+    }
+  });
+
+  // List all users (admin only)
+  router.get('/users', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, name, email, badges, role')
+        .eq('deleted', false)
+        .order('created_at', { ascending: true });
+      if (error) return res.status(500).json({ error: 'Failed to load users' });
+      res.json(data);
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to load users' });
+    }
+  });
+
+  // Soft delete a user by ID (admin only)
+  router.delete('/users/:id', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .update({ deleted: true })
+        .eq('id', id)
+        .select('id, name')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'User not found' });
+      res.json({ deleted: true, deletedUserId: id, deletedUserName: data.name });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete user' });
+    }
+  });
+
+  // Delete a signup request (admin only)
+  router.delete('/signup-requests/:id', requireAuth, isAdmin, async (req, res) => {
+    const { id } = req.params;
+    try {
+      const { data, error } = await supabase
+        .from('signup_requests')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .single();
+      if (error || !data) return res.status(404).json({ error: 'Request not found' });
+      res.json({ deleted: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete request' });
+    }
+  });
+
+  // Check if current user is deleted (for real-time logout)
+  router.get('/check-status', requireAuth, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('deleted')
+        .eq('id', req.user.id)
+        .single();
+      if (error || !data || data.deleted) {
+        return res.status(401).json({ error: 'Account deleted' });
+      }
+      res.json({ status: 'active' });
+    } catch (e) {
+      console.error('CHECK STATUS ERROR:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'Status check failed' });
+    }
+  });
+
+  // Updated login route to block deleted users
+  router.post('/login', async (req, res) => {
+    const { name, password } = req.body || {};
+    if (!name || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    try {
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, name, role, password_hash, deleted')
+        .eq('name', name.trim())
+        .single();
+      if (error || !user || user.deleted) return res.status(401).json({ error: user && user.deleted ? 'Account deleted' : 'Invalid credentials' });
+      const ok = await bcrypt.compare(password, user.password_hash);
+      if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+      const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.json({ token, user: { id: user.id, name: user.name, role: user.role } });
+    } catch (e) {
+      console.error('LOGIN ERROR:', e && e.stack ? e.stack : e);
+      res.status(500).json({ error: 'Login failed', details: e && e.message ? e.message : e });
+    }
+  });
+
+  return (req, res, next) => router(req, res, next);
+};
+
+export default createAuthRouter;
+
+
