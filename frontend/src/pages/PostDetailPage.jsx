@@ -28,6 +28,8 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+  // Track which comment's profile button is shown
+  const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
 
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
@@ -294,8 +296,6 @@ export default function PostDetailPage() {
                   if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
                     badges = [...badges, 'ADMIN'];
                   }
-                  // ...existing code...
-                  const [showProfileBtn, setShowProfileBtn] = useState(false);
                   return (
                     <CommentCard
                       key={comment.id}
@@ -303,7 +303,7 @@ export default function PostDetailPage() {
                         <div className="relative flex items-center">
                           <button
                             className="bg-transparent border-none p-0 cursor-pointer"
-                            onClick={() => setShowProfileBtn(show => !show)}
+                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
                             style={{ background: 'none' }}
                           >
                             <img
@@ -313,7 +313,7 @@ export default function PostDetailPage() {
                               onError={e => { e.target.src = '/Cute-Cat.png'; }}
                             />
                           </button>
-                          {showProfileBtn && (
+                          {showProfileBtnFor === comment.id && (
                             <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
                               View Profile
                             </Link>
@@ -324,12 +324,12 @@ export default function PostDetailPage() {
                         <div className="relative inline-block">
                           <button
                             className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
-                            onClick={() => setShowProfileBtn(show => !show)}
+                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
                             style={{ background: 'none' }}
                           >
                             {comment.author_name || 'User'}
                           </button>
-                          {showProfileBtn && (
+                          {showProfileBtnFor === comment.id && (
                             <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
                               View Profile
                             </Link>
