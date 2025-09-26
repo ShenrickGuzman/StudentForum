@@ -19,26 +19,40 @@ export default function ProfilePage() {
   const [hobbies, setHobbies] = useState('');
   // Fetch latest profile from backend on mount
   useEffect(() => {
-    async function fetchProfile() {
+    async function fetchProfileAndStats() {
       if (!token) return;
       const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
+      let stats = { posts: 0, likes: 0, comments: 0 };
       if (data && data.profile) {
+        // Fetch post count
+        const postRes = await fetch('https://studentforum-backend.onrender.com/api/posts/count', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const postData = await postRes.json();
+        stats.posts = postData.count || 0;
+        // Fetch comment count
+        const commentRes = await fetch('https://studentforum-backend.onrender.com/api/posts/comments/count', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const commentData = await commentRes.json();
+        stats.comments = commentData.count || 0;
+        // Likes can be implemented similarly if needed
         setProfile({
           avatar: data.profile.avatar || defaultProfile.avatar,
           name: data.profile.name || defaultProfile.name,
           about: data.profile.about || '',
           interests: Array.isArray(data.profile.interests) ? data.profile.interests : (data.profile.interests ? [data.profile.interests] : []),
-          stats: data.profile.stats || defaultProfile.stats,
+          stats,
           badges: Array.isArray(data.profile.badges) ? data.profile.badges : (data.profile.badges ? [data.profile.badges] : [])
         });
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
       }
     }
-    fetchProfile();
+    fetchProfileAndStats();
   }, [token]);
   const [avatarError, setAvatarError] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
