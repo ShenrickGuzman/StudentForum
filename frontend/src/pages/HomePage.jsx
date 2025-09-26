@@ -328,22 +328,11 @@ function HomePage() {
                 <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
                 <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                  <div className="relative group flex items-center">
-                    <Link to={`/profile/${p.user_id}`} className="mr-2">
-                      <img
-                        src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
-                        alt={p.author_name}
-                        className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
-                        onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                      />
-                    </Link>
-                    <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
-                      {p.author_name}
-                    </Link>
-                    <Link to={`/profile/${p.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                      View Profile
-                    </Link>
-                  </div>
+                  <UserProfilePreview
+                    userId={p.user_id}
+                    avatar={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                    name={p.author_name}
+                  />
                   {(() => {
                     let badges = Array.isArray(p.badges) ? [...p.badges] : [];
                     if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
