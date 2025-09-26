@@ -24,13 +24,14 @@ function HomePage() {
   const [userSearchError, setUserSearchError] = useState('');
 
   // Search users by name
+  const API_BASE = process.env.REACT_APP_API_BASE_URL || '';
   const handleUserSearch = async (e) => {
     e.preventDefault();
     if (!userSearchInput.trim()) return;
     setUserSearchLoading(true);
     setUserSearchError('');
     try {
-      const res = await fetch(`/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`);
+      const res = await fetch(`${API_BASE}/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`);
       const data = await res.json();
       setUserSearchResults(Array.isArray(data) ? data : []);
     } catch (err) {
