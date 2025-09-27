@@ -205,7 +205,7 @@ export default function PostDetailPage() {
                     })()}
                   </span>
                   <span className="text-gray-400 text-xs font-semibold mt-1">
-                    {post.created_at && format(utcToZonedTime(post.created_at, 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
+                    {post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
                   </span>
                 </div>
             </div>
@@ -352,7 +352,7 @@ export default function PostDetailPage() {
                         </div>
                       }
                       badges={badges}
-                      time={comment.created_at ? format(utcToZonedTime(comment.created_at, 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
+                      time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
