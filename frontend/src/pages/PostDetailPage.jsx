@@ -302,24 +302,36 @@ export default function PostDetailPage() {
           <style>{`
             @media (max-width: 640px) {
               .comment-card-mobile {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 0.5rem !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.75rem !important;
                 padding: 1rem !important;
+                position: relative !important;
               }
               .comment-avatar-mobile {
-                width: 2.5rem !important;
-                height: 2.5rem !important;
-                margin-bottom: 0.5rem !important;
+                width: 3rem !important;
+                height: 3rem !important;
+                border-radius: 50% !important;
+                object-fit: cover !important;
+                margin-bottom: 0 !important;
+                box-shadow: 0 2px 8px rgba(186,104,200,0.12);
               }
               .comment-meta-mobile {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 0.25rem !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 0.5rem !important;
               }
               .comment-delete-mobile {
-                margin-top: 0.5rem !important;
+                margin-top: 0 !important;
                 align-self: flex-end !important;
+              }
+              .comment-date-mobile {
+                position: absolute !important;
+                right: 1rem !important;
+                bottom: 0.5rem !important;
+                font-size: 0.85rem !important;
+                color: #888 !important;
+                text-align: right !important;
               }
             }
           `}</style>
