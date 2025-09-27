@@ -161,7 +161,7 @@ export default function PostDetailPage() {
           onClick={() => navigate('/')}
           aria-label="Close Forum and return to Home"
         >
-          <span className="text-2xl">⬅️</span> <span className="hidden sm:inline">Close Forum</span>
+    <span className="text-2xl">⬅️</span> <span className="inline">Close Forum</span>
         </button>
       </div>
       {/* Floating pastel circles */}
@@ -299,6 +299,30 @@ export default function PostDetailPage() {
           <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg flex items-center gap-2">
             <span className="text-3xl">💬</span> Comments
           </h3>
+          <style>{`
+            @media (max-width: 640px) {
+              .comment-card-mobile {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem !important;
+                padding: 1rem !important;
+              }
+              .comment-avatar-mobile {
+                width: 2.5rem !important;
+                height: 2.5rem !important;
+                margin-bottom: 0.5rem !important;
+              }
+              .comment-meta-mobile {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.25rem !important;
+              }
+              .comment-delete-mobile {
+                margin-top: 0.5rem !important;
+                align-self: flex-end !important;
+              }
+            }
+          `}</style>
           {/* Only show comments if post is approved or author is viewing */}
           {(post.status === 'approved' || isAuthor) ? (
             <>
