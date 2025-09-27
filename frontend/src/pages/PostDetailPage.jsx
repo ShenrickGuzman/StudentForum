@@ -149,16 +149,20 @@ export default function PostDetailPage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
-      {/* Close Forum Button */}
-      <button
-        type="button"
-        className="fixed top-4 left-4 z-30 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
-        style={{ fontFamily: 'Baloo, Fredoka, Comic Neue, cursive' }}
-        onClick={() => navigate('/')}
-        aria-label="Close Forum and return to Home"
-      >
-        <span className="text-2xl">⬅️</span> <span className="hidden sm:inline">Close Forum</span>
-      </button>
+      {/* Navigation Bar Placeholder (if any) */}
+      <div className="h-16 w-full" />
+      {/* Close Forum Button below nav bar */}
+      <div className="w-full flex justify-start px-4 mb-2">
+        <button
+          type="button"
+          className="px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
+          style={{ fontFamily: 'Baloo, Fredoka, Comic Neue, cursive' }}
+          onClick={() => navigate('/')}
+          aria-label="Close Forum and return to Home"
+        >
+          <span className="text-2xl">⬅️</span> <span className="hidden sm:inline">Close Forum</span>
+        </button>
+      </div>
       {/* Floating pastel circles */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
@@ -182,6 +186,7 @@ export default function PostDetailPage() {
                   onError={e => { e.target.src = '/Cute-Cat.png'; }}
                 />
               </div>
+                {/* Author Profile Picture - Only show once */}
                 <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
                   <img
                     src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
