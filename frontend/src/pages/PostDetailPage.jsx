@@ -1,6 +1,7 @@
 
 
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { format, utcToZonedTime } from 'date-fns-tz';
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
@@ -204,7 +205,7 @@ export default function PostDetailPage() {
                     })()}
                   </span>
                   <span className="text-gray-400 text-xs font-semibold mt-1">
-                    {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                    {post.created_at && format(utcToZonedTime(post.created_at, 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
                   </span>
                 </div>
             </div>
@@ -351,7 +352,7 @@ export default function PostDetailPage() {
                         </div>
                       }
                       badges={badges}
-                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
+                      time={comment.created_at ? format(utcToZonedTime(comment.created_at, 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
