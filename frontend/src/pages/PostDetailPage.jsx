@@ -178,23 +178,15 @@ export default function PostDetailPage() {
           {/* Header Row: User info left, category right */}
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
+              {/* Author Profile Picture - Only show once */}
+              <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
                 <img
                   src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
                   alt="avatar"
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-full h-full rounded-full object-cover"
                   onError={e => { e.target.src = '/Cute-Cat.png'; }}
                 />
               </div>
-                {/* Author Profile Picture - Only show once */}
-                <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
-                  <img
-                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                    alt="avatar"
-                    className="w-full h-full rounded-full object-cover"
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                </div>
                 <div className="flex flex-col justify-center ml-2">
                   <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight flex flex-wrap items-center gap-2">
                     {post.users?.name || post.author_name}
@@ -212,7 +204,7 @@ export default function PostDetailPage() {
                     })()}
                   </span>
                   <span className="text-gray-400 text-xs font-semibold mt-1">
-                    {post.created_at && new Date(post.created_at).toLocaleString('en-GB', { timeZone: 'GMT', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                    {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                   </span>
                 </div>
             </div>
@@ -359,7 +351,7 @@ export default function PostDetailPage() {
                         </div>
                       }
                       badges={badges}
-                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-GB', { timeZone: 'GMT', hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
+                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
