@@ -151,8 +151,8 @@ export default function PostDetailPage() {
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       {/* Navigation Bar Placeholder (if any) */}
       <div className="h-16 w-full" />
-      {/* Close Forum Button below nav bar */}
-      <div className="w-full flex justify-start px-4 mb-2">
+      {/* Close Forum Button just above the post card for mobile */}
+      <div className="w-full flex justify-start px-4 mb-2" style={{ maxWidth: '700px', margin: '0 auto' }}>
         <button
           type="button"
           className="px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
@@ -212,7 +212,7 @@ export default function PostDetailPage() {
                     })()}
                   </span>
                   <span className="text-gray-400 text-xs font-semibold mt-1">
-                    {post.created_at && new Date(post.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                    {post.created_at && new Date(post.created_at).toLocaleString('en-GB', { timeZone: 'GMT', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                   </span>
                 </div>
             </div>
@@ -359,7 +359,7 @@ export default function PostDetailPage() {
                         </div>
                       }
                       badges={badges}
-                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
+                      time={comment.created_at ? new Date(comment.created_at).toLocaleString('en-GB', { timeZone: 'GMT', hour: '2-digit', minute: '2-digit', hour12: true, month: 'short', day: 'numeric' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
