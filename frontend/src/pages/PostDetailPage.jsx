@@ -360,7 +360,8 @@ export default function PostDetailPage() {
                             <img
                               src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
                               alt="avatar"
-                              className="w-12 h-12 rounded-full object-cover hover:ring-2 hover:ring-purple-400 transition-all"
+                              className="w-12 h-12 rounded-full object-cover aspect-square hover:ring-2 hover:ring-purple-400 transition-all"
+                              style={{objectFit:'cover', aspectRatio:'1/1'}}
                               onError={e => { e.target.src = '/Cute-Cat.png'; }}
                             />
                           </button>
