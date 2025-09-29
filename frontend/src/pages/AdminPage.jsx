@@ -737,7 +737,11 @@ export default function AdminPage() {
                   <div className="text-sm font-bold mb-1">
                     <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>{categories.find(c => c.key === p.category)?.label || p.category}</span>
                   </div>
-                  <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl font-extrabold text-gray-800 drop-shadow">{p.title}</span>
+                    {p.pinned && <span className="ml-2 px-2 py-1 rounded-full bg-pink-100 border border-pink-300 text-pink-700 text-xs font-bold flex items-center gap-1">📌 Pinned</span>}
+                    {p.locked && <span className="ml-2 px-2 py-1 rounded-full bg-red-100 border border-red-300 text-red-700 text-xs font-bold flex items-center gap-1">🔒 Locked</span>}
+                  </div>
                   <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                   <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
                     <div className="flex items-center">
