@@ -745,23 +745,29 @@ export default function AdminPage() {
                   </div>
                   <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                   <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                    <div className="flex items-center">
-                      <span className="mr-2">
-                        <img
-                          src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
-                          alt={p.author_name}
-                          className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
-                          onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                        />
-                      </span>
-                      <span className="font-bold text-gray-700 hover:text-purple-600 transition-all">{p.author_name}</span>
-                    </div>
-                    {badges.length > 0 && (
-                      <span className="flex gap-1 ml-2">
-                        {badges.map((badge, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                        ))}
-                      </span>
+                    {p.anonymous ? (
+                      <span className="font-bold text-gray-500">Anonymous</span>
+                    ) : (
+                      <>
+                        <div className="flex items-center">
+                          <span className="mr-2">
+                            <img
+                              src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                              alt={p.author_name}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
+                              onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                            />
+                          </span>
+                          <span className="font-bold text-gray-700 hover:text-purple-600 transition-all">{p.author_name}</span>
+                        </div>
+                        {badges.length > 0 && (
+                          <span className="flex gap-1 ml-2">
+                            {badges.map((badge, idx) => (
+                              <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                            ))}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                   {/* Action buttons below author profile */}
