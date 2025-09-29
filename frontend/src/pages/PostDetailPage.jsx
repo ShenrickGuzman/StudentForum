@@ -28,6 +28,7 @@ export default function PostDetailPage() {
   const [reacting, setReacting] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [commentAnonymous, setCommentAnonymous] = useState(false);
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
   // Track which comment's profile button is shown
   const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
@@ -115,8 +116,9 @@ export default function PostDetailPage() {
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (newComment.trim()) {
-      await api.post(`/posts/${id}/comments`, { content: newComment });
+      await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous });
       setNewComment('');
+      setCommentAnonymous(false);
       // Re-fetch comments after adding a new one
       const response = await api.get(`/posts/${id}/comments`);
       setComments(response.data);
@@ -179,21 +181,20 @@ export default function PostDetailPage() {
           {/* Header Row: User info left, category right */}
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
-              {/* Author Profile Picture - Only show once */}
-              <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
-                <img
-                  src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                  alt="avatar"
-                  className="w-full h-full rounded-full object-cover"
-                  onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                />
-              </div>
+              {/* Author info: hide if anonymous */}
+              {post.anonymous ? (
+                <div className="flex flex-col items-center justify-center ml-2">
+                  <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
+                    <span className="text-2xl">👤</span>
+                  </div>
+                  <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight flex flex-wrap items-center gap-2">Anonymous</span>
+                  <span className="text-gray-400 text-xs font-semibold mt-1">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                </div>
+              ) : (
                 <div className="flex flex-col justify-center ml-2">
                   <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight flex flex-wrap items-center gap-2">
                     {post.users?.name || post.author_name}
-                    <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">
-                      View Profile
-                    </Link>
+                    <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>
                   </span>
                   <span className="flex flex-wrap gap-1 mt-1">
                     {(() => {
@@ -204,10 +205,9 @@ export default function PostDetailPage() {
                       ));
                     })()}
                   </span>
-                  <span className="text-gray-400 text-xs font-semibold mt-1">
-                    {post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
-                  </span>
+                  <span className="text-gray-400 text-xs font-semibold mt-1">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
                 </div>
+              )}
             </div>
             <span className={`px-4 py-1 rounded-full text-sm shadow font-extrabold font-cartoon tracking-wide drop-shadow-lg mt-2 ${categories.find(c => c.key === post.category)?.color || 'bg-gray-400 text-white'}`}>
               {categories.find(c => c.key === post.category)?.label || post.category}
@@ -350,7 +350,7 @@ export default function PostDetailPage() {
                   return (
                     <CommentCard
                       key={comment.id}
-                      avatar={
+                      avatar={comment.anonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
                         <div className="relative flex items-center">
                           <button
                             className="bg-transparent border-none p-0 cursor-pointer"
@@ -371,8 +371,8 @@ export default function PostDetailPage() {
                             </Link>
                           )}
                         </div>
-                      }
-                      username={
+                      )}
+                      username={comment.anonymous ? <span className="font-bold text-gray-500">Anonymous</span> : (
                         <div className="relative inline-block">
                           <button
                             className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
@@ -387,8 +387,8 @@ export default function PostDetailPage() {
                             </Link>
                           )}
                         </div>
-                      }
-                      badges={badges}
+                      )}
+                      badges={comment.anonymous ? [] : badges}
                       time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
@@ -421,6 +421,15 @@ export default function PostDetailPage() {
                       className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
                       style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
                     />
+                    <label className="flex items-center gap-2 mt-2">
+                      <input
+                        type="checkbox"
+                        checked={commentAnonymous}
+                        onChange={e => setCommentAnonymous(e.target.checked)}
+                        className="w-5 h-5 accent-pink-500"
+                      />
+                      <span className="font-bold text-pink-500">Comment Anonymously</span>
+                    </label>
                   </div>
                   <button
                     type="submit"
