@@ -620,7 +620,7 @@ export default function AdminPage() {
         {deleteModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
             <div className="cartoon-card border-4 border-error bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full animate-wiggle">
-              <div className="text-5xl"> ️</div>
+              <div className="text-5xl">�️</div>
               <div className="text-2xl font-extrabold text-error text-center">Delete this log permanently?</div>
               <div className="text-lg text-dark text-center">{deleteModal.name} <span className="text-gray-400">({deleteModal.email})</span></div>
               <div className="flex gap-4 mt-2">
@@ -732,7 +732,7 @@ export default function AdminPage() {
             if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
             return (
               <div key={p.id} className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-row gap-4 relative p-6">
-                <div className="absolute top-2 right-4 text-2xl">{p.pinned ? ' ' : ''}</div>
+                <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '�' : ''}</div>
                 <div className="flex flex-col flex-1">
                   <div className="text-sm font-bold mb-1">
                     <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>{categories.find(c => c.key === p.category)?.label || p.category}</span>
@@ -759,6 +759,19 @@ export default function AdminPage() {
                       </span>
                     )}
                   </div>
+                  {/* Action buttons below author profile */}
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500" onClick={() => openPostDetail(p.id)}>Open</button>
+                    {p.locked
+                      ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600" onClick={() => handleUnlock(p.id)}>Unlock 🔓</button>
+                      : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleLock(p.id)}>Lock 🔒</button>
+                    }
+                    {p.pinned
+                      ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleUnpin(p.id)}>Unpin 📌</button>
+                      : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => handlePin(p.id)}>Pin 📌</button>
+                    }
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => handleDeletePost(p.id)}>Delete 🗑️</button>
+                  </div>
                   {/* Status label for pending/rejected posts (if needed) */}
                   {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
                     <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${
@@ -780,18 +793,6 @@ export default function AdminPage() {
                     />
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2 mt-3 absolute left-6 bottom-4">
-                  <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500" onClick={() => openPostDetail(p.id)}>Open</button>
-                  {p.locked
-                    ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600" onClick={() => handleUnlock(p.id)}>Unlock 🔓</button>
-                    : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500" onClick={() => handleLock(p.id)}>Lock 🔒</button>
-                  }
-                  {p.pinned
-                    ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleUnpin(p.id)}>Unpin 📌</button>
-                    : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => handlePin(p.id)}>Pin 📌</button>
-                  }
-                  <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => handleDeletePost(p.id)}>Delete 🗑️</button>
-                </div>
               </div>
             );
           })}
