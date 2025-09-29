@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
+import PostDetailPage from './PostDetailPage';
 
 export default function AdminPage() {
   
