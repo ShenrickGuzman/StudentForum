@@ -18,6 +18,7 @@ export default function NewPostPage() {
     { key: 'Random', icon: '✨', colors: 'from-purple-400 to-violet-500' },
   ];
   const [linkUrl, setLinkUrl] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
   const textareaRef = useRef(null);
   const [imageFile, setImageFile] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -77,6 +78,7 @@ export default function NewPostPage() {
         category,
         linkUrl,
         imageUrl,
+        anonymous,
       });
       // Clear draft on successful submit
       localStorage.removeItem(DRAFT_KEY);
@@ -129,6 +131,15 @@ export default function NewPostPage() {
           style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}} 
         />
         <div className="flex flex-col gap-3">
+          <label className="flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              checked={anonymous}
+              onChange={e => setAnonymous(e.target.checked)}
+              className="w-5 h-5 accent-pink-500"
+            />
+            <span className="font-bold text-pink-500">Post Anonymously</span>
+          </label>
           <label className="text-xs sm:text-sm font-bold text-purple-500 tracking-wide uppercase pl-1 sm:pl-4" style={{fontFamily: 'Baloo, Fredoka, Comic Neue, cursive'}}>Category</label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             {categories.map(c => {
