@@ -620,7 +620,7 @@ export default function AdminPage() {
         {deleteModal.open && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
             <div className="cartoon-card border-4 border-error bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full animate-wiggle">
-              <div className="text-5xl">�️</div>
+              <div className="text-5xl">🗑️</div>
               <div className="text-2xl font-extrabold text-error text-center">Delete this log permanently?</div>
               <div className="text-lg text-dark text-center">{deleteModal.name} <span className="text-gray-400">({deleteModal.email})</span></div>
               <div className="flex gap-4 mt-2">
@@ -732,7 +732,7 @@ export default function AdminPage() {
             if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
             return (
               <div key={p.id} className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-row gap-4 relative p-6">
-                <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '�' : ''}</div>
+                <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
                 <div className="flex flex-col flex-1">
                   <div className="text-sm font-bold mb-1">
                     <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>{categories.find(c => c.key === p.category)?.label || p.category}</span>
