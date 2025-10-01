@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS about TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS interests TEXT[];
-ALTER TABLE users ADD COLUMN IF NOT EXISTS badge TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS badges TEXT[];
 
 -- Ensure case-insensitive uniqueness for usernames
 CREATE UNIQUE INDEX IF NOT EXISTS users_name_lower_idx ON users ((lower(name)));
@@ -31,6 +31,9 @@ CREATE TABLE IF NOT EXISTS posts (
   status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+-- Add anonymous column for anonymous posting
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS anonymous BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE IF NOT EXISTS comments (
   id SERIAL PRIMARY KEY,
