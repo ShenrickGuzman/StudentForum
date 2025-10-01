@@ -206,6 +206,37 @@ export default function PostDetailPage() {
                     )}
                   </div>
                 </div>
+              ) : isAnonymous && postAuthorRevealed ? (
+                <div className="flex items-center gap-4 ml-2">
+                  <img
+                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
+                    alt="author avatar"
+                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-purple-300 shadow"
+                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight">{post.users?.name || post.author_name}</span>
+                      <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-1">
+                      {(() => {
+                        let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
+                        if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                        return badges.map((badge, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                        ));
+                      })()}
+                    </div>
+                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                    {isAdmin && (
+                      <button
+                        className="mt-2 px-3 py-1 rounded-xl bg-yellow-100 text-purple-800 font-bold text-xs border border-yellow-400 hover:bg-yellow-200 transition-all"
+                        onClick={() => setPostAuthorRevealed(false)}
+                      >Hide Author</button>
+                    )}
+                  </div>
+                </div>
               ) : (
                 <div className="flex items-center gap-4 ml-2">
                   <img
@@ -397,13 +428,30 @@ export default function PostDetailPage() {
                           )}
                         </div>
                       )}
-                      username={isCommentAnonymous ? (
-                        <span className="font-bold text-gray-500">Anonymous{isAdmin && (
-                          <button
-                            className="ml-2 px-2 py-0.5 rounded bg-yellow-200 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-300 transition-all"
-                            onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: true }))}
-                          >Reveal Author</button>
-                        )}</span>
+                      username={comment.anonymous ? (
+                        <span className="font-bold text-gray-500">
+                          {revealedComments[comment.id] ? (
+                            <>
+                              {comment.author_name || 'User'}
+                              {isAdmin && (
+                                <button
+                                  className="ml-2 px-2 py-0.5 rounded bg-yellow-100 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-200 transition-all"
+                                  onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: false }))}
+                                >Hide Author</button>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              Anonymous
+                              {isAdmin && (
+                                <button
+                                  className="ml-2 px-2 py-0.5 rounded bg-yellow-200 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-300 transition-all"
+                                  onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: true }))}
+                                >Reveal Author</button>
+                              )}
+                            </>
+                          )}
+                        </span>
                       ) : (
                         <div className="relative inline-block">
                           <button
