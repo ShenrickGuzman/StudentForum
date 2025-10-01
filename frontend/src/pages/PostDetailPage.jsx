@@ -34,6 +34,10 @@ export default function PostDetailPage() {
   const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
   // Track if forum author's profile button is shown
   const [showAuthorProfileBtn, setShowAuthorProfileBtn] = useState(false);
+  // Track if admin has revealed the post author
+  const [postAuthorRevealed, setPostAuthorRevealed] = useState(false);
+  // Track which comment authors have been revealed (by comment id)
+  const [revealedComments, setRevealedComments] = useState({});
 
   const reactionTypes = [
     { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
@@ -152,6 +156,8 @@ export default function PostDetailPage() {
   const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
   const isAuthor = user && post.user_id === user.id;
 
+  const isAdmin = user && (user.role === 'admin' || user.role === 'teacher' || user.role === 'shen');
+
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       {/* Navigation Bar Placeholder (if any) */}
@@ -184,7 +190,7 @@ export default function PostDetailPage() {
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
               {/* Author info: hide if anonymous */}
-              {isAnonymous ? (
+              {isAnonymous && !postAuthorRevealed ? (
                 <div className="flex items-center gap-4 ml-2">
                   <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-5xl text-white font-bold shadow-fun overflow-hidden">
                     <span className="text-5xl">👤</span>
@@ -192,50 +198,38 @@ export default function PostDetailPage() {
                   <div className="flex flex-col justify-center">
                     <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight">Anonymous</span>
                     <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                    {isAdmin && (
+                      <button
+                        className="mt-2 px-3 py-1 rounded-xl bg-yellow-200 text-purple-800 font-bold text-xs border border-yellow-400 hover:bg-yellow-300 transition-all"
+                        onClick={() => setPostAuthorRevealed(true)}
+                      >Reveal Author</button>
+                    )}
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-4 ml-2">
-                  {isAnonymous ? (
-                    <div className="flex items-center gap-4">
-                      <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-5xl text-white font-bold shadow-fun overflow-hidden">
-                        <span className="text-5xl">👤</span>
-                      </div>
-                      <div className="flex flex-col justify-center">
-                        <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight">Anonymous</span>
-                        <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                      </div>
+                  <img
+                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
+                    alt="author avatar"
+                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-purple-300 shadow"
+                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                  />
+                  <div className="flex flex-col justify-center">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight">{post.users?.name || post.author_name}</span>
+                      <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>
                     </div>
-                  ) : (
-                    <>
-                      <img
-                        src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                        alt="author avatar"
-                        className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-purple-300 shadow"
-                        onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                      />
-                      <div className="flex flex-col justify-center">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight">{post.users?.name || post.author_name}</span>
-                          {/* Hide View Profile if anonymous */}
-                          {!isAnonymous && <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>}
-                        </div>
-                        {/* Hide badges if anonymous */}
-                        {!isAnonymous && (
-                          <div className="flex flex-wrap gap-2 mb-1">
-                            {(() => {
-                              let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
-                              if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                              return badges.map((badge, idx) => (
-                                <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                              ));
-                            })()}
-                          </div>
-                        )}
-                        <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                      </div>
-                    </>
-                  )}
+                    <div className="flex flex-wrap gap-2 mb-1">
+                      {(() => {
+                        let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
+                        if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                        return badges.map((badge, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                        ));
+                      })()}
+                    </div>
+                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -377,55 +371,56 @@ export default function PostDetailPage() {
                   if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
                     badges = [...badges, 'ADMIN'];
                   }
+                  const isCommentAnonymous = comment.anonymous && !revealedComments[comment.id];
                   return (
                     <CommentCard
                       key={comment.id}
-                      avatar={comment.anonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
+                      avatar={isCommentAnonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
                         <div className="relative flex items-center">
-                          {/* Hide profile button if anonymous */}
-                          {!comment.anonymous && (
-                            <button
-                              className="bg-transparent border-none p-0 cursor-pointer"
-                              onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
-                              style={{ background: 'none' }}
-                            >
-                              <img
-                                src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
-                                alt="avatar"
-                                className="w-12 h-12 rounded-full object-cover aspect-square hover:ring-2 hover:ring-purple-400 transition-all"
-                                style={{objectFit:'cover', aspectRatio:'1/1'}}
-                                onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                              />
-                            </button>
-                          )}
-                          {!comment.anonymous && showProfileBtnFor === comment.id && (
+                          <button
+                            className="bg-transparent border-none p-0 cursor-pointer"
+                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
+                            style={{ background: 'none' }}
+                          >
+                            <img
+                              src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
+                              alt="avatar"
+                              className="w-12 h-12 rounded-full object-cover aspect-square hover:ring-2 hover:ring-purple-400 transition-all"
+                              style={{objectFit:'cover', aspectRatio:'1/1'}}
+                              onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                            />
+                          </button>
+                          {showProfileBtnFor === comment.id && (
                             <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
                               View Profile
                             </Link>
                           )}
                         </div>
                       )}
-                      username={comment.anonymous ? <span className="font-bold text-gray-500">Anonymous</span> : (
+                      username={isCommentAnonymous ? (
+                        <span className="font-bold text-gray-500">Anonymous{isAdmin && (
+                          <button
+                            className="ml-2 px-2 py-0.5 rounded bg-yellow-200 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-300 transition-all"
+                            onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: true }))}
+                          >Reveal Author</button>
+                        )}</span>
+                      ) : (
                         <div className="relative inline-block">
-                          {/* Hide profile button if anonymous */}
-                          {!comment.anonymous && (
-                            <button
-                              className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
-                              onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
-                              style={{ background: 'none' }}
-                            >
-                              {comment.author_name || 'User'}
-                            </button>
-                          )}
-                          {!comment.anonymous && showProfileBtnFor === comment.id && (
+                          <button
+                            className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
+                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
+                            style={{ background: 'none' }}
+                          >
+                            {comment.author_name || 'User'}
+                          </button>
+                          {showProfileBtnFor === comment.id && (
                             <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
                               View Profile
                             </Link>
                           )}
-                          {comment.anonymous && <span className="font-bold text-gray-500">Anonymous</span>}
                         </div>
                       )}
-                      badges={comment.anonymous ? [] : badges}
+                      badges={isCommentAnonymous ? [] : badges}
                       time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
                       content={comment.content}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
