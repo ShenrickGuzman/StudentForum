@@ -72,14 +72,16 @@ export default function NewPostPage() {
         });
         imageUrl = uploadRes.data.url;
       }
-      await api.post('/posts', {
+      const payload = {
         title,
         content,
         category,
         linkUrl,
         imageUrl,
-        anonymous,
-      });
+        anonymous: anonymous === true ? true : false,
+      };
+      console.log('POST PAYLOAD:', payload);
+      await api.post('/posts', payload);
       // Clear draft on successful submit
       localStorage.removeItem(DRAFT_KEY);
       navigate('/');
