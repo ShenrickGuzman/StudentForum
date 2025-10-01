@@ -185,12 +185,14 @@ export default function PostDetailPage() {
             <div className="flex items-center gap-4">
               {/* Author info: hide if anonymous */}
               {isAnonymous ? (
-                <div className="flex flex-col items-center justify-center ml-2">
-                  <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-2xl text-white font-bold shadow-fun overflow-hidden">
-                    <span className="text-2xl">👤</span>
+                <div className="flex items-center gap-4 ml-2">
+                  <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-5xl text-white font-bold shadow-fun overflow-hidden">
+                    <span className="text-5xl">👤</span>
                   </div>
-                  <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight flex flex-wrap items-center gap-2">Anonymous</span>
-                  <span className="text-gray-400 text-xs font-semibold mt-1">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                  <div className="flex flex-col justify-center">
+                    <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight">Anonymous</span>
+                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-4 ml-2">
