@@ -406,9 +406,10 @@ const createPostsRouter = () => {
         return res.status(403).json({ error: 'Post not available' });
       }
 
-      // Mask author info if anonymous
+      // Mask author info if anonymous, unless admin
       let maskedPost = { ...postData };
-      if (postData.anonymous) {
+      const isAdmin = req.user?.role === 'admin' || req.user?.role === 'teacher' || (req.user?.name && req.user.name.trim().toLowerCase() === 'shen');
+      if (postData.anonymous && !isAdmin) {
         maskedPost.users = {
           name: 'Anonymous',
           avatar: null,
@@ -433,9 +434,9 @@ const createPostsRouter = () => {
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
-      // Mask author info for anonymous comments
+      // Mask author info for anonymous comments, unless admin
       const comments = commentsArr.map(c => {
-        if (c.anonymous) {
+        if (c.anonymous && !isAdmin) {
           return {
             ...c,
             users: {
