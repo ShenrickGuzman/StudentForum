@@ -298,7 +298,7 @@ export default function PostDetailPage() {
                           className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-bold shadow hover:scale-105 transition-all"
                           onClick={async () => {
                             setShowPostDeleteConfirm(false);
-                            await api.delete(`/posts/${post.id}/cancel`);
+                            await api.delete(`/posts/${post.id}`);
                             navigate('/');
                           }}
                         >Yes</button>
