@@ -492,7 +492,7 @@ const createPostsRouter = () => {
 
   // Comment (prevent if locked)
   router.post('/:id/comments', requireAuth, async (req, res) => {
-    const { content } = req.body || {};
+    const { content, anonymous } = req.body || {};
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
       const { data: postRes } = await supabase
@@ -501,9 +501,18 @@ const createPostsRouter = () => {
         .eq('id', req.params.id)
         .single();
       if (postRes?.locked) return res.status(403).json({ error: 'Post is locked. Comments are disabled.' });
+      // Accept true, 'true', 1, '1' as true, else false
+      let anonBool = false;
+      if (typeof anonymous === 'boolean') {
+        anonBool = anonymous;
+      } else if (typeof anonymous === 'string') {
+        anonBool = anonymous.trim().toLowerCase() === 'true';
+      } else if (typeof anonymous === 'number') {
+        anonBool = anonymous === 1;
+      }
       const { data, error } = await supabase
         .from('comments')
-        .insert([{ post_id: req.params.id, user_id: req.user.id, content }])
+        .insert([{ post_id: req.params.id, user_id: req.user.id, content, anonymous: anonBool }])
         .select('*')
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
