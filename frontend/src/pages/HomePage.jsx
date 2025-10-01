@@ -329,17 +329,26 @@ function HomePage() {
                 <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
                   <div className="flex items-center">
-                    <Link to={`/profile/${p.user_id}`} className="mr-2">
-                      <img
-                        src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
-                        alt={p.author_name}
-                        className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
-                        onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                      />
-                    </Link>
-                    <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
-                      {p.author_name}
-                    </Link>
+                    {p.anonymous ? (
+                      <>
+                        <span className="mr-2 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xl text-white font-bold shadow-fun select-none">👤</span>
+                        <span className="font-bold text-gray-500 select-none">Anonymous</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link to={`/profile/${p.user_id}`} className="mr-2">
+                          <img
+                            src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                            alt={p.author_name}
+                            className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
+                            onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                          />
+                        </Link>
+                        <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
+                          {p.author_name}
+                        </Link>
+                      </>
+                    )}
                   </div>
                   {(() => {
                     let badges = Array.isArray(p.badges) ? [...p.badges] : [];
