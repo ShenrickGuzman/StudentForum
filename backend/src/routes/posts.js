@@ -1,4 +1,4 @@
- 
+
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../lib/supabaseClient.js';
@@ -24,6 +24,23 @@ const isAdmin = (req, res, next) => {
 const createPostsRouter = () => {
   
   const router = express.Router();
+
+ // Test endpoint to debug insert object
+  router.post('/test-insert', requireAuth, async (req, res) => {
+    const { title, content, category, imageUrl, linkUrl, anonymous } = req.body || {};
+    const anonBool = anonymous === true || anonymous === 'true' || anonymous === 1 || anonymous === '1';
+    const insertObj = {
+      user_id: req.user.id,
+      title,
+      content,
+      category,
+      image_url: imageUrl || null,
+      link_url: linkUrl || null,
+      status: 'pending',
+      anonymous: !!anonBool
+    };
+    res.json({ insertObj });
+  });
 
 // Get post count for a user
   router.get('/count', requireAuth, async (req, res) => {
@@ -272,14 +289,42 @@ const createPostsRouter = () => {
 
   // Create post
   router.post('/', requireAuth, async (req, res) => {
-    const { title, content, category, imageUrl, linkUrl } = req.body || {};
+    console.log('POST /api/posts route hit');
+    console.log('Request body:', req.body);
+    const { title, content, category, imageUrl, linkUrl, anonymous } = req.body || {};
+    // Debug: print the value of anonymous received
+    console.log('DEBUG anonymous value received:', anonymous, 'typeof:', typeof anonymous);
+    // Accept true, 'true', 1, '1' as true, else false
+    let anonBool = false;
+    if (typeof anonymous === 'boolean') {
+      anonBool = anonymous;
+    } else if (typeof anonymous === 'string') {
+      anonBool = anonymous.trim().toLowerCase() === 'true';
+    } else if (typeof anonymous === 'number') {
+      anonBool = anonymous === 1;
+    }
+    // Debug: print the computed anonBool
+    console.log('DEBUG computed anonBool:', anonBool);
+    const insertObj = {
+      user_id: req.user.id,
+      title,
+      content,
+      category,
+      image_url: imageUrl || null,
+      link_url: linkUrl || null,
+      status: 'pending',
+      anonymous: anonBool
+    };
+    // Debug: print the full insert object
+    console.log('DEBUG final insertObj:', insertObj);
     if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
     try {
       const { data, error } = await supabase
         .from('posts')
-        .insert([{ user_id: req.user.id, title, content, category, image_url: imageUrl || null, link_url: linkUrl || null, status: 'pending' }])
+        .insert([insertObj])
         .select('*')
         .single();
+      console.log('SUPABASE INSERT RESULT:', { data, error });
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
       res.json(data);
     } catch (e) {
@@ -321,13 +366,26 @@ const createPostsRouter = () => {
       const { data, error } = await query;
       if (error) return res.status(500).json({ error: 'Failed to fetch posts' });
       // Add author_name, avatar, role, badges for compatibility
-      const posts = data.map(p => ({
-        ...p,
-        author_name: p.users?.name || null,
-        avatar: p.users?.avatar || null,
-        author_role: p.users?.role || null,
-        badges: p.users?.badges || []
-      }));
+      const posts = data.map(p => {
+        if (p.anonymous) {
+          return {
+            ...p,
+            author_name: 'Anonymous',
+            avatar: null,
+            author_role: null,
+            badges: [],
+            users: { name: 'Anonymous', avatar: null, role: null, badges: [] }
+          };
+        } else {
+          return {
+            ...p,
+            author_name: p.users?.name || null,
+            avatar: p.users?.avatar || null,
+            author_role: p.users?.role || null,
+            badges: p.users?.badges || []
+          };
+        }
+      });
       res.json(posts);
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch posts' });
@@ -348,156 +406,60 @@ const createPostsRouter = () => {
         return res.status(403).json({ error: 'Post not available' });
       }
 
-  // Admin approve post
-  router.post('/:id/approve', requireAuth, isAdmin, async (req, res) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .update({ status: 'approved' })
-        .eq('id', req.params.id)
-        .eq('status', 'pending');
-      if (error) return res.status(500).json({ error: 'Failed to approve post' });
-      res.json({ ok: true });
-    } catch (e) {
-      res.status(500).json({ error: 'Failed to approve post' });
-    }
-  });
-
-  // Admin reject post
-  router.post('/:id/reject', requireAuth, isAdmin, async (req, res) => {
-    try {
-      const { error } = await supabase
-        .from('posts')
-        .update({ status: 'rejected' })
-        .eq('id', req.params.id)
-        .eq('status', 'pending');
-      if (error) return res.status(500).json({ error: 'Failed to reject post' });
-      res.json({ ok: true });
-    } catch (e) {
-      res.status(500).json({ error: 'Failed to reject post' });
-    }
-  });
-
-  // Author cancels (deletes) their own post (any status, cascade delete related data)
-  router.delete('/:id/cancel', requireAuth, async (req, res) => {
-    try {
-      const { data: postData, error: postError } = await supabase
-        .from('posts')
-        .select('user_id, status')
-        .eq('id', req.params.id)
-        .single();
-      if (postError) {
-        console.error('Error fetching post for delete:', postError);
-        return res.status(500).json({ error: 'Database error fetching post', details: postError.message || postError });
-      }
-      if (!postData) {
-        return res.status(404).json({ error: 'Post not found' });
-      }
-      if (postData.user_id !== req.user.id) {
-        return res.status(403).json({ error: 'You are not the author of this post.' });
+      // Mask author info if anonymous
+      let maskedPost = { ...postData };
+      if (postData.anonymous) {
+        maskedPost.users = {
+          name: 'Anonymous',
+          avatar: null,
+          role: null,
+          badges: []
+        };
+        maskedPost.author_name = 'Anonymous';
+        maskedPost.avatar = null;
+        maskedPost.author_role = null;
+        maskedPost.badges = [];
+      } else {
+        maskedPost.author_name = postData.users?.name || null;
+        maskedPost.avatar = postData.users?.avatar || null;
+        maskedPost.author_role = postData.users?.role || null;
+        maskedPost.badges = postData.users?.badges || [];
       }
 
-      // 1. Get all comment IDs for this post
-      const { data: comments, error: commentsError } = await supabase
-        .from('comments')
-        .select('id')
-        .eq('post_id', req.params.id);
-      if (commentsError) {
-        console.error('Error fetching comments for post delete:', commentsError);
-        return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message || commentsError });
-      }
-      const commentIds = (comments || []).map(c => c.id);
-
-      // 2. Delete all comment reactions for these comments
-      if (commentIds.length > 0) {
-        const { error: delCommentReactionsError } = await supabase
-          .from('comment_reactions')
-          .delete()
-          .in('comment_id', commentIds);
-        if (delCommentReactionsError) {
-          console.error('Error deleting comment reactions:', delCommentReactionsError);
-          return res.status(500).json({ error: 'Failed to delete comment reactions', details: delCommentReactionsError.message || delCommentReactionsError });
-        }
-      }
-
-      // 3. Delete all comments for this post
-      if (commentIds.length > 0) {
-        const { error: delCommentsError } = await supabase
-          .from('comments')
-          .delete()
-          .in('id', commentIds);
-        if (delCommentsError) {
-          console.error('Error deleting comments:', delCommentsError);
-          return res.status(500).json({ error: 'Failed to delete comments', details: delCommentsError.message || delCommentsError });
-        }
-      }
-
-      // 4. Delete all post reactions for this post
-      const { error: delPostReactionsError } = await supabase
-        .from('post_reactions')
-        .delete()
-        .eq('post_id', req.params.id);
-      if (delPostReactionsError) {
-        console.error('Error deleting post reactions:', delPostReactionsError);
-        return res.status(500).json({ error: 'Failed to delete post reactions', details: delPostReactionsError.message || delPostReactionsError });
-      }
-
-      // 5. Delete the post itself
-      const { error: deleteError } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', req.params.id);
-      if (deleteError) {
-        console.error('Error deleting post:', deleteError);
-        return res.status(500).json({ error: 'Failed to delete post', details: deleteError.message || deleteError });
-      }
-      res.json({ ok: true });
-    } catch (e) {
-      console.error('Exception in post delete:', e);
-      res.status(500).json({ error: 'Exception occurred while deleting post', details: e && e.message ? e.message : e });
-    }
-  });
+      // Get comments
       const { data: commentsRaw, error: commentsError } = await supabase
         .from('comments')
-        .select('*, users(name)')
+        .select('*, users(name, role, avatar, badges), anonymous')
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
-      const commentsArr = commentsRaw || [];
-      const commentIds = commentsArr.map(c => c.id);
-      let commentReactions = [];
-      if (commentIds.length > 0) {
-        const { data: reactionsData } = await supabase
-          .from('comment_reactions')
-          .select('comment_id, emoji')
-          .in('comment_id', commentIds);
-        commentReactions = reactionsData || [];
-      }
-      let userCommentReactions = [];
-      if (commentIds.length > 0) {
-        const { data: userReactionsData } = await supabase
-          .from('comment_reactions')
-          .select('comment_id, emoji')
-          .in('comment_id', commentIds)
-          .eq('user_id', req.user.id);
-        userCommentReactions = userReactionsData || [];
-      }
-      const commentReactionsMap = {};
-      for (const row of commentReactions) {
-        if (!commentReactionsMap[row.comment_id]) commentReactionsMap[row.comment_id] = {};
-        commentReactionsMap[row.comment_id][row.emoji] = (commentReactionsMap[row.comment_id][row.emoji] || 0) + 1;
-      }
-      const userCommentReactionsMap = {};
-      for (const row of userCommentReactions) {
-        userCommentReactionsMap[row.comment_id] = row.emoji;
-      }
-      const comments = commentsArr.map(c => ({
-        ...c,
-        author_name: c.users?.name || null,
-        reactions: {
-          counts: commentReactionsMap[c.id] || {},
-          user: userCommentReactionsMap[c.id] || null
+      const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
+      // Mask author info for anonymous comments
+      const comments = commentsArr.map(c => {
+        if (c.anonymous) {
+          return {
+            ...c,
+            users: {
+              name: 'Anonymous',
+              avatar: null,
+              role: null,
+              badges: []
+            },
+            author_name: 'Anonymous',
+            avatar: null,
+            author_role: null,
+            badges: []
+          };
+        } else {
+          return {
+            ...c,
+            author_name: c.users?.name || null,
+            avatar: c.users?.avatar || null,
+            author_role: c.users?.role || null,
+            badges: c.users?.badges || []
+          };
         }
-      }));
+      });
+
       // Get reaction counts for this post
       const { data: reactionCountsRaw } = await supabase
         .from('post_reactions')
@@ -515,7 +477,7 @@ const createPostsRouter = () => {
         .eq('user_id', req.user.id)
         .single();
       res.json({
-        post: { ...postData, author_name: postData.users?.name || null },
+        post: maskedPost,
         comments,
         reactions: {
           counts,
