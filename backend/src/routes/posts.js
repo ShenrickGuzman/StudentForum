@@ -565,10 +565,14 @@ const createPostsRouter = () => {
           .delete()
           .eq(targetCol, id)
           .eq('user_id', req.user.id);
-        if (error) return res.status(500).json({ error: 'Failed to remove reaction' });
+        if (error) {
+          console.error('Failed to remove reaction:', error);
+          return res.status(500).json({ error: 'Failed to remove reaction', details: error.message, supabaseError: error });
+        }
         return res.json({ ok: true, removed: true });
       } catch (e) {
-        return res.status(500).json({ error: 'Failed to remove reaction', details: e.message });
+        console.error('Exception in remove reaction:', e);
+        return res.status(500).json({ error: 'Failed to remove reaction', details: e.message, exception: e });
       }
     }
     if (!['like', 'heart', 'wow', 'sad', 'haha'].includes(emoji)) {
@@ -576,13 +580,17 @@ const createPostsRouter = () => {
     }
     try {
       // True upsert: insert or update emoji for (post_id/user_id) or (comment_id/user_id)
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from(table)
         .upsert([{ [targetCol]: id, user_id: req.user.id, emoji }], { onConflict: [targetCol, 'user_id'] });
-      if (error) return res.status(500).json({ error: 'Failed to react', details: error.message });
-      res.json({ ok: true });
+      if (error) {
+        console.error('Failed to react (upsert):', error, 'Request:', { [targetCol]: id, user_id: req.user.id, emoji });
+        return res.status(500).json({ error: 'Failed to react', details: error.message, supabaseError: error });
+      }
+      res.json({ ok: true, data });
     } catch (e) {
-      res.status(500).json({ error: 'Failed to react', details: e.message });
+      console.error('Exception in react (upsert):', e);
+      res.status(500).json({ error: 'Failed to react', details: e.message, exception: e });
     }
   });
 
