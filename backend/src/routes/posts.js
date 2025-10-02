@@ -337,7 +337,7 @@ const createPostsRouter = () => {
     const { q, category, status, admin } = req.query;
     let query = supabase
       .from('posts')
-      .select('*, users(name, avatar, role, badges)')
+      .select('*, users!posts_user_id_fkey(name, avatar, role, badges)')
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -407,7 +407,7 @@ const createPostsRouter = () => {
     try {
       const { data: postData, error: postError } = await supabase
         .from('posts')
-        .select('*, users(name, avatar, role, badges)')
+        .select('*, users!posts_user_id_fkey(name, avatar, role, badges)')
         .eq('id', req.params.id)
         .single();
       if (postError || !postData) return res.status(404).json({ error: 'Post not found' });
