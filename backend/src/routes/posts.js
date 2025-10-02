@@ -364,31 +364,41 @@ const createPostsRouter = () => {
     }
     try {
       const { data, error } = await query;
-      if (error) return res.status(500).json({ error: 'Failed to fetch posts' });
+      if (error) {
+        console.error('Failed to fetch posts:', error);
+        return res.status(500).json({ error: 'Failed to fetch posts', details: error.message, supabaseError: error });
+      }
       // Add author_name, avatar, role, badges for compatibility
-      const posts = data.map(p => {
-        if (p.anonymous) {
-          return {
-            ...p,
-            author_name: 'Anonymous',
-            avatar: null,
-            author_role: null,
-            badges: [],
-            users: { name: 'Anonymous', avatar: null, role: null, badges: [] }
-          };
-        } else {
-          return {
-            ...p,
-            author_name: p.users?.name || null,
-            avatar: p.users?.avatar || null,
-            author_role: p.users?.role || null,
-            badges: p.users?.badges || []
-          };
-        }
-      });
+      let posts = [];
+      try {
+        posts = data.map(p => {
+          if (p.anonymous) {
+            return {
+              ...p,
+              author_name: 'Anonymous',
+              avatar: null,
+              author_role: null,
+              badges: [],
+              users: { name: 'Anonymous', avatar: null, role: null, badges: [] }
+            };
+          } else {
+            return {
+              ...p,
+              author_name: p.users?.name || null,
+              avatar: p.users?.avatar || null,
+              author_role: p.users?.role || null,
+              badges: p.users?.badges || []
+            };
+          }
+        });
+      } catch (mapErr) {
+        console.error('Error mapping posts data:', mapErr, 'Raw data:', data);
+        return res.status(500).json({ error: 'Failed to map posts data', details: mapErr.message, rawData: data });
+      }
       res.json(posts);
     } catch (e) {
-      res.status(500).json({ error: 'Failed to fetch posts' });
+      console.error('Exception in posts list endpoint:', e);
+      res.status(500).json({ error: 'Failed to fetch posts', details: e.message, exception: e });
     }
   });
 
