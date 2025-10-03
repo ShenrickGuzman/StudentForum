@@ -321,17 +321,7 @@ function HomePage() {
                 className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col sm:flex-row gap-4 relative p-6 items-start"
               >
                 <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-                {/* Post image preview */}
-                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4">
-                  <img
-                    src={getAssetUrl(p.image_url)}
-                    alt="Post image"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </div>
+                {/* Main content and author info (left on PC, top on mobile) */}
                 <div className="flex flex-col flex-1 justify-between">
                   <div>
                     <div className="text-sm font-bold mb-1">
@@ -388,6 +378,17 @@ function HomePage() {
                         : 'Rejected: not approved by admin'}
                     </div>
                   )}
+                </div>
+                {/* Post image preview (right on PC, top on mobile) */}
+                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
+                  <img
+                    src={getAssetUrl(p.image_url)}
+                    alt="Post image"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
                 </div>
               </Link>
             );
