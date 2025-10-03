@@ -329,8 +329,8 @@ function HomePage() {
                         {categories.find(c => c.key === p.category)?.label || p.category}
                       </span>
                     </div>
-                    <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
-                    <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
+                    <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight">{p.title}</div>
+                    <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
                   </div>
                   {/* Author info always at the bottom left, like posts without images */}
                   <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
@@ -407,8 +407,8 @@ function HomePage() {
                     {categories.find(c => c.key === p.category)?.label || p.category}
                   </span>
                 </div>
-                <div className="text-2xl font-extrabold text-gray-800 drop-shadow mb-1">{p.title}</div>
-                <div className="opacity-80 line-clamp-2 flex-1 text-gray-700">{p.content}</div>
+                <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight">{p.title}</div>
+                <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
                   <div className="flex items-center">
                     {p.anonymous ? (
