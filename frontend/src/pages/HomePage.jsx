@@ -251,11 +251,7 @@ function HomePage() {
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className={`rounded-2xl px-4 py-3 font-bold shadow-lg transition-all duration-200 border-2 border-white/60 ${
-            refreshing 
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-500 hover:to-blue-600 text-white hover:scale-105 active:scale-95'
-          }`}
+          className={`rounded-2xl px-4 py-3 font-bold shadow-lg transition-all duration-200 border-2 border-white/60 ${refreshing ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-400 text-white hover:bg-blue-500'}`}
           title="Refresh posts to see new content"
         >
           <span className={`text-xl ${refreshing ? 'animate-spin' : ''}`} role="img" aria-label="refresh">🔄</span>
@@ -329,7 +325,7 @@ function HomePage() {
                         {categories.find(c => c.key === p.category)?.label || p.category}
                       </span>
                     </div>
-                    <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight">{p.title}</div>
+                        <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight break-words whitespace-pre-wrap" style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{p.title}</div>
                     <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
                   </div>
                   {/* Author info always at the bottom left, like posts without images */}
@@ -407,7 +403,7 @@ function HomePage() {
                     {categories.find(c => c.key === p.category)?.label || p.category}
                   </span>
                 </div>
-                <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight">{p.title}</div>
+                <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight break-words whitespace-pre-wrap" style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{p.title}</div>
                 <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
                 <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
                   <div className="flex items-center">
