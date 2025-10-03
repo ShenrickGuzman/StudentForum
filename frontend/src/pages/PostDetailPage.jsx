@@ -30,6 +30,8 @@ export default function PostDetailPage() {
   const [newComment, setNewComment] = useState('');
   const [commentAnonymous, setCommentAnonymous] = useState(false);
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+  // Track loading state for comment submission
+  const [commentLoading, setCommentLoading] = useState(false);
   // Track which comment's profile button is shown
   const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
   // Track if forum author's profile button is shown
@@ -118,14 +120,20 @@ export default function PostDetailPage() {
   };
 
   const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (newComment.trim()) {
+    if (e) e.preventDefault();
+    if (!newComment.trim()) return;
+    setCommentLoading(true);
+    try {
       await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous });
       setNewComment('');
       setCommentAnonymous(false);
       // Re-fetch comments after adding a new one
       const response = await api.get(`/posts/${id}/comments`);
       setComments(response.data);
+    } catch (err) {
+      alert('Failed to submit comment. Please try again.');
+    } finally {
+      setCommentLoading(false);
     }
   };
 
