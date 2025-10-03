@@ -321,7 +321,7 @@ function HomePage() {
                 className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col sm:flex-row gap-4 relative p-6 items-start"
               >
                 <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-                {/* Mobile: author info above image, Desktop: original layout */}
+                {/* Mobile: author info above image */}
                 <div className="block sm:hidden mb-2 flex items-center gap-2 w-full">
                   {p.anonymous ? (
                     <>
@@ -355,7 +355,41 @@ function HomePage() {
                     ) : null;
                   })()}
                 </div>
-                <div className="flex flex-col flex-1">
+                {/* Desktop: author info next to image */}
+                <div className="hidden sm:flex flex-col flex-1 justify-center">
+                  <div className="flex items-center gap-2 mb-2">
+                    {p.anonymous ? (
+                      <>
+                        <span className="mr-2 w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-xl text-white font-bold shadow-fun select-none">👤</span>
+                        <span className="font-bold text-gray-500 select-none">Anonymous</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link to={`/profile/${p.user_id}`} className="mr-2">
+                          <img
+                            src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                            alt={p.author_name}
+                            className="w-10 h-10 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
+                            onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                          />
+                        </Link>
+                        <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
+                          {p.author_name}
+                        </Link>
+                      </>
+                    )}
+                    {(() => {
+                      let badges = Array.isArray(p.badges) ? [...p.badges] : [];
+                      if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                      return badges.length > 0 ? (
+                        <span className="flex gap-1 ml-2">
+                          {badges.map((badge, idx) => (
+                            <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                          ))}
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
                   <div className="text-sm font-bold mb-1">
                     <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
                       {categories.find(c => c.key === p.category)?.label || p.category}
