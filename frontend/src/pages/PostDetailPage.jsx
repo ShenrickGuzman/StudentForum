@@ -278,7 +278,7 @@ export default function PostDetailPage() {
           </div>
           {/* Title & Status */}
           <div className="px-8 pt-2 pb-0">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon" style={{letterSpacing:1}}>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon break-words whitespace-pre-wrap" style={{letterSpacing:1, wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>
               {post.title}
               {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
             </h1>
