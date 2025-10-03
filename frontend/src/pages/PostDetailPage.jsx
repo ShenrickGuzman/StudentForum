@@ -159,7 +159,7 @@ export default function PostDetailPage() {
   const isAdmin = user && (user.role === 'admin' || user.role === 'teacher' || user.role === 'shen');
 
   return (
-    <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+  <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       {/* Navigation Bar Placeholder (if any) */}
       <div className="h-16 w-full" />
       {/* Close Forum Button just above the post card for mobile */}
@@ -183,9 +183,9 @@ export default function PostDetailPage() {
         <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
-      <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
+  <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
         {/* Post Card - Redesigned */}
-        <div className="bg-white/95 rounded-3xl shadow-fun border-4 border-purple-200 p-0 sm:p-0 animate-pop flex flex-col gap-0" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
+  <div className="bg-white/95 rounded-3xl shadow-fun border-4 border-purple-200 p-0 sm:p-0 animate-pop flex flex-col gap-0" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
           {/* Header Row: User info left, category right */}
           <div className="flex justify-between items-start px-8 pt-8 pb-2">
             <div className="flex items-center gap-4">
@@ -318,7 +318,7 @@ export default function PostDetailPage() {
             <div className="rounded-3xl p-1" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
               <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
                 {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
-                <p className="whitespace-pre-wrap text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
+                <p className="whitespace-pre-wrap break-words text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
                 {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
               </div>
             </div>
@@ -407,26 +407,12 @@ export default function PostDetailPage() {
                     <CommentCard
                       key={comment.id}
                       avatar={isCommentAnonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
-                        <div className="relative flex items-center">
-                          <button
-                            className="bg-transparent border-none p-0 cursor-pointer"
-                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
-                            style={{ background: 'none' }}
-                          >
-                            <img
-                              src={comment.avatar && comment.avatar.trim() ? comment.avatar : '/Cute-Cat.png'}
-                              alt="avatar"
-                              className="w-12 h-12 rounded-full object-cover aspect-square hover:ring-2 hover:ring-purple-400 transition-all"
-                              style={{objectFit:'cover', aspectRatio:'1/1'}}
-                              onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                            />
-                          </button>
-                          {showProfileBtnFor === comment.id && (
-                            <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                              View Profile
-                            </Link>
-                          )}
-                        </div>
+                        <img
+                          src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'}
+                          alt="author avatar"
+                          className="w-12 h-12 rounded-full object-cover border-2 border-purple-300 shadow"
+                          onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                        />
                       )}
                       username={comment.anonymous ? (
                         <span className="font-bold text-gray-500">
@@ -494,12 +480,20 @@ export default function PostDetailPage() {
                     😊
                   </div>
                   <div className="flex-1">
-                    <input
+                    <textarea
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Write a comment... 💭"
-                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm"
+                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px]"
                       style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
+                      rows={1}
+                      maxLength={500}
+                      disabled={commentLoading}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          handleCommentSubmit();
+                        }
+                      }}
                     />
                     <label className="flex items-center gap-2 mt-2">
                       <input
@@ -520,7 +514,8 @@ export default function PostDetailPage() {
                   </button>
                 </form>
               )}
-            </>
+            {/* End comments and comment form section */}
+          </>
           ) : (
             <div className="text-center text-purple-400 font-bold py-8">This post is not public yet. Comments will be available after admin approval.</div>
           )}
