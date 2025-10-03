@@ -464,7 +464,7 @@ export default function PostDetailPage() {
                       )}
                       badges={isCommentAnonymous ? [] : badges}
                       time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
-                      content={comment.content}
+                      content={<span style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{comment.content}</span>}
                       canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
                       onDelete={async () => {
                         await api.delete(`/posts/comments/${comment.id}`);
