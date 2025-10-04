@@ -1,3 +1,13 @@
+import express from 'express';
+import multer from 'multer';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { supabase } from '../lib/supabaseClient.js';
+
+const createAuthRouter = () => {
+  const router = express.Router();
+
   // Reset password using token
   router.post('/reset-password', async (req, res) => {
     const { token, newPassword } = req.body || {};
@@ -35,7 +45,7 @@
       return res.status(500).json({ error: 'Failed to reset password', details: e && e.message ? e.message : e });
     }
   });
-import crypto from 'crypto';
+
   // Request password reset: generates a secure link and returns it
   router.post('/request-password-reset', async (req, res) => {
     const { email } = req.body || {};
@@ -76,13 +86,6 @@ import crypto from 'crypto';
       return res.status(500).json({ error: 'Failed to process request', details: e && e.message ? e.message : e });
     }
   });
-import express from 'express';
-import multer from 'multer';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { supabase } from '../lib/supabaseClient.js';
-
-const createAuthRouter = () => {
 
   // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
   const requireAuth = (req, res, next) => {
@@ -102,8 +105,6 @@ const createAuthRouter = () => {
     if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
     return res.status(403).json({ error: 'Forbidden' });
   };
-
-  const router = express.Router();
 
 // Get public profile by user ID (for viewing other users)
   router.get('/profile/:id', async (req, res) => {
