@@ -61,7 +61,7 @@ const createAuthRouter = () => {
 
       // Generate secure token
       const token = crypto.randomBytes(32).toString('hex');
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 23); // 23 minutes
 
       // Store token in DB
       const { error: insertError } = await supabase
