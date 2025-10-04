@@ -71,3 +71,14 @@ CREATE TABLE IF NOT EXISTS signup_requests (
 CREATE UNIQUE INDEX IF NOT EXISTS signup_requests_name_lower_idx ON signup_requests ((lower(name)));
 
 
+-- Table for password reset tokens
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  token TEXT NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL,
+  used BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+
