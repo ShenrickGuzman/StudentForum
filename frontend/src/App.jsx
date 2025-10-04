@@ -1,4 +1,3 @@
-import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import ProfilePage from './pages/ProfilePage';
 import { useEffect, useState } from 'react';
 import HomePage from './pages/HomePage';
@@ -13,6 +12,7 @@ import AccountDeletedPage from './pages/AccountDeletedPage';
 import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
 import RequireAdminAuth from './components/RequireAdminAuth';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -91,6 +91,7 @@ function AppShell() {
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         {/* Add a settings page route if you create one */}
         <Route path="/settings" element={<RequireAuth><div className="p-8 text-2xl">Settings Page (Coming Soon)</div></RequireAuth>} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
