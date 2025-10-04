@@ -1,6 +1,7 @@
 
 
 import { useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import RulesPopup from '../components/RulesPopup';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
@@ -24,6 +25,12 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
   const [pendingNav, setPendingNav] = useState(false);
+
+  // Forgot password modal state
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const validateEmail = (value) => {
     if (!value) return 'Email is required';
@@ -80,6 +87,31 @@ export default function AuthPage() {
   // Show/hide password
   const [showPassword, setShowPassword] = useState(false);
 
+  // Handle forgot password submit
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotMessage('');
+    setForgotLoading(true);
+    if (!forgotEmail) {
+      setForgotMessage('Email is required');
+      setForgotLoading(false);
+      return;
+    }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+      if (error) {
+        setForgotMessage(error.message);
+      } else {
+        setForgotMessage('Password reset email sent! Check your inbox.');
+      }
+    } catch (err) {
+      setForgotMessage('Something went wrong.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
   // Removed palette toggle; fixed vibrant style for signup
 
   return (
@@ -181,6 +213,17 @@ export default function AuthPage() {
             onClick={() => setShowPassword(v => !v)}
             aria-label="Show/hide password"
           >{showPassword ? '🙈' : '👁️'}</button>
+          {/* Forgot password link (login only) */}
+          {mode === 'login' && (
+            <button
+              type="button"
+              className="text-xs text-blue-500 hover:underline mt-2 absolute right-0 top-full"
+              style={{ marginTop: '2px' }}
+              onClick={() => { setShowForgot(true); setForgotMessage(''); setForgotEmail(''); }}
+            >
+              Forgot password?
+            </button>
+          )}
         </div>
         {/* Gmail Email (signup only) */}
         {mode === 'signup' && (
@@ -228,6 +271,39 @@ export default function AuthPage() {
           )}
         </div>
   </motion.form>
+      {/* Forgot Password Modal */}
+      {showForgot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xs relative">
+            <button
+              className="absolute top-2 right-3 text-xl text-gray-400 hover:text-pink-400"
+              onClick={() => setShowForgot(false)}
+              aria-label="Close"
+            >✖️</button>
+            <h2 className="text-lg font-bold mb-3 text-pink-500">Forgot Password</h2>
+            <form onSubmit={handleForgotPassword} className="flex flex-col gap-3">
+              <input
+                type="email"
+                className="rounded-xl px-4 py-2 border-2 border-gray-200 bg-pink-50 text-base focus:ring-2 focus:ring-pink-300 outline-none"
+                placeholder="Enter your email"
+                value={forgotEmail}
+                onChange={e => setForgotEmail(e.target.value)}
+                required
+              />
+              <button
+                type="submit"
+                className="bg-gradient-to-r from-pink-400 to-blue-400 text-white font-bold py-2 rounded-xl mt-2 disabled:opacity-60"
+                disabled={forgotLoading}
+              >
+                {forgotLoading ? 'Sending...' : 'Send Reset Email'}
+              </button>
+              {forgotMessage && (
+                <div className="text-sm text-center mt-2 text-pink-600">{forgotMessage}</div>
+              )}
+            </form>
+          </div>
+        </div>
+      )}
       {/* Simple custom footer below card */}
       <motion.div
         className="mt-6 w-full max-w-md px-2"
