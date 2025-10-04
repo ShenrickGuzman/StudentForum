@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useNavigate } from 'react-router-dom';
+
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import AnimatedCartoonButton from '../components/AnimatedCartoonButton';
+import api from '../lib/api';
+
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
@@ -10,15 +12,11 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  useEffect(() => {
-    // Check if user is in password recovery mode
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        // User is in recovery mode
-      }
-    });
-  }, []);
+  // Get token from URL
+  const params = new URLSearchParams(location.search);
+  const token = params.get('token');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,13 +30,21 @@ export default function ResetPasswordPage() {
       setError('Passwords do not match.');
       return;
     }
+    if (!token) {
+      setError('Missing or invalid reset token.');
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      setError(error.message);
-    } else {
-      setSuccess('Password updated! You can now log in.');
-      setTimeout(() => navigate('/'), 2000);
+    try {
+      const r = await api.post('/auth/reset-password', { token, newPassword: password });
+      if (r.data && r.data.success) {
+        setSuccess('Password updated! You can now log in.');
+        setTimeout(() => navigate('/auth'), 2000);
+      } else {
+        setError('Failed to reset password.');
+      }
+    } catch (err) {
+      setError(err?.response?.data?.error || 'Failed to reset password.');
     }
     setLoading(false);
   };
