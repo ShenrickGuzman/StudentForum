@@ -1,3 +1,4 @@
+import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import ProfilePage from './pages/ProfilePage';
 import { useEffect, useState } from 'react';
 import HomePage from './pages/HomePage';
