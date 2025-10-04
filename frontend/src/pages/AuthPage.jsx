@@ -142,14 +142,14 @@ export default function AuthPage() {
         <div className="flex w-full mb-2 rounded-full bg-gray-100 p-1 shadow-inner">
           <AnimatedCartoonButton
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? '!bg-gradient-to-r !from-pink-500 !to-rose-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 hover:!text-pink-500'}`}
-            style={{ borderRadius: '9999px', border: 'none' }}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? '!bg-gradient-to-r !from-pink-500 !to-rose-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 !bg-none !border-none'}`}
+            style={{ borderRadius: '9999px', border: 'none', background: mode==='login' ? undefined : '#e5e7eb' }}
             onClick={() => setMode('login')}
           >🔑 Sign In</AnimatedCartoonButton>
           <AnimatedCartoonButton
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? '!bg-gradient-to-r !from-indigo-400 !via-fuchsia-400 !to-pink-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 hover:!text-fuchsia-500'}`}
-            style={{ borderRadius: '9999px', border: 'none' }}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? '!bg-gradient-to-r !from-indigo-400 !via-fuchsia-400 !to-pink-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 !bg-none !border-none'}`}
+            style={{ borderRadius: '9999px', border: 'none', background: mode==='signup' ? undefined : '#e5e7eb' }}
             onClick={() => setMode('signup')}
           >✴️ Sign Up</AnimatedCartoonButton>
         </div>
