@@ -1,3 +1,81 @@
+  // Reset password using token
+  router.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body || {};
+    if (!token || !newPassword) return res.status(400).json({ error: 'Token and new password are required' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    try {
+      // Find token in DB
+      const { data: tokenRow, error: tokenError } = await supabase
+        .from('password_reset_tokens')
+        .select('id, user_id, expires_at, used')
+        .eq('token', token)
+        .single();
+      if (tokenError || !tokenRow) return res.status(400).json({ error: 'Invalid or expired token' });
+      if (tokenRow.used) return res.status(400).json({ error: 'Token already used' });
+      if (new Date(tokenRow.expires_at) < new Date()) return res.status(400).json({ error: 'Token expired' });
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ password_hash: passwordHash })
+        .eq('id', tokenRow.user_id);
+      if (updateError) return res.status(500).json({ error: 'Failed to update password' });
+
+      // Mark token as used
+      await supabase
+        .from('password_reset_tokens')
+        .update({ used: true })
+        .eq('id', tokenRow.id);
+
+      return res.json({ success: true });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to reset password', details: e && e.message ? e.message : e });
+    }
+  });
+import crypto from 'crypto';
+  // Request password reset: generates a secure link and returns it
+  router.post('/request-password-reset', async (req, res) => {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    try {
+      // Find user by email
+      const { data: user, error } = await supabase
+        .from('users')
+        .select('id, email')
+        .eq('email', email.trim().toLowerCase())
+        .single();
+      if (error || !user) return res.status(404).json({ error: 'User not found' });
+
+      // Generate secure token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 30); // 30 minutes
+
+      // Store token in DB
+      const { error: insertError } = await supabase
+        .from('password_reset_tokens')
+        .insert([
+          {
+            user_id: user.id,
+            token,
+            expires_at: expiresAt.toISOString(),
+            used: false
+          }
+        ]);
+      if (insertError) return res.status(500).json({ error: 'Failed to create reset token' });
+
+      // Build reset link (adjust base URL as needed)
+      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const resetLink = `${baseUrl}/reset-password?token=${token}`;
+
+      // Return the link to the frontend (for display)
+      return res.json({ resetLink });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to process request', details: e && e.message ? e.message : e });
+    }
+  });
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -639,4 +717,3 @@ const createAuthRouter = () => {
 export default createAuthRouter;
 
 
-//ARIANAH
