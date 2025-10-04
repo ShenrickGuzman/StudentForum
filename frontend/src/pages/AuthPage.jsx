@@ -104,7 +104,7 @@ export default function AuthPage() {
       const r = await api.post('/auth/request-password-reset', { email: forgotEmail });
       if (r.data && r.data.resetLink) {
         setResetLink(r.data.resetLink);
-        setForgotMessage('Copy and paste this link in your browser to reset your password:');
+  setForgotMessage('Copy and paste this link in your browser to reset your password. This link will only be available for 23 minutes:');
       } else {
         setForgotMessage('No reset link returned.');
       }
@@ -268,7 +268,7 @@ export default function AuthPage() {
           ) : (
             <>
               <span className="text-lg">🎉 <b>Ready to join the fun?</b> <span className="text-pink-400">✨</span></span>
-              <div className="text-pink-500 mt-1">Create your account and start posting! <span className="text-lg">�🎈</span></div>
+              <div className="text-pink-500 mt-1">Create your account and start posting! <span className="text-lg">🎈</span></div>
             </>
           )}
         </div>
@@ -303,9 +303,14 @@ export default function AuthPage() {
                 <div className="text-sm text-center mt-2 text-pink-600">{forgotMessage}</div>
               )}
               {resetLink && (
-                <div className="text-xs text-center mt-2 break-all bg-pink-50 p-2 rounded border border-pink-200 select-all">
-                  {resetLink}
-                </div>
+                <>
+                  <div className="text-xs text-center mt-2 break-all bg-pink-50 p-2 rounded border border-pink-200 select-all">
+                    {resetLink}
+                  </div>
+                  <div className="text-xs text-center mt-1 text-pink-500 font-semibold">
+                    The link will only be available for 23 minutes
+                  </div>
+                </>
               )}
             </form>
           </div>
