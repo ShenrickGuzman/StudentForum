@@ -88,9 +88,12 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   // Handle forgot password submit
+  // Custom password reset logic (show link)
+  const [resetLink, setResetLink] = useState('');
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     setForgotMessage('');
+    setResetLink('');
     setForgotLoading(true);
     if (!forgotEmail) {
       setForgotMessage('Email is required');
@@ -98,16 +101,15 @@ export default function AuthPage() {
       return;
     }
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-        redirectTo: window.location.origin + '/reset-password',
-      });
-      if (error) {
-        setForgotMessage(error.message);
+      const r = await api.post('/auth/request-password-reset', { email: forgotEmail });
+      if (r.data && r.data.resetLink) {
+        setResetLink(r.data.resetLink);
+        setForgotMessage('Copy and paste this link in your browser to reset your password:');
       } else {
-        setForgotMessage('Password reset email sent! Check your inbox.');
+        setForgotMessage('No reset link returned.');
       }
     } catch (err) {
-      setForgotMessage('Something went wrong.');
+      setForgotMessage(err?.response?.data?.error || 'Something went wrong.');
     } finally {
       setForgotLoading(false);
     }
@@ -300,6 +302,11 @@ export default function AuthPage() {
               {forgotMessage && (
                 <div className="text-sm text-center mt-2 text-pink-600">{forgotMessage}</div>
               )}
+              {resetLink && (
+                <div className="text-xs text-center mt-2 break-all bg-pink-50 p-2 rounded border border-pink-200 select-all">
+                  {resetLink}
+                </div>
+              )}
             </form>
           </div>
         </div>
@@ -316,5 +323,5 @@ export default function AuthPage() {
     </div>
   );
 }
-//TEST
+
 
