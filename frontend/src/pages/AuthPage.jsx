@@ -5,6 +5,9 @@ import RulesPopup from '../components/RulesPopup';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
+import AnimatedCartoonBackground from '../components/AnimatedCartoonBackground';
+import AnimatedCartoonButton from '../components/AnimatedCartoonButton';
+import { motion } from 'framer-motion';
 
 
 const RULES_KEY = 'mf_rules_agreed';
@@ -81,6 +84,7 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center font-cartoon relative overflow-hidden" style={{background: 'linear-gradient(135deg, #7fbcff 0%, #b388ff 50%, #ff7eb3 100%)'}}>
+      <AnimatedCartoonBackground />
       <RulesPopup
         open={showRules}
         onAgree={() => { setShowRules(false); if (pendingNav) { setPendingNav(false); navigate('/'); } }}
@@ -100,31 +104,54 @@ export default function AuthPage() {
         <span className="absolute left-1/3 top-1/3 text-2xl opacity-20 animate-bounce">📚</span>
       </div>
       {/* Heading and subheading */}
-      <div className="mt-8 mb-4 z-10 text-center">
-        <h1 className="text-5xl font-extrabold text-white drop-shadow mb-2 tracking-wide" style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}>Students Forum</h1>
-        <div className="text-lg font-bold text-white/90 flex flex-col items-center gap-1">
-          <span className="inline-flex items-center gap-2">🎓 Welcome to Students Forum! <span className="text-xl">🚀</span></span>
-          <span className="inline-flex gap-2 text-xl">📚 <span className="text-pink-200">✨</span> 🎯</span>
-        </div>
-      </div>
+      <motion.div
+        className="mt-8 mb-4 z-10 text-center"
+        initial={{ opacity: 0, y: -40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 120, delay: 0.2 }}
+      >
+        <motion.h1
+          className="text-5xl font-extrabold text-white drop-shadow mb-2 tracking-wide"
+          style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}
+          initial={{ scale: 0.8, rotate: -5 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
+        >
+          Students Forum
+        </motion.h1>
+        <motion.div
+          className="text-lg font-bold text-white/90 flex flex-col items-center gap-1"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
+          <span className="inline-flex items-center gap-2 animate-bounce-slow">🎓 Welcome to Students Forum! <span className="text-xl">🚀</span></span>
+          <span className="inline-flex gap-2 text-xl animate-pulse">📚 <span className="text-pink-200">✨</span> 🎯</span>
+        </motion.div>
+      </motion.div>
       {/* Auth card */}
-      <form
+      <motion.form
         onSubmit={submit}
         className="relative z-10 w-full max-w-md flex flex-col gap-6 items-center bg-white/90 rounded-3xl shadow-2xl border-2 border-yellow-200 p-8"
         style={{ backdropFilter: 'blur(4px)' }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 120, delay: 0.5 }}
       >
         {/* Tabs */}
         <div className="flex w-full mb-2 rounded-full bg-gray-100 p-1 shadow-inner">
-          <button
+          <AnimatedCartoonButton
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? 'bg-gradient-to-r from-pink-500 to-rose-400 text-white shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-pink-500'}`}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all !bg-gradient-to-r !from-pink-500 !to-rose-400 !text-white !shadow-lg !scale-[1.02] ${mode!=='login' && '!bg-transparent !text-gray-500 !shadow-none !scale-100 hover:!text-pink-500'}`}
+            style={{ borderRadius: '9999px', border: 'none' }}
             onClick={() => setMode('login')}
-          >🔑 Sign In</button>
-          <button
+          >🔑 Sign In</AnimatedCartoonButton>
+          <AnimatedCartoonButton
             type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? 'bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-pink-400 text-white shadow-lg scale-[1.02]' : 'text-gray-500 hover:text-fuchsia-500'}`}
+            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all !bg-gradient-to-r !from-indigo-400 !via-fuchsia-400 !to-pink-400 !text-white !shadow-lg !scale-[1.02] ${mode!=='signup' && '!bg-transparent !text-gray-500 !shadow-none !scale-100 hover:!text-fuchsia-500'}`}
+            style={{ borderRadius: '9999px', border: 'none' }}
             onClick={() => setMode('signup')}
-          >✴️ Sign Up</button>
+          >✴️ Sign Up</AnimatedCartoonButton>
         </div>
         {/* Username */}
         <div className="w-full">
@@ -177,14 +204,15 @@ export default function AuthPage() {
           </div>
         )}
         {/* Submit */}
-        <button
-          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold shadow-lg text-white flex items-center justify-center gap-2 transition-all disabled:opacity-70 bg-gradient-to-r ${mode==='signup' ? 'from-indigo-500 via-fuchsia-500 to-pink-500 hover:from-indigo-600 hover:via-fuchsia-600 hover:to-pink-600' : 'from-pink-400 to-orange-300 hover:from-pink-500 hover:to-orange-400'}`}
+        <AnimatedCartoonButton
+          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-70 ${mode==='signup' ? '!bg-gradient-to-r !from-indigo-500 !via-fuchsia-500 !to-pink-500 hover:!from-indigo-600 hover:!via-fuchsia-600 hover:!to-pink-600' : '!bg-gradient-to-r !from-pink-400 !to-orange-300 hover:!from-pink-500 hover:!to-orange-400'}`}
           disabled={loading}
+          type="submit"
         >
           {loading
-            ? (<span>{mode === 'signup' ? 'Signing up, please wait a moment...' : 'Logging in, please wait a moment...'}</span>)
-            : (mode === 'signup' ? <><span>✨</span>Sign Up</> : <><span>🚀</span>Sign in<span>💬</span></>)}
-        </button>
+            ? (<span className="animate-pulse">{mode === 'signup' ? 'Signing up, please wait a moment...' : 'Logging in, please wait a moment...'}</span>)
+            : (mode === 'signup' ? <><span className="animate-bounce">✨</span>Sign Up</> : <><span className="animate-bounce">🚀</span>Sign in<span className="animate-bounce">💬</span></>)}
+        </AnimatedCartoonButton>
         {/* Welcome message */}
         <div className="w-full bg-white/80 rounded-xl p-4 text-center shadow border-2 border-yellow-100 mt-2">
           {mode === 'login' ? (
@@ -199,11 +227,16 @@ export default function AuthPage() {
             </>
           )}
         </div>
-      </form>
+  </motion.form>
       {/* Simple custom footer below card */}
-      <div className="mt-6 w-full max-w-md px-2">
-        <div className="text-center text-base text-blue-500 font-bold">Made with 💖 by shen</div>
-      </div>
+      <motion.div
+        className="mt-6 w-full max-w-md px-2"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.2 }}
+      >
+        <div className="text-center text-base text-blue-500 font-bold animate-wiggle">Made with 💖 by shen</div>
+      </motion.div>
     </div>
   );
 }
