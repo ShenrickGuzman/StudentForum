@@ -5,6 +5,29 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';
 
 export default function AdminPage() {
+  // ...existing code...
+  const [warnUserModal, setWarnUserModal] = useState({ open: false, id: null, name: '', email: '' });
+  const [warnReason, setWarnReason] = useState('');
+  const [warnLoading, setWarnLoading] = useState(false);
+  const [warnMsg, setWarnMsg] = useState('');
+
+  const handleWarnUser = async () => {
+    if (!warnReason) { setWarnMsg('Please enter a reason.'); return; }
+    setWarnLoading(true); setWarnMsg('');
+    try {
+      const r = await api.post(`/auth/users/${warnUserModal.id}/warn`, { reason: warnReason });
+      if (r.data.deleted) {
+        setWarnMsg('User deleted after 3 warnings.');
+      } else {
+        setWarnMsg('Warning sent!');
+      }
+      setWarnReason('');
+      loadUsers();
+    } catch (e) {
+      setWarnMsg(e?.response?.data?.error || 'Failed to send warning');
+    }
+    setWarnLoading(false);
+  };
   
    // Lock a post
   const handleLock = async (id) => {
@@ -553,9 +576,30 @@ export default function AdminPage() {
                       >{badgeLoading[u.id] ? 'Saving...' : 'Add'}</button>
                     </div>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete 🗑️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-red-400 hover:from-yellow-500 hover:to-red-500" onClick={() => setWarnUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Warn User ⚠️</button>
                   </div>
                 </div>
               ))}
+      {/* Warn User Modal */}
+      {warnUserModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+            <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">Send Warning to {warnUserModal.name}</h2>
+            <input
+              className="w-full rounded-xl px-4 py-3 border-2 border-red-300 bg-yellow-50 text-lg focus:ring-2 focus:ring-red-300 outline-none mb-4"
+              placeholder="Reason for warning"
+              value={warnReason}
+              onChange={e => setWarnReason(e.target.value)}
+              disabled={warnLoading}
+            />
+            {warnMsg && <div className="text-error bg-red-100 rounded-xl px-4 py-2 border-2 border-red-300 w-full text-center animate-wiggle mb-2">{warnMsg}</div>}
+            <div className="flex gap-4 justify-center mt-2">
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400" onClick={handleWarnUser} disabled={warnLoading}>{warnLoading ? 'Sending...' : 'Send Warning'}</button>
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => { setWarnUserModal({ open: false, id: null, name: '', email: '' }); setWarnReason(''); setWarnMsg(''); }}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
             </div>
           </div>
         </>
