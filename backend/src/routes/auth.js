@@ -1,20 +1,4 @@
 // ...existing code...
-
-  // User: Get active warnings
-  router.get('/me/warnings', requireAuth, async (req, res) => {
-    const userId = req.user.id;
-    try {
-      const { data: warnings, error } = await supabase
-        .from('user_warnings')
-        .select('id, reason, created_at, admin_id')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: 'Failed to fetch warnings', details: error.message || error });
-      return res.json({ warnings });
-    } catch (e) {
-      return res.status(500).json({ error: 'Failed to fetch warnings', details: e && e.message ? e.message : e });
-    }
-  });
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -24,6 +8,22 @@ import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
   const router = express.Router();
+
+    // User: Get active warnings
+    router.get('/me/warnings', requireAuth, async (req, res) => {
+      const userId = req.user.id;
+      try {
+        const { data: warnings, error } = await supabase
+          .from('user_warnings')
+          .select('id, reason, created_at, admin_id')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: 'Failed to fetch warnings', details: error.message || error });
+        return res.json({ warnings });
+      } catch (e) {
+        return res.status(500).json({ error: 'Failed to fetch warnings', details: e && e.message ? e.message : e });
+      }
+    });
 
   // Reset password using token
   router.post('/reset-password', async (req, res) => {
