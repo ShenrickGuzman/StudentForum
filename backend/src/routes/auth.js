@@ -1,15 +1,4 @@
-  
-import express from 'express';
-import multer from 'multer';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
-import { supabase } from '../lib/supabaseClient.js';
-
-const createAuthRouter = () => {
-  const router = express.Router();
-
-// Admin: Send a warning to a user
+  // Admin: Send a warning to a user
   router.post('/users/:id/warn', requireAuth, isAdmin, async (req, res) => {
     const userId = parseInt(req.params.id, 10);
     const adminId = req.user.id;
@@ -58,6 +47,15 @@ const createAuthRouter = () => {
       return res.status(500).json({ error: 'Failed to fetch warnings', details: e && e.message ? e.message : e });
     }
   });
+import express from 'express';
+import multer from 'multer';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { supabase } from '../lib/supabaseClient.js';
+
+const createAuthRouter = () => {
+  const router = express.Router();
 
   // Reset password using token
   router.post('/reset-password', async (req, res) => {
