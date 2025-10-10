@@ -1,3 +1,4 @@
+  
 import express from 'express';
 import multer from 'multer';
 import jwt from 'jsonwebtoken';
@@ -7,6 +8,56 @@ import { supabase } from '../lib/supabaseClient.js';
 
 const createAuthRouter = () => {
   const router = express.Router();
+
+// Admin: Send a warning to a user
+  router.post('/users/:id/warn', requireAuth, isAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    const adminId = req.user.id;
+    const { reason } = req.body || {};
+    if (!reason || !userId) return res.status(400).json({ error: 'Reason and user ID required' });
+    try {
+      // Insert warning
+      const { error: warnError } = await supabase
+        .from('user_warnings')
+        .insert([{ user_id: userId, admin_id: adminId, reason }]);
+      if (warnError) return res.status(500).json({ error: 'Failed to send warning', details: warnError.message || warnError });
+
+      // Count warnings
+      const { data: warnings, error: countError } = await supabase
+        .from('user_warnings')
+        .select('id')
+        .eq('user_id', userId);
+      if (countError) return res.status(500).json({ error: 'Failed to count warnings', details: countError.message || countError });
+
+      if (Array.isArray(warnings) && warnings.length >= 3) {
+        // Delete user after 3 warnings
+        await supabase
+          .from('users')
+          .update({ deleted: true })
+          .eq('id', userId);
+        return res.json({ ok: true, deleted: true, message: 'User deleted after 3 warnings.' });
+      }
+      return res.json({ ok: true, deleted: false });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to warn user', details: e && e.message ? e.message : e });
+    }
+  });
+
+  // User: Get active warnings
+  router.get('/me/warnings', requireAuth, async (req, res) => {
+    const userId = req.user.id;
+    try {
+      const { data: warnings, error } = await supabase
+        .from('user_warnings')
+        .select('id, reason, created_at, admin_id')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      if (error) return res.status(500).json({ error: 'Failed to fetch warnings', details: error.message || error });
+      return res.json({ warnings });
+    } catch (e) {
+      return res.status(500).json({ error: 'Failed to fetch warnings', details: e && e.message ? e.message : e });
+    }
+  });
 
   // Reset password using token
   router.post('/reset-password', async (req, res) => {
