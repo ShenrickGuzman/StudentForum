@@ -193,6 +193,7 @@ function HomePage() {
           <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
             <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">You have received a warning from an admin</h2>
             <div className="mb-4 text-lg font-bold text-red-700">Current warnings: {warnings.length}</div>
+            <div className="mb-2 text-base text-red-600 font-semibold">Notice: If your account reaches 3 warnings, it will be permanently deleted.</div>
             {warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => (
               <div key={w.id} className="mb-4 text-lg text-red-700 font-bold bg-red-50 rounded-xl border border-red-300 p-3">
                 {w.reason}
