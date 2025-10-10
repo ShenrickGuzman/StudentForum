@@ -1,36 +1,4 @@
-  // Admin: Send a warning to a user
-  router.post('/users/:id/warn', requireAuth, isAdmin, async (req, res) => {
-    const userId = parseInt(req.params.id, 10);
-    const adminId = req.user.id;
-    const { reason } = req.body || {};
-    if (!reason || !userId) return res.status(400).json({ error: 'Reason and user ID required' });
-    try {
-      // Insert warning
-      const { error: warnError } = await supabase
-        .from('user_warnings')
-        .insert([{ user_id: userId, admin_id: adminId, reason }]);
-      if (warnError) return res.status(500).json({ error: 'Failed to send warning', details: warnError.message || warnError });
-
-      // Count warnings
-      const { data: warnings, error: countError } = await supabase
-        .from('user_warnings')
-        .select('id')
-        .eq('user_id', userId);
-      if (countError) return res.status(500).json({ error: 'Failed to count warnings', details: countError.message || countError });
-
-      if (Array.isArray(warnings) && warnings.length >= 3) {
-        // Delete user after 3 warnings
-        await supabase
-          .from('users')
-          .update({ deleted: true })
-          .eq('id', userId);
-        return res.json({ ok: true, deleted: true, message: 'User deleted after 3 warnings.' });
-      }
-      return res.json({ ok: true, deleted: false });
-    } catch (e) {
-      return res.status(500).json({ error: 'Failed to warn user', details: e && e.message ? e.message : e });
-    }
-  });
+// ...existing code...
 
   // User: Get active warnings
   router.get('/me/warnings', requireAuth, async (req, res) => {
@@ -106,6 +74,43 @@ const createAuthRouter = () => {
         .select('id, email')
         .eq('email', email.trim().toLowerCase())
         .single();
+          // Admin: Warn a user (adds a warning, deletes user after 3 warnings)
+          router.post('/users/:id/warn', requireAuth, isAdmin, async (req, res) => {
+            const userId = parseInt(req.params.id, 10);
+            const adminId = req.user.id;
+            const { reason } = req.body || {};
+            if (!userId || !reason || typeof reason !== 'string' || reason.trim().length < 3) {
+              return res.status(400).json({ error: 'User ID and valid reason required.' });
+            }
+            try {
+              // Add warning
+              const { error: warnError } = await supabase
+                .from('user_warnings')
+                .insert([{ user_id: userId, admin_id: adminId, reason: reason.trim() }]);
+              if (warnError) return res.status(500).json({ error: 'Failed to add warning', details: warnError.message || warnError });
+
+              // Count warnings
+              const { data: warnings, error: countError } = await supabase
+                .from('user_warnings')
+                .select('id')
+                .eq('user_id', userId);
+              if (countError) return res.status(500).json({ error: 'Failed to count warnings', details: countError.message || countError });
+              const warningCount = Array.isArray(warnings) ? warnings.length : 0;
+
+              // If 3 or more warnings, soft-delete user
+              if (warningCount >= 3) {
+                const { error: delError } = await supabase
+                  .from('users')
+                  .update({ deleted: true })
+                  .eq('id', userId);
+                if (delError) return res.status(500).json({ error: 'Failed to delete user after 3 warnings', details: delError.message || delError });
+                return res.json({ warned: true, deleted: true, message: 'User has reached 3 warnings and was deleted.' });
+              }
+              return res.json({ warned: true, warningCount });
+            } catch (e) {
+              return res.status(500).json({ error: 'Failed to warn user', details: e && e.message ? e.message : e });
+            }
+          });
       if (error || !user) return res.status(404).json({ error: 'User not found' });
 
       // Generate secure token
