@@ -9,6 +9,25 @@ import { supabase } from '../lib/supabaseClient.js';
 const createAuthRouter = () => {
   const router = express.Router();
 
+    // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
+    const requireAuth = (req, res, next) => {
+      const auth = req.headers.authorization || '';
+      const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
+      try {
+        req.user = jwt.verify(token, process.env.JWT_SECRET);
+        next();
+      } catch {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+    };
+
+    const isAdmin = (req, res, next) => {
+      const nameLower = req.user?.name?.trim().toLowerCase();
+      if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
+      return res.status(403).json({ error: 'Forbidden' });
+    };
+
     // User: Get active warnings
     router.get('/me/warnings', requireAuth, async (req, res) => {
       const userId = req.user.id;
@@ -141,24 +160,7 @@ const createAuthRouter = () => {
     }
   });
 
-  // Middleware to require authentication and admin role (scoped here to avoid redeclaration)
-  const requireAuth = (req, res, next) => {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
-    if (!token) return res.status(401).json({ error: 'Unauthorized' });
-    try {
-      req.user = jwt.verify(token, process.env.JWT_SECRET);
-      next();
-    } catch {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-  };
 
-  const isAdmin = (req, res, next) => {
-    const nameLower = req.user?.name?.trim().toLowerCase();
-    if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
-    return res.status(403).json({ error: 'Forbidden' });
-  };
 
 // Get public profile by user ID (for viewing other users)
   router.get('/profile/:id', async (req, res) => {
