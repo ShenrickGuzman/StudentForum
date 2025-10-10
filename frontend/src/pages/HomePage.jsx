@@ -198,7 +198,8 @@ function HomePage() {
               <div key={w.id} className="mb-4 text-lg text-red-700 font-bold bg-red-50 rounded-xl border border-red-300 p-3">
                 {w.reason}
                 <div className="text-xs text-gray-500 mt-1">
-                  Sent on: {new Date(w.created_at).toLocaleString(undefined, {
+                  Sent on: {new Date(w.created_at).toLocaleString('en-PH', {
+                    timeZone: 'Asia/Manila',
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -206,7 +207,7 @@ function HomePage() {
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: true
-                  })}
+                  })} (PHT)
                 </div>
               </div>
             ))}
