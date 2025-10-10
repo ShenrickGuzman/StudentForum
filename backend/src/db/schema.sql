@@ -57,6 +57,15 @@ CREATE TABLE IF NOT EXISTS comment_reactions (
   PRIMARY KEY (comment_id, user_id)
 );
 
+-- Track warnings sent to users by admins
+CREATE TABLE IF NOT EXISTS user_warnings (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  admin_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
+  reason TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- Pending signup requests waiting for admin approval
 CREATE TABLE IF NOT EXISTS signup_requests (
   id SERIAL PRIMARY KEY,
