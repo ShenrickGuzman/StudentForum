@@ -18,6 +18,25 @@ const categories = [
 
 function HomePage() {
   // ...existing code...
+  const [warnings, setWarnings] = useState([]);
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [acknowledgedWarnings, setAcknowledgedWarnings] = useState([]);
+
+  const { user, token, logout } = useAuth();
+
+  useEffect(() => {
+    if (user && token) {
+      api.get('/auth/me/warnings', { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => {
+          if (Array.isArray(r.data.warnings) && r.data.warnings.length > 0) {
+            setWarnings(r.data.warnings);
+            setShowWarningModal(true);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [user, token]);
+  // ...existing code...
   const [userSearchInput, setUserSearchInput] = useState('');
   const [userSearchResults, setUserSearchResults] = useState([]);
   const [userSearchLoading, setUserSearchLoading] = useState(false);
@@ -56,7 +75,6 @@ function HomePage() {
   const [cat, setCat] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
 
@@ -159,6 +177,27 @@ function HomePage() {
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
       <RulesPopup open={showRules} onAgree={() => setShowRules(false)} onClose={() => setShowRules(false)} onDontShowAgain={() => {}} />
+
+      {/* Warning Modal for users */}
+      {showWarningModal && warnings.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+            <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">You have received a warning from an admin</h2>
+            {warnings.map(w => (
+              <div key={w.id} className="mb-4 text-lg text-red-700 font-bold bg-red-50 rounded-xl border border-red-300 p-3">
+                {w.reason}
+                <div className="text-xs text-gray-500 mt-1">{new Date(w.created_at).toLocaleString()}</div>
+              </div>
+            ))}
+            {warnings.length >= 3 ? (
+              <div className="text-xl font-bold text-red-700 bg-red-100 rounded-xl border-2 border-red-400 p-4 mb-2">
+                You have reached 3 warnings. Your account has been deleted due to repeated violations.
+              </div>
+            ) : null}
+            <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400 mt-2" onClick={() => { setShowWarningModal(false); setAcknowledgedWarnings(warnings.map(w => w.id)); }}>I understand</button>
+          </div>
+        </div>
+      )}
       {/* Floating pastel circles */}
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
