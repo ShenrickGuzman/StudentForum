@@ -21,6 +21,13 @@ function HomePage() {
   const [warnings, setWarnings] = useState([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
   const [acknowledgedWarnings, setAcknowledgedWarnings] = useState([]);
+  const [doNotShowWarningAgainIds, setDoNotShowWarningAgainIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('doNotShowWarningAgainIds') || '[]');
+    } catch {
+      return [];
+    }
+  });
 
   const { user, token, logout } = useAuth();
 
@@ -29,13 +36,15 @@ function HomePage() {
       api.get('/auth/me/warnings', { headers: { Authorization: `Bearer ${token}` } })
         .then(r => {
           if (Array.isArray(r.data.warnings) && r.data.warnings.length > 0) {
+            // Only show modal if there are warnings not in doNotShowWarningAgainIds
+            const unseen = r.data.warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id));
             setWarnings(r.data.warnings);
-            setShowWarningModal(true);
+            setShowWarningModal(unseen.length > 0);
           }
         })
         .catch(() => {});
     }
-  }, [user, token]);
+  }, [user, token, doNotShowWarningAgainIds]);
   // ...existing code...
   const [userSearchInput, setUserSearchInput] = useState('');
   const [userSearchResults, setUserSearchResults] = useState([]);
@@ -183,7 +192,8 @@ function HomePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
             <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">You have received a warning from an admin</h2>
-            {warnings.map(w => (
+            <div className="mb-4 text-lg font-bold text-red-700">Current warnings: {warnings.length}</div>
+            {warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => (
               <div key={w.id} className="mb-4 text-lg text-red-700 font-bold bg-red-50 rounded-xl border border-red-300 p-3">
                 {w.reason}
                 <div className="text-xs text-gray-500 mt-1">{new Date(w.created_at).toLocaleString()}</div>
@@ -194,7 +204,32 @@ function HomePage() {
                 You have reached 3 warnings. Your account has been deleted due to repeated violations.
               </div>
             ) : null}
-            <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400 mt-2" onClick={() => { setShowWarningModal(false); setAcknowledgedWarnings(warnings.map(w => w.id)); }}>I understand</button>
+            <div className="flex flex-col items-center gap-2 mt-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).every(w => doNotShowWarningAgainIds.includes(w.id))}
+                  onChange={e => {
+                    if (e.target.checked) {
+                      // Add all currently shown warning ids to localStorage
+                      const newIds = [...doNotShowWarningAgainIds, ...warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => w.id)];
+                      setDoNotShowWarningAgainIds(newIds);
+                      localStorage.setItem('doNotShowWarningAgainIds', JSON.stringify(newIds));
+                    } else {
+                      // Remove all currently shown warning ids from localStorage
+                      const removeIds = warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => w.id);
+                      const newIds = doNotShowWarningAgainIds.filter(id => !removeIds.includes(id));
+                      setDoNotShowWarningAgainIds(newIds);
+                      localStorage.setItem('doNotShowWarningAgainIds', JSON.stringify(newIds));
+                    }
+                  }}
+                />
+                Do not show again
+              </label>
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400 mt-2" onClick={() => { setShowWarningModal(false); setAcknowledgedWarnings(warnings.map(w => w.id)); }}>
+                I understand
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -202,9 +237,9 @@ function HomePage() {
       <div className="absolute inset-0 z-0 pointer-events-none select-none">
         <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
         <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
-        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
-        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
-        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
+        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20 animate-pulse"></span>
+        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20 animate-bounce"></span>
+        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20 animate-pulse"></span>
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
       {/* Mobile only: Rules and New Post buttons */}
