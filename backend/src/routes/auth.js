@@ -33,22 +33,41 @@ const createAuthRouter = () => {
 // Admin: Get warning count for all users
 router.get('/users/warnings', requireAuth, isAdmin, async (req, res) => {
   try {
+    const details = req.query.details === 'true';
     const { data: users, error: userError } = await supabase
       .from('users')
       .select('id, name, email, role, badges');
     if (userError) return res.status(500).json({ error: 'Failed to fetch users', details: userError.message || userError });
-    const userIds = users.map(u => u.id);
-    const { data: warnings, error: warnError } = await supabase
-      .from('user_warnings')
-      .select('user_id');
-    if (warnError) return res.status(500).json({ error: 'Failed to fetch warnings', details: warnError.message || warnError });
-    // Count warnings per user
+    let warnings = [];
+    if (details) {
+      const warnRes = await supabase
+        .from('user_warnings')
+        .select('id, user_id, reason, created_at');
+      if (warnRes.error) return res.status(500).json({ error: 'Failed to fetch warnings', details: warnRes.error.message || warnRes.error });
+      warnings = warnRes.data;
+    } else {
+      const warnRes = await supabase
+        .from('user_warnings')
+        .select('user_id');
+      if (warnRes.error) return res.status(500).json({ error: 'Failed to fetch warnings', details: warnRes.error.message || warnRes.error });
+      warnings = warnRes.data;
+    }
+    // Count warnings per user and attach details if requested
     const warningCounts = {};
+    const warningDetails = {};
     warnings.forEach(w => {
       warningCounts[w.user_id] = (warningCounts[w.user_id] || 0) + 1;
+      if (details) {
+        if (!warningDetails[w.user_id]) warningDetails[w.user_id] = [];
+        warningDetails[w.user_id].push(w);
+      }
     });
-    // Attach warning count to each user
-    const usersWithWarnings = users.map(u => ({ ...u, warningCount: warningCounts[u.id] || 0 }));
+    // Attach warning count and details to each user
+    const usersWithWarnings = users.map(u => ({
+      ...u,
+      warningCount: warningCounts[u.id] || 0,
+      warnings: details ? (warningDetails[u.id] || []) : undefined
+    }));
     return res.json({ users: usersWithWarnings });
   } catch (e) {
     return res.status(500).json({ error: 'Failed to fetch user warnings', details: e && e.message ? e.message : e });
