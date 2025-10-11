@@ -207,7 +207,7 @@ function HomePage() {
                     minute: '2-digit',
                     second: '2-digit',
                     hour12: true
-                  })} (PHT)
+                  })} (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi
                 </div>
               </div>
             ))}
