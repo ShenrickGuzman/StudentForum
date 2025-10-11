@@ -67,11 +67,11 @@ const createAuthRouter = () => {
           if (countError) return res.status(500).json({ error: 'Failed to count warnings', details: countError.message || countError });
           const warningCount = Array.isArray(warnings) ? warnings.length : 0;
 
-          // If 3 or more warnings, soft-delete user
+          // If 3 or more warnings, soft-delete user and set deleted_reason
           if (warningCount >= 3) {
             const { error: delError } = await supabase
               .from('users')
-              .update({ deleted: true })
+              .update({ deleted: true, deleted_reason: 'warnings' })
               .eq('id', userId);
             if (delError) return res.status(500).json({ error: 'Failed to delete user after 3 warnings', details: delError.message || delError });
             return res.json({ warned: true, deleted: true, message: 'User has reached 3 warnings and was deleted.' });
@@ -700,7 +700,7 @@ const createAuthRouter = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .update({ deleted: true })
+        .update({ deleted: true, deleted_reason: 'manual' })
         .eq('id', id)
         .select('id, name')
         .single();
@@ -733,11 +733,12 @@ const createAuthRouter = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('deleted')
+        .select('deleted, deleted_reason')
         .eq('id', req.user.id)
         .single();
       if (error || !data || data.deleted) {
-        return res.status(401).json({ error: 'Account deleted' });
+        // Pass reason if available
+        return res.status(401).json({ error: 'Account deleted', reason: data && data.deleted_reason ? data.deleted_reason : 'manual' });
       }
       res.json({ status: 'active' });
     } catch (e) {
