@@ -33,7 +33,8 @@ export function AuthContextProvider({ children }) {
         if (error?.response?.status === 401 && error?.response?.data?.error === 'Account deleted') {
           setToken(null);
           setUser(null);
-          window.location.replace('/account-deleted');
+          const reason = error?.response?.data?.reason || 'manual';
+          window.location.replace(`/account-deleted?reason=${encodeURIComponent(reason)}`);
         }
       }
     };
@@ -48,7 +49,8 @@ export function AuthContextProvider({ children }) {
         if (error?.response?.status === 401 && error?.response?.data?.error === 'Account deleted') {
           setToken(null);
           setUser(null);
-          window.location.replace('/account-deleted');
+          const reason = error?.response?.data?.reason || 'manual';
+          window.location.replace(`/account-deleted?reason=${encodeURIComponent(reason)}`);
         }
       }
     };
