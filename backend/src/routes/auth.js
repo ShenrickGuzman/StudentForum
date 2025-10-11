@@ -36,7 +36,8 @@ router.get('/users/warnings', requireAuth, isAdmin, async (req, res) => {
     const details = req.query.details === 'true';
     const { data: users, error: userError } = await supabase
       .from('users')
-      .select('id, name, email, role, badges');
+      .select('id, name, email, role, badges, deleted')
+      .eq('deleted', false);
     if (userError) return res.status(500).json({ error: 'Failed to fetch users', details: userError.message || userError });
     let warnings = [];
     if (details) {
