@@ -1,4 +1,5 @@
 
+
 // ...existing code...
 import express from 'express';
 import multer from 'multer';
@@ -107,6 +108,26 @@ router.get('/users/warnings', requireAuth, isAdmin, async (req, res) => {
           return res.status(500).json({ error: 'Failed to warn user', details: e && e.message ? e.message : e });
         }
       });
+
+// Admin: Remove a warning from a user
+router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async (req, res) => {
+  const userId = parseInt(req.params.userId, 10);
+  const warningId = parseInt(req.params.warningId, 10);
+  if (!userId || !warningId) {
+    return res.status(400).json({ error: 'User ID and Warning ID required.' });
+  }
+  try {
+    const { error: delError } = await supabase
+      .from('user_warnings')
+      .delete()
+      .eq('id', warningId)
+      .eq('user_id', userId);
+    if (delError) return res.status(500).json({ error: 'Failed to remove warning', details: delError.message || delError });
+    return res.json({ success: true });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to remove warning', details: e && e.message ? e.message : e });
+  }
+});
 
   // Reset password using token
   router.post('/reset-password', async (req, res) => {
