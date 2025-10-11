@@ -736,9 +736,16 @@ const createAuthRouter = () => {
         .select('deleted, deleted_reason')
         .eq('id', req.user.id)
         .single();
-      if (error || !data || data.deleted) {
+      if (error) {
+        console.error('CHECK STATUS ERROR:', error);
+        return res.status(500).json({ error: 'Status check failed', details: error.message || error });
+      }
+      if (!data) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      if (data.deleted) {
         // Pass reason if available
-        return res.status(401).json({ error: 'Account deleted', reason: data && data.deleted_reason ? data.deleted_reason : 'manual' });
+        return res.status(401).json({ error: 'Account deleted', reason: data.deleted_reason || 'manual' });
       }
       res.json({ status: 'active' });
     } catch (e) {
