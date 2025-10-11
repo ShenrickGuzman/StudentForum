@@ -196,10 +196,11 @@ export default function AdminPage() {
   const [deleteUserModal, setDeleteUserModal] = useState({ open: false, id: null, name: '', email: '' });
 
   // Load all users with warning counts
+  // Load all users with warning details
   const loadUsers = async () => {
     setUsersLoading(true); setUsersError('');
     try {
-      const r = await api.get('/auth/users/warnings');
+      const r = await api.get('/auth/users/warnings?details=true');
       setUsers(r.data.users);
     } catch (e) {
       setUsersError(e?.response?.data?.error || 'Failed to load users');
@@ -523,6 +524,28 @@ export default function AdminPage() {
                     <span className="font-bold text-lg text-dark">{u.name}</span>
                     <span className="text-base text-gray-500">{u.email}</span>
                     <span className="text-base text-red-500 font-bold ml-2">Warnings: {u.warningCount}</span>
+                    {Array.isArray(u.warnings) && u.warnings.length > 0 && (
+                      <div className="flex flex-col gap-1 ml-2">
+                        {u.warnings.map(w => (
+                          <div key={w.id} className="flex items-center gap-2 text-xs text-gray-600 bg-red-50 rounded px-2 py-1 border border-red-200">
+                            <span>{w.reason}</span>
+                            <span className="text-gray-400">{new Date(w.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}</span>
+                            <button
+                              className="text-red-500 hover:text-red-700 font-bold px-2 py-0.5 rounded border border-red-300 bg-red-100/70"
+                              title="Remove warning"
+                              onClick={async () => {
+                                try {
+                                  await api.delete(`/auth/users/${u.id}/warnings/${w.id}`);
+                                  loadUsers();
+                                } catch (e) {
+                                  setUserActionMsg(e?.response?.data?.error || 'Failed to remove warning');
+                                }
+                              }}
+                            >Remove</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     {/* Badges display */}
                     {Array.isArray(u.badges) && u.badges.length > 0 && (
                       <div className="flex flex-wrap gap-1 ml-2">
