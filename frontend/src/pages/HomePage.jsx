@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { format, utcToZonedTime } from 'date-fns-tz';
 // import { Link } from 'react-router-dom';
 import RulesPopup from '../components/RulesPopup';
 import { Link, useNavigate } from 'react-router-dom';
@@ -198,16 +199,14 @@ function HomePage() {
               <div key={w.id} className="mb-4 text-lg text-red-700 font-bold bg-red-50 rounded-xl border border-red-300 p-3">
                 {w.reason}
                 <div className="text-xs text-gray-500 mt-1">
-                  Sent on: {new Date(w.created_at).toLocaleString('en-PH', {
-                    timeZone: 'Asia/Manila',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: true
-                  })} (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi
+                  Sent on: {format(
+                    utcToZonedTime(
+                      w.created_at.endsWith('Z') ? new Date(w.created_at) : new Date(w.created_at + 'Z'),
+                      'Asia/Manila'
+                    ),
+                    'dd MMMM yyyy, hh:mm a',
+                    { timeZone: 'Asia/Manila' }
+                  )}
                 </div>
               </div>
             ))}
