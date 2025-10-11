@@ -1,3 +1,4 @@
+
 // ...existing code...
 import express from 'express';
 import multer from 'multer';
@@ -27,6 +28,31 @@ const createAuthRouter = () => {
       if (req.user?.role === 'admin' || req.user?.role === 'teacher' || nameLower === 'shen') return next();
       return res.status(403).json({ error: 'Forbidden' });
     };
+
+// Admin: Get warning count for all users
+router.get('/users/warnings', requireAuth, isAdmin, async (req, res) => {
+  try {
+    const { data: users, error: userError } = await supabase
+      .from('users')
+      .select('id, name, email, role, badges');
+    if (userError) return res.status(500).json({ error: 'Failed to fetch users', details: userError.message || userError });
+    const userIds = users.map(u => u.id);
+    const { data: warnings, error: warnError } = await supabase
+      .from('user_warnings')
+      .select('user_id');
+    if (warnError) return res.status(500).json({ error: 'Failed to fetch warnings', details: warnError.message || warnError });
+    // Count warnings per user
+    const warningCounts = {};
+    warnings.forEach(w => {
+      warningCounts[w.user_id] = (warningCounts[w.user_id] || 0) + 1;
+    });
+    // Attach warning count to each user
+    const usersWithWarnings = users.map(u => ({ ...u, warningCount: warningCounts[u.id] || 0 }));
+    return res.json({ users: usersWithWarnings });
+  } catch (e) {
+    return res.status(500).json({ error: 'Failed to fetch user warnings', details: e && e.message ? e.message : e });
+  }
+});
 
     // User: Get active warnings
     router.get('/me/warnings', requireAuth, async (req, res) => {
