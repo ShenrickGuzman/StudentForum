@@ -195,12 +195,12 @@ export default function AdminPage() {
   const [userActionMsg, setUserActionMsg] = useState('');
   const [deleteUserModal, setDeleteUserModal] = useState({ open: false, id: null, name: '', email: '' });
 
-  // Load all users
+  // Load all users with warning counts
   const loadUsers = async () => {
     setUsersLoading(true); setUsersError('');
     try {
-      const r = await api.get('/auth/users');
-      setUsers(r.data);
+      const r = await api.get('/auth/users/warnings');
+      setUsers(r.data.users);
     } catch (e) {
       setUsersError(e?.response?.data?.error || 'Failed to load users');
     } finally {
@@ -522,6 +522,7 @@ export default function AdminPage() {
                     <span className="text-2xl">👤</span>
                     <span className="font-bold text-lg text-dark">{u.name}</span>
                     <span className="text-base text-gray-500">{u.email}</span>
+                    <span className="text-base text-red-500 font-bold ml-2">Warnings: {u.warningCount}</span>
                     {/* Badges display */}
                     {Array.isArray(u.badges) && u.badges.length > 0 && (
                       <div className="flex flex-wrap gap-1 ml-2">
