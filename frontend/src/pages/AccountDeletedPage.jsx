@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from 'react-router-dom';
 
+export default function AccountDeletedPage() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const reason = params.get('reason');
@@ -39,4 +40,4 @@ import { Link, useLocation } from 'react-router-dom';
       </div>
     </div>
   );
-// End of component
+}
