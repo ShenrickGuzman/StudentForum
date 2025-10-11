@@ -1,3 +1,5 @@
+  // State for post delete confirmation modal
+  const [deletePostModal, setDeletePostModal] = useState({ open: false, id: null });
 
 import { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
@@ -849,7 +851,21 @@ export default function AdminPage() {
                       ? <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleUnpin(p.id)}>Unpin 📌</button>
                       : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => handlePin(p.id)}>Pin 📌</button>
                     }
-                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => handleDeletePost(p.id)}>Delete 🗑️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => setDeletePostModal({ open: true, id: p.id })}>Delete 🗑️</button>
+      {/* Delete Post Confirmation Modal */}
+      {deletePostModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+            <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">Delete Post?</h2>
+            <div className="mb-4 text-lg font-bold text-red-700">Are you sure you want to delete this post?</div>
+            <div className="mb-2 text-base text-red-600 font-semibold">Once deleted, it cannot be recovered.</div>
+            <div className="flex gap-4 justify-center mt-2">
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400" onClick={() => handleDeletePost(deletePostModal.id)}>Delete Permanently</button>
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setDeletePostModal({ open: false, id: null })}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
                   </div>
                   {/* Status label for pending/rejected posts (if needed) */}
                   {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
