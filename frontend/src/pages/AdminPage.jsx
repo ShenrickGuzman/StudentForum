@@ -5,7 +5,8 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';
 
 export default function AdminPage() {
-  // ...existing code...
+  // State for post delete confirmation modal
+  const [deletePostModal, setDeletePostModal] = useState({ open: false, id: null });
   const [warnUserModal, setWarnUserModal] = useState({ open: false, id: null, name: '', email: '' });
   const [warnReason, setWarnReason] = useState('');
   const [warnLoading, setWarnLoading] = useState(false);
