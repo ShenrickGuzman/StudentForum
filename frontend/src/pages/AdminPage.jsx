@@ -162,6 +162,7 @@ export default function AdminPage() {
     try {
       await api.delete(`/posts/${id}`);
       setPostActionMsg('🗑️ Post deleted!');
+      setDeletePostModal({ open: false, id: null }); // Close modal after delete
       loadPosts();
     } catch (e) {
       setPostActionMsg(e?.response?.data?.error || 'Failed to delete post');
