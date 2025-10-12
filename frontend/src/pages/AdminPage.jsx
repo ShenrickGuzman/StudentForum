@@ -1,7 +1,5 @@
-  // State for post delete confirmation modal
-  const [deletePostModal, setDeletePostModal] = useState({ open: false, id: null });
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl } from '../lib/api';
 import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';
