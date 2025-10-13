@@ -38,17 +38,67 @@ const createPostsRouter = () => {
     }
   });
 
-  // Admin: Remove reported post
+  // Admin: Remove reported post (cascade delete related data)
   router.delete('/reported-post/:id', requireAuth, isAdmin, async (req, res) => {
     try {
-      const { error } = await supabase
+      // 1. Get all comment IDs for this post
+      const { data: comments, error: commentsError } = await supabase
+        .from('comments')
+        .select('id')
+        .eq('post_id', req.params.id);
+      if (commentsError) {
+        console.error('Error fetching comments for post delete:', commentsError);
+        return res.status(500).json({ error: 'Failed to fetch comments', details: commentsError.message || commentsError });
+      }
+      const commentIds = (comments || []).map(c => c.id);
+
+      // 2. Delete all comment reactions for these comments
+      if (commentIds.length > 0) {
+        const { error: delCommentReactionsError } = await supabase
+          .from('comment_reactions')
+          .delete()
+          .in('comment_id', commentIds);
+        if (delCommentReactionsError) {
+          console.error('Error deleting comment reactions:', delCommentReactionsError);
+          return res.status(500).json({ error: 'Failed to delete comment reactions', details: delCommentReactionsError.message || delCommentReactionsError });
+        }
+      }
+
+      // 3. Delete all comments for this post
+      if (commentIds.length > 0) {
+        const { error: delCommentsError } = await supabase
+          .from('comments')
+          .delete()
+          .in('id', commentIds);
+        if (delCommentsError) {
+          console.error('Error deleting comments:', delCommentsError);
+          return res.status(500).json({ error: 'Failed to delete comments', details: delCommentsError.message || delCommentsError });
+        }
+      }
+
+      // 4. Delete all post reactions for this post
+      const { error: delPostReactionsError } = await supabase
+        .from('post_reactions')
+        .delete()
+        .eq('post_id', req.params.id);
+      if (delPostReactionsError) {
+        console.error('Error deleting post reactions:', delPostReactionsError);
+        return res.status(500).json({ error: 'Failed to delete post reactions', details: delPostReactionsError.message || delPostReactionsError });
+      }
+
+      // 5. Delete the post itself
+      const { error: deleteError } = await supabase
         .from('posts')
         .delete()
         .eq('id', req.params.id);
-      if (error) return res.status(500).json({ error: 'Failed to delete post' });
+      if (deleteError) {
+        console.error('Error deleting post:', deleteError);
+        return res.status(500).json({ error: 'Failed to delete post', details: deleteError.message || deleteError });
+      }
       res.json({ ok: true });
     } catch (e) {
-      res.status(500).json({ error: 'Failed to delete post' });
+      console.error('Exception in admin reported post delete:', e);
+      res.status(500).json({ error: 'Exception occurred while deleting post', details: e && e.message ? e.message : e });
     }
   });
 
