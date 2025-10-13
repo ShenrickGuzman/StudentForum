@@ -407,6 +407,14 @@ export default function PostDetailPage() {
               </button>
             ))}
           </div>
+          {/* Report Button moved below reactions, bottom right corner */}
+          <div className="w-full flex justify-end px-8 pb-4">
+            <button
+              className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500"
+              onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}
+              title="Report post"
+            >Report 🚩</button>
+          </div>
         </div>
         {/* Comment Section - New Format */}
         <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
