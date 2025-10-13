@@ -1,6 +1,48 @@
 
 import React, { useEffect, useState } from 'react';
-import api, { getAssetUrl, reportPost } from '../lib/api';
+import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment } from '../lib/api';
+  // Report log state
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState('');
+  const [reportActionMsg, setReportActionMsg] = useState('');
+
+  // Load all reports for admin
+  const loadReports = async () => {
+    setReportsLoading(true); setReportsError('');
+    try {
+      const r = await getReports();
+      setReports(r.data.reports || []);
+    } catch (e) {
+      setReportsError(e?.response?.data?.error || 'Failed to load reports');
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  // Remove reported post
+  const handleRemoveReportedPost = async (postId) => {
+    setReportActionMsg('');
+    try {
+      await removeReportedPost(postId);
+      setReportActionMsg('Reported post removed!');
+      loadReports();
+    } catch (e) {
+      setReportActionMsg(e?.response?.data?.error || 'Failed to remove post');
+    }
+  };
+
+  // Remove reported comment
+  const handleRemoveReportedComment = async (commentId) => {
+    setReportActionMsg('');
+    try {
+      await removeReportedComment(commentId);
+      setReportActionMsg('Reported comment removed!');
+      loadReports();
+    } catch (e) {
+      setReportActionMsg(e?.response?.data?.error || 'Failed to remove comment');
+    }
+  };
 import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';
 
@@ -383,7 +425,40 @@ export default function AdminPage() {
   loadUsers();
   loadPendingPosts();
   loadRequests();
+    loadReports();
   }, []);
+      {/* Report Log Section */}
+      <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🚩</span>
+          <h2 className="text-2xl font-bold text-pink-500 drop-shadow">Reported Posts & Comments</h2>
+          <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadReports}>Refresh 🔄</button>
+        </div>
+        {reportsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading reports...</div>}
+        {reportsError && <div className="text-error font-bold">{reportsError}</div>}
+        {reportActionMsg && <div className="text-success font-bold animate-bouncex">{reportActionMsg}</div>}
+        <div className="flex flex-col gap-4 mt-4">
+          {reports.length === 0 && !reportsLoading && <div className="text-gray-400 text-base">No reports found.</div>}
+          {reports.map(r => (
+            <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
+              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                <span className="text-2xl">🚩</span>
+                <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
+                <span className="text-base text-gray-500">Reporter: {r.reporter_id}</span>
+                <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
+                <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
+                {r.post_id && <span className="text-xs text-purple-700">Post ID: {r.post_id}</span>}
+                {r.comment_id && <span className="text-xs text-blue-700">Comment ID: {r.comment_id}</span>}
+                <span className={`ml-2 px-3 py-1 rounded-full font-bold text-xs shadow ${r.resolved ? 'bg-green-200 text-green-700' : 'bg-yellow-200 text-yellow-900'}`}>{r.resolved ? 'Resolved' : 'Unresolved'}</span>
+              </div>
+              <div className="flex gap-2 mt-2 md:mt-0">
+                {r.post_id && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.post_id)}>Remove Post 🗑️</button>}
+                {r.comment_id && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.comment_id)}>Remove Comment 🗑️</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
