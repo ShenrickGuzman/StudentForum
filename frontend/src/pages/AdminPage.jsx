@@ -5,6 +5,26 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
+  // Helper to view reported comment: open parent post and scroll/highlight comment
+  const handleViewReportedComment = async (commentId) => {
+    // Find the report for this comment
+    const report = reports.find(r => r.target_type === 'comment' && r.target_id === commentId);
+    if (!report) return;
+    // Assume report has post_id, else fetch comment to get post_id
+    let postId = report.post_id;
+    if (!postId) {
+      try {
+        const res = await api.get(`/comments/${commentId}`);
+        postId = res.data.comment?.post_id;
+      } catch (e) {
+        return;
+      }
+    }
+    if (postId) {
+      await openPostDetail(postId);
+      // Optionally, scroll/highlight the comment in modal (not implemented here)
+    }
+  };
   // Report log state
   const [reports, setReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(false);
@@ -443,7 +463,7 @@ export default function AdminPage() {
         {/* Pending Posts Approval Section */}
         <div className="cartoon-card border-4 border-yellow-400 shadow-fun bg-white/90 mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">�</span>
+            <span className="text-2xl">📝</span>
             <h2 className="text-2xl font-bold text-yellow-500 drop-shadow">Pending Posts for Approval</h2>
             <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadPendingPosts}>Refresh 🔄</button>
           </div>
@@ -455,7 +475,7 @@ export default function AdminPage() {
             {pendingPosts.map(p => (
               <div key={p.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-yellow-300 bg-yellow-50/60 shadow-fun">
                 <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                  <span className="text-2xl">�</span>
+                  <span className="text-2xl">👤</span>
                   <span className="font-bold text-lg text-dark">{p.author_name}</span>
                   <span className="text-base text-gray-500">{p.category}</span>
                   <span className="text-xs text-gray-400 ml-2">{new Date(p.created_at).toLocaleString()}</span>
@@ -490,7 +510,7 @@ export default function AdminPage() {
             {reports.map(r => (
               <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
                 <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                  <span className="text-2xl">�</span>
+                  <span className="text-2xl">🚩</span>
                   <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
                   <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
                   <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
@@ -499,8 +519,14 @@ export default function AdminPage() {
                   <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
-                  {r.target_type === 'post' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>}
-                  {r.target_type === 'comment' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>}
+                  {r.target_type === 'post' && <>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500" onClick={() => openPostDetail(r.target_id)}>View Post 👁️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>
+                  </>}
+                  {r.target_type === 'comment' && <>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleViewReportedComment(r.target_id)}>View Comment 👁️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>
+                  </>}
                 </div>
               </div>
             ))}
