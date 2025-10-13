@@ -29,7 +29,7 @@ const createPostsRouter = () => {
     try {
       const { data, error } = await supabase
         .from('reports')
-        .select('id, reporter_id, post_id, comment_id, reason, created_at, resolved')
+        .select('*')
         .order('created_at', { ascending: false });
       if (error) return res.status(500).json({ error: 'Failed to fetch reports' });
       res.json({ reports: data });
@@ -67,18 +67,33 @@ const createPostsRouter = () => {
   });
   
 
- // Report a post
+  // Report a post
   router.post('/:id/report', requireAuth, async (req, res) => {
     const { reason } = req.body || {};
     if (!reason) return res.status(400).json({ error: 'Missing reason' });
     try {
       const { error } = await supabase
         .from('reports')
-        .insert([{ post_id: req.params.id, reporter_id: req.user.id, reason }]);
+        .insert([{ reported_by: req.user.id, target_type: 'post', target_id: req.params.id, reason }]);
       if (error) return res.status(500).json({ error: 'Failed to report post' });
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: 'Failed to report post' });
+    }
+  });
+
+  // Report a comment
+  router.post('/comment/:id/report', requireAuth, async (req, res) => {
+    const { reason } = req.body || {};
+    if (!reason) return res.status(400).json({ error: 'Missing reason' });
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .insert([{ reported_by: req.user.id, target_type: 'comment', target_id: req.params.id, reason }]);
+      if (error) return res.status(500).json({ error: 'Failed to report comment' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to report comment' });
     }
   });
 
