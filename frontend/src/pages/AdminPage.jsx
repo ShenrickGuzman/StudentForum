@@ -445,16 +445,15 @@ export default function AdminPage() {
               <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
                 <span className="text-2xl">🚩</span>
                 <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
-                <span className="text-base text-gray-500">Reporter: {r.reporter_id}</span>
+                <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
                 <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
                 <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
-                {r.post_id && <span className="text-xs text-purple-700">Post ID: {r.post_id}</span>}
-                {r.comment_id && <span className="text-xs text-blue-700">Comment ID: {r.comment_id}</span>}
-                <span className={`ml-2 px-3 py-1 rounded-full font-bold text-xs shadow ${r.resolved ? 'bg-green-200 text-green-700' : 'bg-yellow-200 text-yellow-900'}`}>{r.resolved ? 'Resolved' : 'Unresolved'}</span>
+                <span className="text-xs text-purple-700">Type: {r.target_type}</span>
+                <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
               </div>
               <div className="flex gap-2 mt-2 md:mt-0">
-                {r.post_id && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.post_id)}>Remove Post 🗑️</button>}
-                {r.comment_id && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.comment_id)}>Remove Comment 🗑️</button>}
+                {r.target_type === 'post' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>}
+                {r.target_type === 'comment' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>}
               </div>
             </div>
           ))}
