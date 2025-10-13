@@ -1,6 +1,28 @@
 
 import React, { useEffect, useState } from 'react';
-import api, { getAssetUrl } from '../lib/api';
+import api, { getAssetUrl, reportPost } from '../lib/api';
+  // State for reporting posts
+  const [reportPostModal, setReportPostModal] = useState({ open: false, id: null });
+  const [reportReason, setReportReason] = useState('');
+  const [reportMsg, setReportMsg] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const handleReportPost = async (id) => {
+    if (!reportReason.trim()) {
+      setReportMsg('Please enter a reason.');
+      return;
+    }
+    setReportLoading(true);
+    setReportMsg('');
+    try {
+      await reportPost(id, reportReason);
+      setReportMsg('Reported!');
+      setTimeout(() => setReportPostModal({ open: false, id: null }), 1200);
+    } catch (e) {
+      setReportMsg(e?.response?.data?.error || 'Failed to report post');
+    }
+    setReportLoading(false);
+  };
 import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';
 
@@ -852,7 +874,29 @@ export default function AdminPage() {
                       : <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => handlePin(p.id)}>Pin 📌</button>
                     }
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-500 hover:from-red-500 hover:to-pink-600" onClick={() => setDeletePostModal({ open: true, id: p.id })}>Delete 🗑️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500" onClick={() => { setReportPostModal({ open: true, id: p.id }); setReportReason(''); setReportMsg(''); }}>Report 🚩</button>
                   </div>
+          {/* Report Post Modal (rendered once, outside map) */}
+          {reportPostModal.open && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="cartoon-card max-w-md w-full border-4 border-yellow-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+                <h2 className="text-2xl font-extrabold mb-2 text-pink-500 drop-shadow">Report Post</h2>
+                <div className="mb-4 text-lg font-bold text-yellow-700">Why are you reporting this post?</div>
+                <input
+                  className="w-full rounded-xl px-4 py-3 border-2 border-pink-300 bg-yellow-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none mb-4"
+                  placeholder="Reason for reporting"
+                  value={reportReason}
+                  onChange={e => setReportReason(e.target.value)}
+                  disabled={reportLoading}
+                />
+                {reportMsg && <div className="text-error bg-pink-100 rounded-xl px-4 py-2 border-2 border-pink-300 w-full text-center animate-wiggle mb-2">{reportMsg}</div>}
+                <div className="flex gap-4 justify-center mt-2">
+                  <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-pink-400" onClick={() => handleReportPost(reportPostModal.id)} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
+                  <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setReportPostModal({ open: false, id: null })} disabled={reportLoading}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          )}
                   {/* Status label for pending/rejected posts (if needed) */}
                   {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
                     <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${
