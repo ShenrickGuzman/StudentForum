@@ -373,12 +373,6 @@ export default function PostDetailPage() {
                 {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
                 <p className="whitespace-pre-wrap break-words text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
                 {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
-                {/* Report Button moved below post content */}
-                <button
-                  className="mt-4 fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500"
-                  onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}
-                  title="Report post"
-                >Report 🚩</button>
               </div>
             </div>
           </div>
