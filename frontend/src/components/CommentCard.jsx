@@ -1,8 +1,13 @@
 
 import React, { useState } from 'react';
+import { reportComment } from '../lib/api';
 
-export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete }) {
+export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId }) {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showReport, setShowReport] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportMsg, setReportMsg] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
 
   const handleDeleteClick = () => {
     setShowConfirm(true);
@@ -15,6 +20,29 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
 
   const handleCancel = () => {
     setShowConfirm(false);
+  };
+
+  const handleReportClick = () => {
+    setShowReport(true);
+    setReportReason('');
+    setReportMsg('');
+  };
+
+  const handleReportSubmit = async () => {
+    if (!reportReason.trim()) {
+      setReportMsg('Please enter a reason.');
+      return;
+    }
+    setReportLoading(true);
+    setReportMsg('');
+    try {
+      await reportComment(commentId, reportReason);
+      setReportMsg('Reported!');
+      setTimeout(() => setShowReport(false), 1200);
+    } catch (e) {
+      setReportMsg(e?.response?.data?.error || 'Failed to report comment');
+    }
+    setReportLoading(false);
   };
 
   return (
@@ -47,6 +75,11 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
               title="Delete comment"
             >Delete 🗑️</button>
           )}
+          <button
+            className="ml-2 px-2 py-1 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-xs font-bold shadow hover:scale-105 transition-all comment-report-mobile"
+            onClick={handleReportClick}
+            title="Report comment"
+          >Report 🚩</button>
         </div>
         <div className="text-gray-700 text-base font-medium">
           {content}
@@ -66,6 +99,33 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
                 className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-bold shadow hover:scale-105 transition-all"
                 onClick={handleCancel}
               >No</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showReport && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-20">
+          <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center w-80">
+            <div className="font-bold text-lg mb-3 text-pink-700">Report Comment</div>
+            <input
+              className="w-full rounded-xl px-3 py-2 border-2 border-pink-300 mb-2"
+              placeholder="Reason for reporting"
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value)}
+              disabled={reportLoading}
+            />
+            {reportMsg && <div className="text-error text-sm mb-2">{reportMsg}</div>}
+            <div className="flex gap-4 mt-2">
+              <button
+                className="px-4 py-2 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white font-bold shadow hover:scale-105 transition-all"
+                onClick={handleReportSubmit}
+                disabled={reportLoading}
+              >{reportLoading ? 'Reporting...' : 'Report'}</button>
+              <button
+                className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-bold shadow hover:scale-105 transition-all"
+                onClick={() => setShowReport(false)}
+                disabled={reportLoading}
+              >Cancel</button>
             </div>
           </div>
         </div>
