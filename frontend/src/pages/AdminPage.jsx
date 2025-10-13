@@ -427,37 +427,6 @@ export default function AdminPage() {
     loadRequests();
     loadReports();
   }, []);
-      {/* Report Log Section */}
-      <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-2xl">🚩</span>
-          <h2 className="text-2xl font-bold text-pink-500 drop-shadow">Reported Posts & Comments</h2>
-          <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadReports}>Refresh 🔄</button>
-        </div>
-        {reportsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading reports...</div>}
-        {reportsError && <div className="text-error font-bold">{reportsError}</div>}
-        {reportActionMsg && <div className="text-success font-bold animate-bouncex">{reportActionMsg}</div>}
-        <div className="flex flex-col gap-4 mt-4">
-          {reports.length === 0 && !reportsLoading && <div className="text-gray-400 text-base">No reports found.</div>}
-          {reports.map(r => (
-            <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
-              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                <span className="text-2xl">🚩</span>
-                <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
-                <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
-                <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
-                <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
-                <span className="text-xs text-purple-700">Type: {r.target_type}</span>
-                <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
-              </div>
-              <div className="flex gap-2 mt-2 md:mt-0">
-                {r.target_type === 'post' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>}
-                {r.target_type === 'comment' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
@@ -474,7 +443,7 @@ export default function AdminPage() {
         {/* Pending Posts Approval Section */}
         <div className="cartoon-card border-4 border-yellow-400 shadow-fun bg-white/90 mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">📝</span>
+            <span className="text-2xl">�</span>
             <h2 className="text-2xl font-bold text-yellow-500 drop-shadow">Pending Posts for Approval</h2>
             <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadPendingPosts}>Refresh 🔄</button>
           </div>
@@ -486,7 +455,7 @@ export default function AdminPage() {
             {pendingPosts.map(p => (
               <div key={p.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-yellow-300 bg-yellow-50/60 shadow-fun">
                 <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
-                  <span className="text-2xl">👤</span>
+                  <span className="text-2xl">�</span>
                   <span className="font-bold text-lg text-dark">{p.author_name}</span>
                   <span className="text-base text-gray-500">{p.category}</span>
                   <span className="text-xs text-gray-400 ml-2">{new Date(p.created_at).toLocaleString()}</span>
@@ -500,6 +469,38 @@ export default function AdminPage() {
                   {p.status === 'rejected' && p.user_id === user?.id && (
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleDeleteRejectedPost(p.id)}>Delete 🗑️</button>
                   )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Report Log Section (moved inside main render) */}
+        <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">�</span>
+            <h2 className="text-2xl font-bold text-pink-500 drop-shadow">Reported Posts & Comments</h2>
+            <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadReports}>Refresh 🔄</button>
+          </div>
+          {reportsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading reports...</div>}
+          {reportsError && <div className="text-error font-bold">{reportsError}</div>}
+          {reportActionMsg && <div className="text-success font-bold animate-bouncex">{reportActionMsg}</div>}
+          <div className="flex flex-col gap-4 mt-4">
+            {reports.length === 0 && !reportsLoading && <div className="text-gray-400 text-base">No reports found.</div>}
+            {reports.map(r => (
+              <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
+                <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                  <span className="text-2xl">�</span>
+                  <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
+                  <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
+                  <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
+                  <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
+                  <span className="text-xs text-purple-700">Type: {r.target_type}</span>
+                  <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
+                </div>
+                <div className="flex gap-2 mt-2 md:mt-0">
+                  {r.target_type === 'post' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>}
+                  {r.target_type === 'comment' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>}
                 </div>
               </div>
             ))}
