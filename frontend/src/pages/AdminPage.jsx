@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment } from '../lib/api';
 
 import { useAuth } from '../state/auth';
-import PostDetailPage from './PostDetailPage';
-import React, { useState, useEffect } from 'react';
+import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
   // Report log state
