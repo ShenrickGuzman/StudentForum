@@ -7,6 +7,21 @@ export function reportPost(postId, reason) {
 export function reportComment(commentId, reason) {
   return api.post(`/posts/comments/${commentId}/report`, { reason });
 }
+
+// Admin: Get all reports
+export function getReports() {
+  return api.get('/posts/reports');
+}
+
+// Admin: Remove reported post
+export function removeReportedPost(postId) {
+  return api.delete(`/posts/reported-post/${postId}`);
+}
+
+// Admin: Remove reported comment
+export function removeReportedComment(commentId) {
+  return api.delete(`/posts/reported-comment/${commentId}`);
+}
 import axios from 'axios';
 
 
