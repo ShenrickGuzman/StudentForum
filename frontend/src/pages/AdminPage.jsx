@@ -1,6 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment } from '../lib/api';
+
+import { useAuth } from '../state/auth';
+import PostDetailPage from './PostDetailPage';
+
+export default function AdminPage() {
   // Report log state
   const [reports, setReports] = useState([]);
   const [reportsLoading, setReportsLoading] = useState(false);
@@ -43,10 +48,6 @@ import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeRep
       setReportActionMsg(e?.response?.data?.error || 'Failed to remove comment');
     }
   };
-import { useAuth } from '../state/auth';
-import PostDetailPage from './PostDetailPage';
-
-export default function AdminPage() {
   // State for reporting posts (moved inside component)
   const [reportPostModal, setReportPostModal] = useState({ open: false, id: null });
   const [reportReason, setReportReason] = useState('');
