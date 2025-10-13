@@ -1,7 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl, reportPost } from '../lib/api';
-  // State for reporting posts
+import { useAuth } from '../state/auth';
+import PostDetailPage from './PostDetailPage';
+
+export default function AdminPage() {
+  // State for reporting posts (moved inside component)
   const [reportPostModal, setReportPostModal] = useState({ open: false, id: null });
   const [reportReason, setReportReason] = useState('');
   const [reportMsg, setReportMsg] = useState('');
@@ -23,10 +27,6 @@ import api, { getAssetUrl, reportPost } from '../lib/api';
     }
     setReportLoading(false);
   };
-import { useAuth } from '../state/auth';
-import PostDetailPage from './PostDetailPage';
-
-export default function AdminPage() {
   // State for post delete confirmation modal
   const [deletePostModal, setDeletePostModal] = useState({ open: false, id: null });
   const [warnUserModal, setWarnUserModal] = useState({ open: false, id: null, name: '', email: '' });
