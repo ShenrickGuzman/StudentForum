@@ -1,3 +1,12 @@
+// Report a post
+export function reportPost(postId, reason) {
+  return api.post(`/posts/${postId}/report`, { reason });
+}
+
+// Report a comment
+export function reportComment(commentId, reason) {
+  return api.post(`/posts/comments/${commentId}/report`, { reason });
+}
 import axios from 'axios';
 
 
