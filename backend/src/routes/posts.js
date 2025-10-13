@@ -74,7 +74,7 @@ const createPostsRouter = () => {
     try {
       const { error } = await supabase
         .from('reports')
-        .insert([{ type: 'post', target_id: req.params.id, user_id: req.user.id, reason }]);
+        .insert([{ post_id: req.params.id, reporter_id: req.user.id, reason }]);
       if (error) return res.status(500).json({ error: 'Failed to report post' });
       res.json({ ok: true });
     } catch (e) {
@@ -89,7 +89,7 @@ const createPostsRouter = () => {
     try {
       const { error } = await supabase
         .from('reports')
-        .insert([{ type: 'comment', target_id: req.params.id, user_id: req.user.id, reason }]);
+        .insert([{ comment_id: req.params.id, reporter_id: req.user.id, reason }]);
       if (error) return res.status(500).json({ error: 'Failed to report comment' });
       res.json({ ok: true });
     } catch (e) {
