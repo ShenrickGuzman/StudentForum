@@ -1,3 +1,4 @@
+ 
 
 import express from 'express';
 import jwt from 'jsonwebtoken';
@@ -24,6 +25,36 @@ const isAdmin = (req, res, next) => {
 const createPostsRouter = () => {
   
   const router = express.Router();
+
+ // Report a post
+  router.post('/:id/report', requireAuth, async (req, res) => {
+    const { reason } = req.body || {};
+    if (!reason) return res.status(400).json({ error: 'Missing reason' });
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .insert([{ type: 'post', target_id: req.params.id, user_id: req.user.id, reason }]);
+      if (error) return res.status(500).json({ error: 'Failed to report post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to report post' });
+    }
+  });
+
+  // Report a comment
+  router.post('/comments/:id/report', requireAuth, async (req, res) => {
+    const { reason } = req.body || {};
+    if (!reason) return res.status(400).json({ error: 'Missing reason' });
+    try {
+      const { error } = await supabase
+        .from('reports')
+        .insert([{ type: 'comment', target_id: req.params.id, user_id: req.user.id, reason }]);
+      if (error) return res.status(500).json({ error: 'Failed to report comment' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to report comment' });
+    }
+  });
 
  // Test endpoint to debug insert object
   router.post('/test-insert', requireAuth, async (req, res) => {
