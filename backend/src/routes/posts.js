@@ -23,6 +23,7 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  const router = express.Router();
   // Admin: Get all reports (posts and comments)
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
@@ -65,7 +66,6 @@ const createPostsRouter = () => {
     }
   });
   
-  const router = express.Router();
 
  // Report a post
   router.post('/:id/report', requireAuth, async (req, res) => {
