@@ -23,6 +23,47 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  // Admin: Get all reports (posts and comments)
+  router.get('/reports', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('id, reporter_id, post_id, comment_id, reason, created_at, resolved')
+        .order('created_at', { ascending: false });
+      if (error) return res.status(500).json({ error: 'Failed to fetch reports' });
+      res.json({ reports: data });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch reports' });
+    }
+  });
+
+  // Admin: Remove reported post
+  router.delete('/reported-post/:id', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to delete post' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete post' });
+    }
+  });
+
+  // Admin: Remove reported comment
+  router.delete('/reported-comment/:id', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .delete()
+        .eq('id', req.params.id);
+      if (error) return res.status(500).json({ error: 'Failed to delete comment' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to delete comment' });
+    }
+  });
   
   const router = express.Router();
 
