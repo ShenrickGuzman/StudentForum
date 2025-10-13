@@ -5,7 +5,7 @@ export function reportPost(postId, reason) {
 
 // Report a comment
 export function reportComment(commentId, reason) {
-  return api.post(`/posts/comments/${commentId}/report`, { reason });
+  return api.post(`/posts/comment/${commentId}/report`, { reason });
 }
 
 // Admin: Get all reports
