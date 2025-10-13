@@ -1,3 +1,45 @@
+  // Report log state
+  const [reports, setReports] = useState([]);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState('');
+  const [reportActionMsg, setReportActionMsg] = useState('');
+
+  // Load all reports for admin
+  const loadReports = async () => {
+    setReportsLoading(true); setReportsError('');
+    try {
+      const r = await api.get('/posts/reports');
+      setReports(r.data.reports || []);
+    } catch (e) {
+      setReportsError(e?.response?.data?.error || 'Failed to load reports');
+    } finally {
+      setReportsLoading(false);
+    }
+  };
+
+  // Remove reported post
+  const handleRemoveReportedPost = async (postId) => {
+    setReportActionMsg('');
+    try {
+      await api.delete(`/posts/reported-post/${postId}`);
+      setReportActionMsg('Reported post removed!');
+      loadReports();
+    } catch (e) {
+      setReportActionMsg(e?.response?.data?.error || 'Failed to remove post');
+    }
+  };
+
+  // Remove reported comment
+  const handleRemoveReportedComment = async (commentId) => {
+    setReportActionMsg('');
+    try {
+      await api.delete(`/posts/reported-comment/${commentId}`);
+      setReportActionMsg('Reported comment removed!');
+      loadReports();
+    } catch (e) {
+      setReportActionMsg(e?.response?.data?.error || 'Failed to remove comment');
+    }
+  };
 
 import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment } from '../lib/api';
@@ -422,12 +464,43 @@ export default function AdminPage() {
 
   // Automatically load posts, users, and pending posts on mount
   useEffect(() => {
-  loadPosts();
-  loadUsers();
-  loadPendingPosts();
-  loadRequests();
+    loadPosts();
+    loadUsers();
+    loadPendingPosts();
+    loadRequests();
     loadReports();
   }, []);
+      {/* Report Log Section */}
+      <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🚩</span>
+          <h2 className="text-2xl font-bold text-pink-500 drop-shadow">Reported Posts & Comments</h2>
+          <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadReports}>Refresh 🔄</button>
+        </div>
+        {reportsLoading && <div className="text-lg text-info font-bold flex items-center gap-2"><span className="animate-spin">⏳</span> Loading reports...</div>}
+        {reportsError && <div className="text-error font-bold">{reportsError}</div>}
+        {reportActionMsg && <div className="text-success font-bold animate-bouncex">{reportActionMsg}</div>}
+        <div className="flex flex-col gap-4 mt-4">
+          {reports.length === 0 && !reportsLoading && <div className="text-gray-400 text-base">No reports found.</div>}
+          {reports.map(r => (
+            <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
+              <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
+                <span className="text-2xl">🚩</span>
+                <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
+                <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
+                <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
+                <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
+                <span className="text-xs text-purple-700">Type: {r.target_type}</span>
+                <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
+              </div>
+              <div className="flex gap-2 mt-2 md:mt-0">
+                {r.target_type === 'post' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>}
+                {r.target_type === 'comment' && <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
       {/* Report Log Section */}
       <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
         <div className="flex items-center gap-2 mb-4">
