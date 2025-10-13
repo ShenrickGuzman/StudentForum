@@ -5,6 +5,15 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
+  // State for report log post delete confirmation modal
+  const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
+
+  // Handler for confirmed delete from report log
+  const handleConfirmRemoveReportedPost = async () => {
+    if (!reportLogDeleteModal.id) return;
+    await handleRemoveReportedPost(reportLogDeleteModal.id);
+    setReportLogDeleteModal({ open: false, id: null });
+  };
   // Helper to view reported comment: open parent post and scroll/highlight comment
   const handleViewReportedComment = async (commentId) => {
     // Find the report for this comment
@@ -498,7 +507,7 @@ export default function AdminPage() {
         {/* Report Log Section (moved inside main render) */}
         <div className="cartoon-card border-4 border-pink-400 shadow-fun bg-white/90 mb-8">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">�</span>
+            <span className="text-2xl">🚩</span>
             <h2 className="text-2xl font-bold text-pink-500 drop-shadow">Reported Posts & Comments</h2>
             <button className="ml-auto fun-btn px-4 py-2 text-base" onClick={loadReports}>Refresh 🔄</button>
           </div>
@@ -521,8 +530,22 @@ export default function AdminPage() {
                 <div className="flex gap-2 mt-2 md:mt-0">
                   {r.target_type === 'post' && <>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500" onClick={() => openPostDetail(r.target_id)}>View Post 👁️</button>
-                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => handleRemoveReportedPost(r.target_id)}>Remove Post 🗑️</button>
+                    <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => setReportLogDeleteModal({ open: true, id: r.target_id })}>Remove Post 🗑️</button>
                   </>}
+      {/* Report Log Post Delete Confirmation Modal */}
+      {reportLogDeleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+            <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">Remove Reported Post?</h2>
+            <div className="mb-4 text-lg font-bold text-red-700">Are you sure you want to remove this post?</div>
+            <div className="mb-2 text-base text-red-600 font-semibold">Once removed, it cannot be recovered.</div>
+            <div className="flex gap-4 justify-center mt-2">
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400" onClick={handleConfirmRemoveReportedPost}>Remove Permanently</button>
+              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setReportLogDeleteModal({ open: false, id: null })}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
                   {r.target_type === 'comment' && <>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleViewReportedComment(r.target_id)}>View Comment 👁️</button>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>
