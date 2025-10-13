@@ -3,7 +3,29 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { useEffect, useState } from 'react';
-import api, { getAssetUrl } from '../lib/api';
+import api, { getAssetUrl, reportPost } from '../lib/api';
+  // State for reporting post
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportMsg, setReportMsg] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+
+  const handleReportPost = async () => {
+    if (!reportReason.trim()) {
+      setReportMsg('Please enter a reason.');
+      return;
+    }
+    setReportLoading(true);
+    setReportMsg('');
+    try {
+      await reportPost(post.id, reportReason);
+      setReportMsg('Reported!');
+      setTimeout(() => setShowReportModal(false), 1200);
+    } catch (e) {
+      setReportMsg(e?.response?.data?.error || 'Failed to report post');
+    }
+    setReportLoading(false);
+  };
 import { useAuth } from '../state/auth';
 import CommentCard from '../components/CommentCard';
 
@@ -278,10 +300,38 @@ export default function PostDetailPage() {
           </div>
           {/* Title & Status */}
           <div className="px-8 pt-2 pb-0">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon break-words whitespace-pre-wrap" style={{letterSpacing:1, wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>
-              {post.title}
-              {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon break-words whitespace-pre-wrap" style={{letterSpacing:1, wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>
+                {post.title}
+                {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
+              </h1>
+              <button
+                className="ml-2 fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500"
+                onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}
+                title="Report post"
+              >Report 🚩</button>
+            </div>
+            {/* Report Post Modal */}
+            {showReportModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="cartoon-card max-w-md w-full border-4 border-yellow-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
+                  <h2 className="text-2xl font-extrabold mb-2 text-pink-500 drop-shadow">Report Post</h2>
+                  <div className="mb-4 text-lg font-bold text-yellow-700">Why are you reporting this post?</div>
+                  <input
+                    className="w-full rounded-xl px-4 py-3 border-2 border-pink-300 bg-yellow-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none mb-4"
+                    placeholder="Reason for reporting"
+                    value={reportReason}
+                    onChange={e => setReportReason(e.target.value)}
+                    disabled={reportLoading}
+                  />
+                  {reportMsg && <div className="text-error bg-pink-100 rounded-xl px-4 py-2 border-2 border-pink-300 w-full text-center animate-wiggle mb-2">{reportMsg}</div>}
+                  <div className="flex gap-4 justify-center mt-2">
+                    <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-pink-400" onClick={handleReportPost} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
+                    <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setShowReportModal(false)} disabled={reportLoading}>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Forum status indicators */}
             <div className="flex gap-2 items-center mb-1">
               {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
@@ -492,7 +542,7 @@ export default function PostDetailPage() {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Write a comment... 💭"
-                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px]"
+                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg"
                       style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
                       rows={1}
                       maxLength={500}
