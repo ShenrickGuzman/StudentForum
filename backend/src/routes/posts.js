@@ -24,6 +24,34 @@ const isAdmin = (req, res, next) => {
 
 const createPostsRouter = () => {
   const router = express.Router();
+  // Global settings: Auto-approve posts
+  router.get('/settings/auto-approve-posts', requireAuth, isAdmin, async (req, res) => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'auto_approve_posts')
+        .single();
+      if (error) return res.status(500).json({ error: 'Failed to fetch setting' });
+      res.json({ autoApprove: data?.value === 'true' });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to fetch setting' });
+    }
+  });
+
+  router.post('/settings/auto-approve-posts', requireAuth, isAdmin, async (req, res) => {
+    const { autoApprove } = req.body || {};
+    if (typeof autoApprove !== 'boolean') return res.status(400).json({ error: 'Missing or invalid autoApprove value' });
+    try {
+      const { error } = await supabase
+        .from('settings')
+        .upsert([{ key: 'auto_approve_posts', value: autoApprove ? 'true' : 'false' }]);
+      if (error) return res.status(500).json({ error: 'Failed to update setting' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to update setting' });
+    }
+  });
   // Admin: Get all reports (posts and comments)
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
@@ -449,19 +477,28 @@ const createPostsRouter = () => {
       category,
       image_url: imageUrl || null,
       link_url: linkUrl || null,
-      status: 'pending',
+      status: 'pending', // will be updated below
       anonymous: anonBool
     };
-    // Debug: print the full insert object
-    console.log('DEBUG final insertObj:', insertObj);
-    if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
+    // Check auto-approve setting
     try {
+      const { data: settingData, error: settingError } = await supabase
+        .from('settings')
+        .select('value')
+        .eq('key', 'auto_approve_posts')
+        .single();
+      if (settingError) {
+        console.error('Error fetching auto-approve setting:', settingError);
+      }
+      if (settingData?.value === 'true') {
+        insertObj.status = 'approved';
+      }
+      if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
       const { data, error } = await supabase
         .from('posts')
         .insert([insertObj])
         .select('*')
         .single();
-      console.log('SUPABASE INSERT RESULT:', { data, error });
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
       res.json(data);
     } catch (e) {
