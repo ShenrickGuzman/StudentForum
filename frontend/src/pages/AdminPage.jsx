@@ -5,36 +5,6 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
-  // Auto-approve posts setting state
-  const [autoApprovePosts, setAutoApprovePosts] = useState(false);
-  const [autoApproveLoading, setAutoApproveLoading] = useState(false);
-  const [autoApproveError, setAutoApproveError] = useState('');
-
-  // Load auto-approve setting
-  const loadAutoApproveSetting = async () => {
-    setAutoApproveLoading(true); setAutoApproveError('');
-    try {
-      const r = await api.getAutoApprovePostsSetting();
-      setAutoApprovePosts(!!r.data.autoApprove);
-    } catch (e) {
-      setAutoApproveError(e?.response?.data?.error || 'Failed to load setting');
-    } finally {
-      setAutoApproveLoading(false);
-    }
-  };
-
-  // Toggle auto-approve setting
-  const handleToggleAutoApprove = async () => {
-    setAutoApproveLoading(true); setAutoApproveError('');
-    try {
-      await api.setAutoApprovePostsSetting(!autoApprovePosts);
-      setAutoApprovePosts(!autoApprovePosts);
-    } catch (e) {
-      setAutoApproveError(e?.response?.data?.error || 'Failed to update setting');
-    } finally {
-      setAutoApproveLoading(false);
-    }
-  };
   // State for report log post delete confirmation modal
   const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
@@ -485,7 +455,6 @@ export default function AdminPage() {
   loadPendingPosts();
   loadRequests();
   loadReports();
-  loadAutoApproveSetting();
   }, []);
 
   return (
@@ -500,18 +469,6 @@ export default function AdminPage() {
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
       <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
-        {/* Auto-Approve Posts Toggle Section */}
-        <div className="cartoon-card border-4 border-blue-400 shadow-fun bg-white/90 mb-8 flex items-center gap-4 p-4">
-          <span className="text-2xl">⚡</span>
-          <h2 className="text-xl font-bold text-blue-500 drop-shadow">Auto-Approve New Posts</h2>
-          <button
-            className={`fun-btn px-6 py-2 text-lg ml-4 ${autoApprovePosts ? 'bg-green-300' : 'bg-gray-300'}`}
-            onClick={handleToggleAutoApprove}
-            disabled={autoApproveLoading}
-          >{autoApprovePosts ? 'ON' : 'OFF'}</button>
-          {autoApproveLoading && <span className="ml-2 text-info animate-spin">⏳</span>}
-          {autoApproveError && <span className="ml-2 text-error font-bold">{autoApproveError}</span>}
-        </div>
         <div className="cartoon-card border-4 border-yellow-400 shadow-fun bg-white/90 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-2xl">📝</span>
