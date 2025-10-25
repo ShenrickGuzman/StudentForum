@@ -23,15 +23,6 @@ export function removeReportedComment(commentId) {
   return api.delete(`/posts/reported-comment/${commentId}`);
 }
 
-// Admin: Get auto-approve posts setting
-export function getAutoApprovePostsSetting() {
-  return api.get('/posts/settings/auto-approve-posts');
-}
-
-// Admin: Set auto-approve posts setting
-export function setAutoApprovePostsSetting(autoApprove) {
-  return api.post('/posts/settings/auto-approve-posts', { autoApprove });
-}
 import axios from 'axios';
 
 
