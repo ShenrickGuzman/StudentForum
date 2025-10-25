@@ -24,47 +24,6 @@ const isAdmin = (req, res, next) => {
 
 const createPostsRouter = () => {
   const router = express.Router();
-  // Global settings: Auto-approve posts (Supabase RLS compatible)
-  // Use service role key for server-side access
-  router.get('/settings/auto-approve-posts', requireAuth, isAdmin, async (req, res) => {
-    try {
-      // Use service role key for unrestricted access
-      const { data, error } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'auto_approve_posts')
-        .single();
-      if (error || !data) {
-        console.error('Auto-approve GET error:', error);
-        return res.status(500).json({ error: 'Failed to fetch setting' });
-      }
-      res.json({ autoApprove: data.value === 'true' });
-    } catch (e) {
-      console.error('Auto-approve GET exception:', e);
-      res.status(500).json({ error: 'Failed to fetch setting' });
-    }
-  });
-
-  router.post('/settings/auto-approve-posts', requireAuth, isAdmin, async (req, res) => {
-    const { autoApprove } = req.body || {};
-    if (typeof autoApprove !== 'boolean') {
-      return res.status(400).json({ error: 'Missing or invalid autoApprove value' });
-    }
-    try {
-      // Use service role key for unrestricted access
-      const { error } = await supabase
-        .from('settings')
-        .upsert([{ key: 'auto_approve_posts', value: autoApprove ? 'true' : 'false' }]);
-      if (error) {
-        console.error('Auto-approve POST error:', error);
-        return res.status(500).json({ error: 'Failed to update setting' });
-      }
-      res.json({ ok: true });
-    } catch (e) {
-      console.error('Auto-approve POST exception:', e);
-      res.status(500).json({ error: 'Failed to update setting' });
-    }
-  });
   // Admin: Get all reports (posts and comments)
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
@@ -495,18 +454,6 @@ const createPostsRouter = () => {
     };
     // Check auto-approve setting
     try {
-      // Use service role key for unrestricted access
-      const { data: settingData, error: settingError } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'auto_approve_posts')
-        .single();
-      if (settingError || !settingData) {
-        console.error('Error fetching auto-approve setting:', settingError);
-      }
-      if (settingData && settingData.value === 'true') {
-        insertObj.status = 'approved';
-      }
       if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
       const { data, error } = await supabase
         .from('posts')
@@ -516,7 +463,6 @@ const createPostsRouter = () => {
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
       res.json(data);
     } catch (e) {
-      console.error('Create post exception:', e);
       res.status(500).json({ error: 'Failed to create post' });
     }
   });
