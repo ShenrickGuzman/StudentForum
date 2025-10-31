@@ -93,6 +93,9 @@ const createPostsRouter = (await import('./src/routes/posts.js')).default;
 app.use('/api/posts', createPostsRouter());
 const uploadRouter = (await import('./src/routes/upload.js')).default;
 app.use('/api/upload', uploadRouter);
+// Settings route for global auto-approve toggle
+const settingsRouter = (await import('./src/routes/settings.js')).default;
+app.use('/api/settings', settingsRouter);
 
 // Start
 // Global error handler to catch all uncaught errors and always return JSON
