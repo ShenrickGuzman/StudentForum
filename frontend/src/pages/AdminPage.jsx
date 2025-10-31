@@ -8,6 +8,44 @@ export default function AdminPage() {
   // State for report log post delete confirmation modal
   const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
+  // --- Auto Approve Pending Post Toggle ---
+  const [autoApprove, setAutoApprove] = useState(false);
+  const [autoApproveLoading, setAutoApproveLoading] = useState(false);
+  const [autoApproveError, setAutoApproveError] = useState('');
+
+  // Fetch auto approve state from backend
+  useEffect(() => {
+    const fetchAutoApprove = async () => {
+      setAutoApproveLoading(true);
+      setAutoApproveError('');
+      try {
+        // TODO: Replace with actual API call
+        const res = await api.get('/settings/auto-approve');
+        setAutoApprove(!!res.data.enabled);
+      } catch (e) {
+        setAutoApproveError('Failed to load auto-approve setting');
+      } finally {
+        setAutoApproveLoading(false);
+      }
+    };
+    fetchAutoApprove();
+  }, []);
+
+  // Toggle auto approve state
+  const handleToggleAutoApprove = async () => {
+    setAutoApproveLoading(true);
+    setAutoApproveError('');
+    try {
+      // TODO: Replace with actual API call
+      await api.post('/settings/auto-approve', { enabled: !autoApprove });
+      setAutoApprove(!autoApprove);
+    } catch (e) {
+      setAutoApproveError('Failed to update auto-approve setting');
+    } finally {
+      setAutoApproveLoading(false);
+    }
+  };
+
   // Handler for confirmed delete from report log
   const handleConfirmRemoveReportedPost = async () => {
     if (!reportLogDeleteModal.id) return;
@@ -469,6 +507,23 @@ export default function AdminPage() {
         <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
       </div>
       <div className="relative z-10 max-w-3xl mx-auto py-12 flex flex-col gap-8">
+        {/* Auto Approve Pending Post Toggle */}
+        <div className="cartoon-card border-4 border-green-400 shadow-fun bg-white/90 mb-8 flex flex-col gap-2 p-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⚡</span>
+            <h2 className="text-xl font-bold text-green-500 drop-shadow">Auto Approve Pending Post</h2>
+            <button
+              className={`ml-auto fun-btn px-6 py-2 text-base ${autoApprove ? 'bg-gradient-to-r from-green-400 to-yellow-300' : 'bg-gradient-to-r from-gray-300 to-gray-500'}`}
+              onClick={handleToggleAutoApprove}
+              disabled={autoApproveLoading}
+            >
+              {autoApproveLoading ? 'Saving...' : autoApprove ? 'Enabled ✅' : 'Disabled ❌'}
+            </button>
+          </div>
+          <div className="text-sm text-gray-600 mt-1">When enabled, all pending posts will be automatically approved. This setting is global for all admins.</div>
+          {autoApproveError && <div className="text-error font-bold mt-2">{autoApproveError}</div>}
+        </div>
+        {/* Existing Pending Posts Section */}
         <div className="cartoon-card border-4 border-yellow-400 shadow-fun bg-white/90 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-2xl">📝</span>
