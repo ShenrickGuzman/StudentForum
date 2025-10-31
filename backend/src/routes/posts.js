@@ -442,6 +442,20 @@ const createPostsRouter = () => {
     }
     // Debug: print the computed anonBool
     console.log('DEBUG computed anonBool:', anonBool);
+
+    // --- Read auto-approve setting from settings.json ---
+    let autoApprove = false;
+    try {
+      const settingsPath = require('path').resolve('./settings.json');
+      if (require('fs').existsSync(settingsPath)) {
+        const raw = require('fs').readFileSync(settingsPath, 'utf8');
+        const settings = JSON.parse(raw);
+        autoApprove = !!settings.autoApprove;
+      }
+    } catch (e) {
+      console.error('Failed to read auto-approve setting:', e);
+    }
+
     const insertObj = {
       user_id: req.user.id,
       title,
@@ -449,10 +463,9 @@ const createPostsRouter = () => {
       category,
       image_url: imageUrl || null,
       link_url: linkUrl || null,
-      status: 'pending', // will be updated below
+      status: autoApprove ? 'approved' : 'pending',
       anonymous: anonBool
     };
-    // Check auto-approve setting
     try {
       if (!title || !content || !category) return res.status(400).json({ error: 'Missing fields' });
       const { data, error } = await supabase
