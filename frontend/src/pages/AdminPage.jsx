@@ -19,8 +19,7 @@ export default function AdminPage() {
       setAutoApproveLoading(true);
       setAutoApproveError('');
       try {
-        // TODO: Replace with actual API call
-        const res = await api.get('/settings/auto-approve');
+        const res = await import('../lib/api').then(m => m.getAutoApproveSetting());
         setAutoApprove(!!res.data.enabled);
       } catch (e) {
         setAutoApproveError('Failed to load auto-approve setting');
@@ -36,8 +35,7 @@ export default function AdminPage() {
     setAutoApproveLoading(true);
     setAutoApproveError('');
     try {
-      // TODO: Replace with actual API call
-      await api.post('/settings/auto-approve', { enabled: !autoApprove });
+      await import('../lib/api').then(m => m.setAutoApproveSetting(!autoApprove));
       setAutoApprove(!autoApprove);
     } catch (e) {
       setAutoApproveError('Failed to update auto-approve setting');
