@@ -1,3 +1,11 @@
+// Auto-approve pending post setting
+export function getAutoApproveSetting() {
+  return api.get('/settings/auto-approve');
+}
+
+export function setAutoApproveSetting(enabled) {
+  return api.post('/settings/auto-approve', { enabled });
+}
 // Report a post
 export function reportPost(postId, reason) {
   return api.post(`/posts/${postId}/report`, { reason });
