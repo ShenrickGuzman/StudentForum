@@ -443,12 +443,17 @@ const createPostsRouter = () => {
     // Debug: print the computed anonBool
     console.log('DEBUG computed anonBool:', anonBool);
 
-    // --- Read auto-approve setting from settings.json ---
+    // --- Read auto-approve setting from settings.json (robust path) ---
     let autoApprove = false;
     try {
-      const settingsPath = require('path').resolve('./settings.json');
-      if (require('fs').existsSync(settingsPath)) {
-        const raw = require('fs').readFileSync(settingsPath, 'utf8');
+      const path = require('path');
+      const fs = require('fs');
+      const { fileURLToPath } = require('url');
+      const __filename = fileURLToPath(import.meta.url);
+      const __dirname = path.dirname(__filename);
+      const settingsPath = path.join(__dirname, '../../settings.json');
+      if (fs.existsSync(settingsPath)) {
+        const raw = fs.readFileSync(settingsPath, 'utf8');
         const settings = JSON.parse(raw);
         autoApprove = !!settings.autoApprove;
       }
