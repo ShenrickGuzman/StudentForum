@@ -1,9 +1,16 @@
 import express from 'express';
+
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Always resolve settings.json relative to backend directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SETTINGS_PATH = path.join(__dirname, '../../settings.json');
+
 
 const router = express.Router();
-const SETTINGS_PATH = path.resolve('./settings.json');
 
 // Helper to read/write settings
 function readSettings() {
