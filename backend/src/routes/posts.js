@@ -3,6 +3,9 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { supabase } from '../lib/supabaseClient.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const requireAuth = (req, res, next) => {
   const auth = req.headers.authorization || '';
@@ -443,12 +446,9 @@ const createPostsRouter = () => {
     // Debug: print the computed anonBool
     console.log('DEBUG computed anonBool:', anonBool);
 
-    // --- Read auto-approve setting from settings.json (robust path) ---
+    // --- Read auto-approve setting from settings.json (ESM, robust path) ---
     let autoApprove = false;
     try {
-      const path = require('path');
-      const fs = require('fs');
-      const { fileURLToPath } = require('url');
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
       const settingsPath = path.join(__dirname, '../../settings.json');
