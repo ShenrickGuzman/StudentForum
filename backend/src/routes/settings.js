@@ -15,11 +15,11 @@ const router = express.Router();
 // Helper to read/write settings
 function readSettings() {
   try {
-    if (!fs.existsSync(SETTINGS_PATH)) return { autoApprove: false };
+    if (!fs.existsSync(SETTINGS_PATH)) return { autoApprove: true };
     const raw = fs.readFileSync(SETTINGS_PATH, 'utf8');
     return JSON.parse(raw);
   } catch {
-    return { autoApprove: false };
+    return { autoApprove: true };
   }
 }
 function writeSettings(settings) {
