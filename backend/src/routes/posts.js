@@ -447,7 +447,7 @@ const createPostsRouter = () => {
     console.log('DEBUG computed anonBool:', anonBool);
 
     // --- Read auto-approve setting from settings.json (ESM, robust path) ---
-    let autoApprove = false;
+    let autoApprove = true;
     try {
       const __filename = fileURLToPath(import.meta.url);
       const __dirname = path.dirname(__filename);
@@ -455,9 +455,10 @@ const createPostsRouter = () => {
       if (fs.existsSync(settingsPath)) {
         const raw = fs.readFileSync(settingsPath, 'utf8');
         const settings = JSON.parse(raw);
-        autoApprove = !!settings.autoApprove;
+        autoApprove = settings.autoApprove !== undefined ? !!settings.autoApprove : true;
       }
     } catch (e) {
+      autoApprove = true;
       console.error('Failed to read auto-approve setting:', e);
     }
 
