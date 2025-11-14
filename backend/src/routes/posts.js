@@ -46,7 +46,7 @@ const createPostsRouter = () => {
       // Join reports with users to get reporter username
       const { data, error } = await supabase
         .from('reports')
-        .select('*, users:reported_by (username)')
+        .select('id, reported_by, target_type, target_id, reason, created_at, users(username)')
         .order('created_at', { ascending: false });
       if (error) return res.status(500).json({ error: 'Failed to fetch reports' });
       // Map username to reported_by_username for frontend
