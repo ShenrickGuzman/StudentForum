@@ -583,12 +583,12 @@ export default function AdminPage() {
               <div key={r.id} className="flex flex-col md:flex-row items-center gap-3 p-4 rounded-cartoon border-2 border-pink-300 bg-pink-50/60 shadow-fun">
                 <div className="flex-1 flex flex-col md:flex-row md:items-center gap-2">
                   <span className="text-2xl">🚩</span>
-                  <span className="font-bold text-lg text-dark">Report ID: {r.id}</span>
-                  <span className="text-base text-gray-500">Reporter: {r.reported_by}</span>
-                  <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString()}</span>
+                  {/* Removed Report ID */}
+                  <span className="text-base text-gray-500">Reporter: {r.reported_by_username || r.reported_by}</span>
+                  <span className="text-xs text-gray-400 ml-2">{new Date(r.created_at).toLocaleString('en-PH', { timeZone: 'Asia/Manila' })}</span>
                   <span className="font-bold text-pink-700 ml-2">Reason: {r.reason}</span>
                   <span className="text-xs text-purple-700">Type: {r.target_type}</span>
-                  <span className="text-xs text-blue-700">Target ID: {r.target_id}</span>
+                  {/* Removed Target ID */}
                 </div>
                 <div className="flex gap-2 mt-2 md:mt-0">
                   {r.target_type === 'post' && <>
