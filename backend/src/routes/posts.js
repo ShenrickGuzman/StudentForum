@@ -43,12 +43,18 @@ const createPostsRouter = () => {
   // Admin: Get all reports (posts and comments)
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
+      // Join reports with users to get reporter username
       const { data, error } = await supabase
         .from('reports')
-        .select('*')
+        .select('*, users:reported_by (username)')
         .order('created_at', { ascending: false });
       if (error) return res.status(500).json({ error: 'Failed to fetch reports' });
-      res.json({ reports: data });
+      // Map username to reported_by_username for frontend
+      const reports = (data || []).map(r => ({
+        ...r,
+        reported_by_username: r.users?.username || r.reported_by
+      }));
+      res.json({ reports });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch reports' });
     }
