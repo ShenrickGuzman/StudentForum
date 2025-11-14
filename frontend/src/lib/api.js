@@ -86,17 +86,6 @@ export function getAssetUrl(path) {
 }
 
 
-export {
-  api as default,
-  deleteReportLog,
-  getAutoApproveSetting,
-  setAutoApproveSetting,
-  reportPost,
-  reportComment,
-  getReports,
-  removeReportedPost,
-  removeReportedComment,
-  getAssetUrl
-};
+export default api;
 
 
