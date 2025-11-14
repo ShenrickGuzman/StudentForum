@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment, deleteReportLog } from '../lib/api';
+import { useAuth } from '../state/auth';
+import PostDetailPage from './PostDetailPage';    
+
+export default function AdminPage() {
+  // State for report log post delete confirmation modal
+  const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
+
   // Delete report log
   const handleDeleteReportLog = async (reportId) => {
     setReportActionMsg('');
@@ -11,13 +18,6 @@ import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeRep
       setReportActionMsg(e?.response?.data?.error || 'Failed to delete report log');
     }
   };
-
-import { useAuth } from '../state/auth';
-import PostDetailPage from './PostDetailPage';    
-
-export default function AdminPage() {
-  // State for report log post delete confirmation modal
-  const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
   // --- Auto Approve Pending Post Toggle ---
   const [autoApprove, setAutoApprove] = useState(false);
@@ -1113,4 +1113,5 @@ export default function AdminPage() {
   );
 }
 
-//ARIANAH :>
+
+
