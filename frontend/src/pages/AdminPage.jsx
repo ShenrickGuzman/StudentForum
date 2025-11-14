@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment } from '../lib/api';
+import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment, deleteReportLog } from '../lib/api';
+  // Delete report log
+  const handleDeleteReportLog = async (reportId) => {
+    setReportActionMsg('');
+    try {
+      await deleteReportLog(reportId);
+      setReportActionMsg('Report log deleted!');
+      loadReports();
+    } catch (e) {
+      setReportActionMsg(e?.response?.data?.error || 'Failed to delete report log');
+    }
+  };
 
 import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
@@ -584,20 +595,8 @@ export default function AdminPage() {
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500" onClick={() => openPostDetail(r.target_id)}>View Post 👁️</button>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-red-400 to-pink-400 hover:from-red-500 hover:to-pink-500" onClick={() => setReportLogDeleteModal({ open: true, id: r.target_id })}>Remove Post 🗑️</button>
                   </>}
-      {/* Report Log Post Delete Confirmation Modal */}
-      {reportLogDeleteModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="cartoon-card max-w-md w-full border-4 border-red-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
-            <h2 className="text-2xl font-extrabold mb-2 text-red-500 drop-shadow">Remove Reported Post?</h2>
-            <div className="mb-4 text-lg font-bold text-red-700">Are you sure you want to remove this post?</div>
-            <div className="mb-2 text-base text-red-600 font-semibold">Once removed, it cannot be recovered.</div>
-            <div className="flex gap-4 justify-center mt-2">
-              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-red-400" onClick={handleConfirmRemoveReportedPost}>Remove Permanently</button>
-              <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setReportLogDeleteModal({ open: false, id: null })}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+                  {/* New Delete Log button for both post and comment reports */}
+                  <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600 hover:from-gray-500 hover:to-gray-700" onClick={() => handleDeleteReportLog(r.id)}>Delete Log 🗑️</button>
                   {r.target_type === 'comment' && <>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleViewReportedComment(r.target_id)}>View Comment 👁️</button>
                     <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-blue-400 to-purple-400 hover:from-blue-500 hover:to-purple-500" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment 🗑️</button>
