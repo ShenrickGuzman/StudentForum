@@ -1,3 +1,7 @@
+// Admin: Delete report log entry
+export function deleteReportLog(reportId) {
+  return api.delete(`/posts/report-log/${reportId}`);
+}
 // Auto-approve pending post setting
 export function getAutoApproveSetting() {
   return api.get('/settings/auto-approve');
@@ -81,6 +85,18 @@ export function getAssetUrl(path) {
   return path;
 }
 
-export default api;
+
+export {
+  api as default,
+  deleteReportLog,
+  getAutoApproveSetting,
+  setAutoApproveSetting,
+  reportPost,
+  reportComment,
+  getReports,
+  removeReportedPost,
+  removeReportedComment,
+  getAssetUrl
+};
 
 
