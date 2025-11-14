@@ -44,17 +44,32 @@ const createPostsRouter = () => {
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
       // Join reports with users to get reporter username
-      const { data, error } = await supabase
+      // Fallback: fetch reports and users separately, then merge
+      const { data: reports, error: reportsError } = await supabase
         .from('reports')
-        .select('id, reported_by, target_type, target_id, reason, created_at, reported_by(username)')
+        .select('*')
         .order('created_at', { ascending: false });
-      if (error) return res.status(500).json({ error: 'Failed to fetch reports' });
-      // Map username to reported_by_username for frontend
-      const reports = (data || []).map(r => ({
+      if (reportsError) return res.status(500).json({ error: 'Failed to fetch reports' });
+
+      // Get all user IDs referenced in reports
+      const userIds = [...new Set((reports || []).map(r => r.reported_by).filter(Boolean))];
+      let usersMap = {};
+      if (userIds.length > 0) {
+        const { data: users, error: usersError } = await supabase
+          .from('users')
+          .select('id, username')
+          .in('id', userIds);
+        if (!usersError && users) {
+          usersMap = Object.fromEntries(users.map(u => [u.id, u.username]));
+        }
+      }
+
+      // Merge username into each report
+      const reportsWithUsernames = (reports || []).map(r => ({
         ...r,
-        reported_by_username: r.users?.username || r.reported_by
+        reported_by_username: usersMap[r.reported_by] || r.reported_by
       }));
-      res.json({ reports });
+      res.json({ reports: reportsWithUsernames });
     } catch (e) {
       res.status(500).json({ error: 'Failed to fetch reports' });
     }
