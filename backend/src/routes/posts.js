@@ -26,6 +26,7 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+  const router = express.Router();
   // Admin: Delete a report log entry
   router.delete('/report-log/:id', requireAuth, isAdmin, async (req, res) => {
     try {
@@ -39,7 +40,6 @@ const createPostsRouter = () => {
       res.status(500).json({ error: 'Failed to delete report log' });
     }
   });
-  const router = express.Router();
   // Admin: Get all reports (posts and comments)
   router.get('/reports', requireAuth, isAdmin, async (req, res) => {
     try {
