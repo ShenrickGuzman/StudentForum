@@ -24,6 +24,67 @@ export default function PostDetailPage() {
   const [reportMsg, setReportMsg] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
 
+  // Essential hooks and state used throughout the page
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user, token } = useAuth();
+
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [comments, setComments] = useState([]);
+
+  const [newComment, setNewComment] = useState('');
+  const [commentAnonymous, setCommentAnonymous] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
+
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [audioUploading, setAudioUploading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const [reacting, setReacting] = useState(false);
+  const [userReaction, setUserReaction] = useState(null);
+  const [reactions, setReactions] = useState({});
+
+  const [postAuthorRevealed, setPostAuthorRevealed] = useState(false);
+  const [revealedComments, setRevealedComments] = useState({});
+  const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
+  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+
+  // Basic reaction types (ensure UI maps over something)
+  const reactionTypes = [
+    { key: 'like', icon: '👍', color: 'bg-white', label: 'Like' },
+    { key: 'love', icon: '❤️', color: 'bg-white', label: 'Love' },
+    { key: 'laugh', icon: '😂', color: 'bg-white', label: 'Haha' },
+  ];
+
+  // Fetch post and comments when `id` changes
+  useEffect(() => {
+    let mounted = true;
+    const fetchAll = async () => {
+      try {
+        const r = await api.get(`/posts/${id}`);
+        if (!mounted) return;
+        setData(r.data);
+        if (r.data?.reactions) {
+          setReactions(r.data.reactions.counts || {});
+          setUserReaction(r.data.reactions.user || null);
+        }
+        const c = await api.get(`/posts/${id}/comments`);
+        if (!mounted) return;
+        setComments(c.data || []);
+      } catch (err) {
+        console.error('Failed to fetch post or comments', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchAll();
+    return () => { mounted = false; };
+  }, [id]);
+
   const handleReportPost = async () => {
     if (!reportReason.trim()) {
       setReportMsg('Please enter a reason.');
