@@ -201,7 +201,7 @@ const createPostsRouter = () => {
 
  // Test endpoint to debug insert object
   router.post('/test-insert', requireAuth, async (req, res) => {
-    const { title, content, category, imageUrl, linkUrl, anonymous } = req.body || {};
+    const { title, content, category, imageUrl, linkUrl, anonymous, audio_url } = req.body || {};
     const anonBool = anonymous === true || anonymous === 'true' || anonymous === 1 || anonymous === '1';
     const insertObj = {
       user_id: req.user.id,
@@ -503,6 +503,7 @@ const createPostsRouter = () => {
       category,
       image_url: imageUrl || null,
       link_url: linkUrl || null,
+      audio_url: audio_url || null,
       status: autoApprove ? 'approved' : 'pending',
       anonymous: anonBool
     };
