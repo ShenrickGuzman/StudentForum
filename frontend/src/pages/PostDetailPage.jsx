@@ -2,7 +2,7 @@
 
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { format, utcToZonedTime } from 'date-fns-tz';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api, { getAssetUrl, reportPost } from '../lib/api';
 import { useAuth } from '../state/auth';
 import CommentCard from '../components/CommentCard';
@@ -51,6 +51,13 @@ export default function PostDetailPage() {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [commentAnonymous, setCommentAnonymous] = useState(false);
+  // Voice message states for comment
+  const [recording, setRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [audioUploading, setAudioUploading] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
   // Track loading state for comment submission
   const [commentLoading, setCommentLoading] = useState(false);
@@ -141,12 +148,48 @@ export default function PostDetailPage() {
       setReacting(false);
   };
 
+  // Audio recording handlers
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderRef.current = new window.MediaRecorder(stream);
+    audioChunksRef.current = [];
+    mediaRecorderRef.current.ondataavailable = e => {
+      audioChunksRef.current.push(e.data);
+    };
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      setAudioBlob(blob);
+      setAudioUrl(URL.createObjectURL(blob));
+    };
+    mediaRecorderRef.current.start();
+    setRecording(true);
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+    setRecording(false);
+  };
+
   const handleCommentSubmit = async (e) => {
     if (e) e.preventDefault();
     if (!newComment.trim()) return;
     setCommentLoading(true);
     try {
-      await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous });
+      // 1. Create comment
+      const res = await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous });
+      const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
+      // 2. If audio, upload it
+      if (audioBlob && commentId) {
+        setAudioUploading(true);
+        const audioForm = new FormData();
+        audioForm.append('file', audioBlob, 'voice-message.webm');
+        await api.post(`/upload/audio/comment/${commentId}`, audioForm, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setAudioUploading(false);
+        setAudioBlob(null);
+        setAudioUrl('');
+      }
       setNewComment('');
       setCommentAnonymous(false);
       // Re-fetch comments after adding a new one
@@ -565,6 +608,24 @@ export default function PostDetailPage() {
                       />
                       <span className="font-bold text-pink-500">Comment Anonymously</span>
                     </label>
+                    {/* Voice Message UI for Comment */}
+                    <div className="mt-2">
+                      <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
+                      <div className="flex gap-2 items-center">
+                        <button
+                          type="button"
+                          className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+                          onClick={recording ? stopRecording : startRecording}
+                          disabled={audioUploading}
+                        >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+                        {audioUrl && (
+                          <audio controls src={audioUrl} className="ml-2" />
+                        )}
+                        {audioUrl && (
+                          <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                   <button
                     type="submit"
