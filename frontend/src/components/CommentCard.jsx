@@ -126,27 +126,13 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             title="Report comment"
           >Report 🚩</button>
         </div>
-        {/* Voice Message UI for Comment */}
-        <div className="mb-2">
-          <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
-          <div className="flex gap-2 items-center">
-            <button
-              type="button"
-              className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
-              onClick={recording ? stopRecording : startRecording}
-              disabled={audioUploading}
-            >{recording ? 'Stop Recording' : 'Record Voice'}</button>
-            {audioUrl && (
-              <audio controls src={audioUrl} className="ml-2" />
-            )}
-            {audioUrl && (
-              <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
-            )}
-            {audioBlob && commentId && (
-              <button type="button" className="ml-2 text-green-600 font-bold" onClick={uploadAudioForComment} disabled={audioUploading}>{audioUploading ? 'Uploading...' : 'Upload Voice'}</button>
-            )}
+        {/* Playback for saved voice message */}
+        {audio_url && (
+          <div className="mb-2">
+            <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
+            <audio controls src={audio_url} />
           </div>
-        </div>
+        )}
         <div className="text-gray-700 text-base font-medium">
           {content}
         </div>
