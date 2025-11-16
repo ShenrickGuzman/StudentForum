@@ -26,12 +26,19 @@ router.post('/audio', upload.single('file'), async (req, res) => {
     const filename = `audio/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
     // Upload to Supabase Storage (bucket: 'forum-files')
+      console.log('Uploading audio to Supabase:', {
+        bucket: 'forum-files',
+        filename,
+        mimetype: req.file.mimetype,
+        size: req.file.buffer.length
+      });
     const { data, error } = await supabase.storage
       .from('forum-files')
       .upload(filename, req.file.buffer, {
         contentType: req.file.mimetype,
         upsert: false,
       });
+      console.log('Supabase upload result:', data);
     if (error) {
       console.error('Supabase audio upload error:', error);
       return res.status(500).json({ error: 'Audio upload failed' });
