@@ -41,8 +41,8 @@ router.post('/audio', upload.single('file'), async (req, res) => {
     const { publicURL } = supabase.storage
       .from('forum-files')
       .getPublicUrl(filename).data;
-
-    res.json({ url: publicURL });
+    console.log('Supabase audio publicURL:', publicURL);
+    res.json({ url: publicURL || null });
   } catch (error) {
     console.error('Audio upload error:', error);
     res.status(500).json({ error: 'Audio upload failed' });
