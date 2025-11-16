@@ -149,19 +149,22 @@ router.post('/audio/comment/:id', upload.single('file'), async (req, res) => {
     }
 
     // Get public URL
-    const { publicURL } = supabase.storage
-      .from('forum-files')
-      .getPublicUrl(filename).data;
+    const projectRef = 'xuezboawkhqlkdaspkos';
+    const publicURL = `https://${projectRef}.supabase.co/storage/v1/object/public/forum-files/${data.path}`;
+    console.log('Comment audio publicURL:', publicURL);
 
     // Update comment audio_url
-    const { error: updateError } = await supabase
+    const { data: updatedComment, error: updateError } = await supabase
       .from('comments')
       .update({ audio_url: publicURL })
-      .eq('id', req.params.id);
+      .eq('id', req.params.id)
+      .select();
     if (updateError) {
+      console.error('Failed to update comment audio URL:', updateError);
       return res.status(500).json({ error: 'Failed to update comment audio URL' });
     }
-    res.json({ url: publicURL });
+    console.log('Updated comment:', updatedComment);
+    res.json({ url: publicURL, comment: updatedComment });
   } catch (e) {
     console.error('Comment audio upload error:', e);
     res.status(500).json({ error: 'Failed to upload and update comment audio URL' });
