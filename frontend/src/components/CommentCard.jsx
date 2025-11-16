@@ -1,13 +1,58 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import api from '../lib/api';
 import { reportComment } from '../lib/api';
 
-export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId }) {
+export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportMsg, setReportMsg] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
+  // Voice message states
+  const [recording, setRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const [audioUploading, setAudioUploading] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  // Audio recording handlers
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderRef.current = new window.MediaRecorder(stream);
+    audioChunksRef.current = [];
+    mediaRecorderRef.current.ondataavailable = e => {
+      audioChunksRef.current.push(e.data);
+    };
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      setAudioBlob(blob);
+      setAudioUrl(URL.createObjectURL(blob));
+    };
+    mediaRecorderRef.current.start();
+    setRecording(true);
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+    setRecording(false);
+  };
+
+  // Upload audio after comment creation (simulate here, should be called after comment is created)
+  const uploadAudioForComment = async () => {
+    if (!audioBlob || !commentId) return;
+    setAudioUploading(true);
+    try {
+      const audioForm = new FormData();
+      audioForm.append('file', audioBlob, 'voice-message.webm');
+      await api.post(`/upload/audio/comment/${commentId}`, { url: audioUrl }); // This is a placeholder, should send file
+      // In real use, upload the file and get the public URL, then call the endpoint with { url }
+    } catch (err) {
+      alert('Failed to upload voice message for comment.');
+    } finally {
+      setAudioUploading(false);
+    }
+  };
 
   const handleDeleteClick = () => {
     setShowConfirm(true);
@@ -81,9 +126,36 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             title="Report comment"
           >Report 🚩</button>
         </div>
+        {/* Voice Message UI for Comment */}
+        <div className="mb-2">
+          <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
+          <div className="flex gap-2 items-center">
+            <button
+              type="button"
+              className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+              onClick={recording ? stopRecording : startRecording}
+              disabled={audioUploading}
+            >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+            {audioUrl && (
+              <audio controls src={audioUrl} className="ml-2" />
+            )}
+            {audioUrl && (
+              <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
+            )}
+            {audioBlob && commentId && (
+              <button type="button" className="ml-2 text-green-600 font-bold" onClick={uploadAudioForComment} disabled={audioUploading}>{audioUploading ? 'Uploading...' : 'Upload Voice'}</button>
+            )}
+          </div>
+        </div>
         <div className="text-gray-700 text-base font-medium">
           {content}
         </div>
+        {/* Playback for saved voice message */}
+        {audio_url && (
+          <div className="mt-2">
+            <audio controls src={audio_url} />
+          </div>
+        )}
         <span className="absolute right-4 bottom-2 text-gray-400 text-xs font-semibold comment-date-mobile">{time}</span>
       </div>
       {showConfirm && (
