@@ -45,9 +45,11 @@ router.post('/audio', upload.single('file'), async (req, res) => {
     }
 
     // Get public URL
+    const publicPath = data && data.path ? data.path : filename;
+    console.log('Getting public URL for path:', publicPath);
     const { publicURL } = supabase.storage
       .from('forum-files')
-      .getPublicUrl(filename).data;
+      .getPublicUrl(publicPath).data;
     console.log('Supabase audio publicURL:', publicURL);
     res.json({ url: publicURL || null });
   } catch (error) {
