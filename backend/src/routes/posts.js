@@ -481,6 +481,7 @@ const createPostsRouter = () => {
     console.log('DEBUG computed anonBool:', anonBool);
 
     // --- Read auto-approve setting from settings.json (ESM, robust path) ---
+    console.log('Received audio_url:', audio_url);
     let autoApprove = true;
     try {
       const __filename = fileURLToPath(import.meta.url);
