@@ -465,7 +465,7 @@ const createPostsRouter = () => {
   router.post('/', requireAuth, async (req, res) => {
     console.log('POST /api/posts route hit');
     console.log('Request body:', req.body);
-    const { title, content, category, imageUrl, linkUrl, anonymous } = req.body || {};
+    const { title, content, category, imageUrl, linkUrl, anonymous, audio_url = null } = req.body || {};
     // Debug: print the value of anonymous received
     console.log('DEBUG anonymous value received:', anonymous, 'typeof:', typeof anonymous);
     // Accept true, 'true', 1, '1' as true, else false
