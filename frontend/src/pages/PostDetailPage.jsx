@@ -189,12 +189,16 @@ export default function PostDetailPage() {
         setAudioUploading(false);
         setAudioBlob(null);
         setAudioUrl('');
+        // Re-fetch comments after uploading audio
+        const response = await api.get(`/posts/${id}/comments`);
+        setComments(response.data);
+      } else {
+        setNewComment('');
+        setCommentAnonymous(false);
+        // Re-fetch comments after adding a new one
+        const response = await api.get(`/posts/${id}/comments`);
+        setComments(response.data);
       }
-      setNewComment('');
-      setCommentAnonymous(false);
-      // Re-fetch comments after adding a new one
-      const response = await api.get(`/posts/${id}/comments`);
-      setComments(response.data);
     } catch (err) {
       alert('Failed to submit comment. Please try again.');
     } finally {
