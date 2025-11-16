@@ -4,6 +4,33 @@ import api from '../lib/api';
 
 const DRAFT_KEY = 'mf_newpost_draft';
 export default function NewPostPage() {
+  // Audio recording state
+  const [recording, setRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioUrl, setAudioUrl] = useState('');
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+    // Audio recording handlers
+    const startRecording = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new window.MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.ondataavailable = e => {
+        audioChunksRef.current.push(e.data);
+      };
+      mediaRecorderRef.current.onstop = () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        setAudioUrl(URL.createObjectURL(blob));
+      };
+      mediaRecorderRef.current.start();
+      setRecording(true);
+    };
+
+    const stopRecording = () => {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+    };
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -72,12 +99,24 @@ export default function NewPostPage() {
         });
         imageUrl = uploadRes.data.url;
       }
+
+      let audioFileUrl = '';
+      if (audioBlob) {
+        const audioForm = new FormData();
+        audioForm.append('file', audioBlob, 'voice-message.webm');
+        const audioRes = await api.post('/upload/audio', audioForm, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        audioFileUrl = audioRes.data.url;
+      }
+
       const payload = {
         title,
         content,
         category,
         linkUrl,
         imageUrl,
+        audio_url: audioFileUrl,
         anonymous: anonymous === true ? true : false,
       };
       console.log('POST PAYLOAD:', payload);
@@ -123,6 +162,24 @@ export default function NewPostPage() {
         <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 justify-center">
           <span className="text-4xl sm:text-5xl animate-wiggle">✏️</span>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-pink-500 drop-shadow-lg text-center font-cartoon" style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive', letterSpacing: 1}}>Create a Post</h1>
+        </div>
+        {/* Audio Recorder UI */}
+        <div className="mb-4">
+          <label className="block mb-2 font-extrabold text-pink-500 text-lg font-cartoon">Record a Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
+          <div className="flex gap-2 items-center">
+            <button
+              type="button"
+              className={`rounded-xl px-4 py-2 font-bold shadow-fun border-2 border-pink-300 bg-gradient-to-r from-pink-200 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+              onClick={recording ? stopRecording : startRecording}
+              disabled={uploading}
+            >{recording ? 'Stop Recording' : 'Record Voice Message'}</button>
+            {audioUrl && (
+              <audio controls src={audioUrl} className="ml-2" />
+            )}
+            {audioUrl && (
+              <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
+            )}
+          </div>
         </div>
         <input
           className="rounded-2xl sm:rounded-3xl px-5 sm:px-7 py-4 sm:py-5 border-4 border-yellow-200 w-full text-xl sm:text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 placeholder:text-purple-300 shadow-fun hover:scale-[1.02] sm:hover:scale-105 focus:scale-[1.02] sm:focus:scale-105 duration-200"
