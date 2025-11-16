@@ -614,7 +614,7 @@ export default function PostDetailPage() {
                       />
                       <span className="font-bold text-pink-500">Comment Anonymously</span>
                     </label>
-                    {/* Voice Message UI for Comment */}
+                    {/* Voice Message UI for Comment - only in input form */}
                     <div className="mt-2">
                       <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
                       <div className="flex gap-2 items-center">
