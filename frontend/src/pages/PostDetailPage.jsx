@@ -29,73 +29,18 @@ export default function PostDetailPage() {
       setReportMsg('Please enter a reason.');
       return;
     }
+    // Add your report logic here (e.g., send report to backend)
     setReportLoading(true);
-    setReportMsg('');
     try {
-      await reportPost(post.id, reportReason);
-      setReportMsg('Reported!');
-      setTimeout(() => setShowReportModal(false), 1200);
-    } catch (e) {
-      setReportMsg(e?.response?.data?.error || 'Failed to report post');
+      await reportPost(id, reportReason);
+      setReportMsg('Report submitted successfully!');
+      setShowReportModal(false);
+    } catch (err) {
+      setReportMsg('Failed to report post.');
+    } finally {
+      setReportLoading(false);
     }
-    setReportLoading(false);
   };
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { token, user } = useAuth();
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [reactions, setReactions] = useState({ like: 0, heart: 0, wow: 0, sad: 0, haha: 0 });
-  const [userReaction, setUserReaction] = useState(null);
-  const [reacting, setReacting] = useState(false);
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [commentAnonymous, setCommentAnonymous] = useState(false);
-  // Voice message states for comment
-  const [recording, setRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
-  const [audioUrl, setAudioUrl] = useState('');
-  const [audioUploading, setAudioUploading] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
-  // Track loading state for comment submission
-  const [commentLoading, setCommentLoading] = useState(false);
-  // Track which comment's profile button is shown
-  const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
-  // Track if forum author's profile button is shown
-  const [showAuthorProfileBtn, setShowAuthorProfileBtn] = useState(false);
-  // Track if admin has revealed the post author
-  const [postAuthorRevealed, setPostAuthorRevealed] = useState(false);
-  // Track which comment authors have been revealed (by comment id)
-  const [revealedComments, setRevealedComments] = useState({});
-
-  const reactionTypes = [
-    { key: 'like', icon: '👍', color: 'bg-blue-200', label: 'Like' },
-    { key: 'heart', icon: '❤️', color: 'bg-pink-200', label: 'Heart' },
-    { key: 'wow', icon: '😮', color: 'bg-white', label: 'Wow' },
-    { key: 'sad', icon: '😢', color: 'bg-purple-200', label: 'Sad' },
-    { key: 'haha', icon: '😂', color: 'bg-green-200', label: 'HAHA' },
-  ];
-
-  useEffect(() => {
-    setLoading(true);
-    api.get(`/posts/${id}`).then(r => {
-      setData(r.data);
-      setLoading(false);
-      if (r.data.reactions) setReactions(r.data.reactions.counts);
-      if (r.data.reactions) setUserReaction(r.data.reactions.user);
-    });
-  }, [id]);
-
-  useEffect(() => {
-    // Fetch comments for the post
-    const fetchComments = async () => {
-      const response = await api.get(`/posts/${id}/comments`);
-      setComments(response.data);
-    };
-    fetchComments();
-  }, [id]);
 
   const handleReact = async (type) => {
       if (!token || reacting) {
@@ -578,6 +523,7 @@ export default function PostDetailPage() {
                         const response = await api.get(`/posts/${id}/comments`);
                         setComments(response.data);
                       }}
+                      audio_url={comment.audio_url}
                     />
                   );
                 })}
