@@ -415,6 +415,12 @@ export default function PostDetailPage() {
               <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
                 {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
                 <p className="whitespace-pre-wrap break-words text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
+                {/* Voice message audio player for post */}
+                {post.audio_url && (
+                  <div className="mt-3 w-full flex justify-center">
+                    <audio controls src={post.audio_url} style={{maxWidth: '100%'}} />
+                  </div>
+                )}
                 {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
               </div>
             </div>
