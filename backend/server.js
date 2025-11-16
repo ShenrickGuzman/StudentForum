@@ -33,7 +33,7 @@ app.use(helmet({
   },
 }));
 app.use(cors({
-  origin: 'https://studentforum-uk42.onrender.com', // Allow all origins for development; restrict for production
+  origin: '*', // Allow all origins for development; restrict for production
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
