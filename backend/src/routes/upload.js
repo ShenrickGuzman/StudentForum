@@ -154,7 +154,7 @@ router.post('/audio/comment/:id', upload.single('file'), async (req, res) => {
       .getPublicUrl(filename).data;
 
     // Update comment audio_url
-    const { error: updateError } = await req.app.get('supabase')
+    const { error: updateError } = await supabase
       .from('comments')
       .update({ audio_url: publicURL })
       .eq('id', req.params.id);
