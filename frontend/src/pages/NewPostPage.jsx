@@ -101,12 +101,14 @@ export default function NewPostPage() {
       }
 
       let audioFileUrl = '';
+      console.log('audioBlob:', audioBlob);
       if (audioBlob) {
         const audioForm = new FormData();
         audioForm.append('file', audioBlob, 'voice-message.webm');
         const audioRes = await api.post('/upload/audio', audioForm, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        console.log('audioRes:', audioRes);
         audioFileUrl = audioRes.data.url;
       }
 
