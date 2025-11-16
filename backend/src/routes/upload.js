@@ -44,14 +44,11 @@ router.post('/audio', upload.single('file'), async (req, res) => {
       return res.status(500).json({ error: 'Audio upload failed' });
     }
 
-    // Get public URL
-    const publicPath = data && data.path ? data.path : filename;
-    console.log('Getting public URL for path:', publicPath);
-    const { publicURL } = supabase.storage
-      .from('forum-files')
-      .getPublicUrl(publicPath).data;
-    console.log('Supabase audio publicURL:', publicURL);
-    res.json({ url: publicURL || null });
+    // Manually construct public URL
+    const projectRef = 'xuezboawkhqlkdaspkos';
+    const publicUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/forum-files/${data.path}`;
+    console.log('Manually constructed audio publicURL:', publicUrl);
+    res.json({ url: publicUrl });
   } catch (error) {
     console.error('Audio upload error:', error);
     res.status(500).json({ error: 'Audio upload failed' });
