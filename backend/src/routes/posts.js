@@ -757,16 +757,24 @@ const createPostsRouter = () => {
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
 
-      // Notify post author (if not self)
-      if (postRes && postRes.user_id && postRes.user_id !== req.user.id) {
-        const { notifyUser } = await import('../lib/notify.js');
-        await notifyUser(postRes.user_id, {
-          type: 'comment',
-          message: `New comment on your post: "${postRes.title}"`,
-          link: `/post/${req.params.id}`
-        });
-      }
+      // Send response first
       res.json(data);
+
+      // Notify post author (if not self) asynchronously
+      (async () => {
+        try {
+          if (postRes && postRes.user_id && postRes.user_id !== req.user.id) {
+            const { notifyUser } = await import('../lib/notify.js');
+            await notifyUser(postRes.user_id, {
+              type: 'comment',
+              message: `New comment on your post: "${postRes.title}"`,
+              link: `/post/${req.params.id}`
+            });
+          }
+        } catch (notifyErr) {
+          console.error('Notification error after comment creation:', notifyErr);
+        }
+      })();
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
     }
