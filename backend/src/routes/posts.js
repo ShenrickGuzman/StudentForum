@@ -26,7 +26,9 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
-    // Get all notifications for the logged-in user
+  const router = express.Router();
+
+// Get all notifications for the logged-in user
     router.get('/notifications', requireAuth, async (req, res) => {
       try {
         const { data, error } = await supabase
@@ -40,7 +42,7 @@ const createPostsRouter = () => {
         res.status(500).json({ error: 'Failed to fetch notifications' });
       }
     });
-  const router = express.Router();
+
   // Admin: Delete a report log entry
   router.delete('/report-log/:id', requireAuth, isAdmin, async (req, res) => {
     try {
