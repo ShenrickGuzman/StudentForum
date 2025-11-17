@@ -516,6 +516,21 @@ const createPostsRouter = () => {
         .select('*')
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
+
+      // Notify all users (except poster) of new post
+      const { data: users } = await supabase
+        .from('users')
+        .select('id');
+      if (Array.isArray(users)) {
+        const { notifyUser } = await import('../lib/notify.js');
+        await Promise.all(users.filter(u => u.id !== req.user.id).map(u =>
+          notifyUser(u.id, {
+            type: 'new_post',
+            message: `A new post was added: "${title}"`,
+            link: `/post/${data.id}`
+          })
+        ));
+      }
       res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to create post' });
@@ -698,7 +713,7 @@ const createPostsRouter = () => {
     try {
       const { data: postRes } = await supabase
         .from('posts')
-        .select('locked')
+        .select('locked, user_id, title')
         .eq('id', req.params.id)
         .single();
       if (postRes?.locked) return res.status(403).json({ error: 'Post is locked. Comments are disabled.' });
@@ -717,6 +732,16 @@ const createPostsRouter = () => {
         .select('*')
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
+
+      // Notify post author (if not self)
+      if (postRes && postRes.user_id && postRes.user_id !== req.user.id) {
+        const { notifyUser } = await import('../lib/notify.js');
+        await notifyUser(postRes.user_id, {
+          type: 'comment',
+          message: `New comment on your post: "${postRes.title}"`,
+          link: `/post/${req.params.id}`
+        });
+      }
       res.json(data);
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
@@ -786,6 +811,24 @@ const createPostsRouter = () => {
       if (error) {
         console.error('Failed to react (upsert):', error, 'Request:', { [targetCol]: id, user_id: req.user.id, emoji });
         return res.status(500).json({ error: 'Failed to react', details: error.message, supabaseError: error });
+      }
+
+      // Trigger notification for post reactions
+      if (type === 'post') {
+        // Get post author
+        const { data: postData } = await supabase
+          .from('posts')
+          .select('user_id, title')
+          .eq('id', id)
+          .single();
+        if (postData && postData.user_id && postData.user_id !== req.user.id) {
+          const { notifyUser } = await import('../lib/notify.js');
+          await notifyUser(postData.user_id, {
+            type: 'reaction',
+            message: `Your post "${postData.title}" received a new reaction!`,
+            link: `/post/${id}`
+          });
+        }
       }
       res.json({ ok: true, data });
     } catch (e) {
