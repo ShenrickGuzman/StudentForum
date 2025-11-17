@@ -104,8 +104,14 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', details: err && err.message ? err.message : err });
 });
 
-app.listen(port, () => {
-  console.log(`Backend running on port ${port}`);
+import { setupWebSocketServer } from './websocket.js';
+import http from 'http';
+
+const server = http.createServer(app);
+const wss = setupWebSocketServer(server);
+
+server.listen(port, () => {
+  console.log(`Backend and websocket running on port ${port}`);
 });
 
 // ARIANAH
