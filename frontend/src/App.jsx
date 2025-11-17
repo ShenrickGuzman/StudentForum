@@ -14,6 +14,7 @@ import { AuthContextProvider, useAuth } from './state/auth';
 import RequireAuth from './components/RequireAuth';
 import RequireAdminAuth from './components/RequireAdminAuth';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import NotificationBell from './components/NotificationBell';
 
 function NavBar() {
   const { user, logout } = useAuth();
@@ -41,6 +42,7 @@ function NavBar() {
           {/* Desktop only: New Post and Rules */}
           <Link to="/new" className="hidden sm:inline bg-green-400 hover:bg-green-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">New Post</Link>
           <Link to="/rules" className="hidden sm:inline bg-yellow-400 hover:bg-yellow-500 text-white font-bold px-4 py-2 rounded-full shadow transition-all">Rules</Link>
+          {user && <NotificationBell />}
           {user && (
             <div className="relative">
               <button
