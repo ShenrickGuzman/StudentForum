@@ -53,11 +53,13 @@ export default function PostDetailPage() {
   const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
 
-  // Basic reaction types (ensure UI maps over something)
+  // Restore original reaction types (including sad)
   const reactionTypes = [
-    { key: 'like', icon: '👍', color: 'bg-white', label: 'Like' },
-    { key: 'love', icon: '❤️', color: 'bg-white', label: 'Love' },
-    { key: 'laugh', icon: '😂', color: 'bg-white', label: 'Haha' },
+    { key: 'like', icon: '👍', color: 'bg-yellow-100', label: 'Like' },
+    { key: 'love', icon: '❤️', color: 'bg-pink-100', label: 'Love' },
+    { key: 'laugh', icon: '😂', color: 'bg-yellow-100', label: 'Haha' },
+    { key: 'sad', icon: '😢', color: 'bg-blue-100', label: 'Sad' },
+    { key: 'wow', icon: '😮', color: 'bg-purple-100', label: 'Wow' },
   ];
 
   // Fetch post and comments when `id` changes
