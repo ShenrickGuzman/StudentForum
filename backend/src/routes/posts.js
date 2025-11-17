@@ -517,21 +517,29 @@ const createPostsRouter = () => {
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
 
-      // Notify all users (except poster) of new post
-      const { data: users } = await supabase
-        .from('users')
-        .select('id');
-      if (Array.isArray(users)) {
-        const { notifyUser } = await import('../lib/notify.js');
-        await Promise.all(users.filter(u => u.id !== req.user.id).map(u =>
-          notifyUser(u.id, {
-            type: 'new_post',
-            message: `A new post was added: "${title}"`,
-            link: `/post/${data.id}`
-          })
-        ));
-      }
+      // Send response first
       res.json(data);
+
+      // Notify all users (except poster) of new post asynchronously
+      (async () => {
+        try {
+          const { data: users } = await supabase
+            .from('users')
+            .select('id');
+          if (Array.isArray(users)) {
+            const { notifyUser } = await import('../lib/notify.js');
+            await Promise.all(users.filter(u => u.id !== req.user.id).map(u =>
+              notifyUser(u.id, {
+                type: 'new_post',
+                message: `A new post was added: "${title}"`,
+                link: `/post/${data.id}`
+              })
+            ));
+          }
+        } catch (notifyErr) {
+          console.error('Notification error after post creation:', notifyErr);
+        }
+      })();
     } catch (e) {
       res.status(500).json({ error: 'Failed to create post' });
     }
