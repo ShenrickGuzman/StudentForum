@@ -5,8 +5,8 @@ let listeners = [];
 export function connectNotifications(userId, onNotification) {
   if (ws) ws.close();
   const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const host = window.location.host;
-  ws = new WebSocket(`${protocol}://${host}/?userId=${userId}`);
+  const backendHost = 'studentforum-backend.onrender.com';
+  ws = new WebSocket(`${protocol}://${backendHost}/?userId=${userId}`);
   ws.onmessage = (event) => {
     const notif = JSON.parse(event.data);
     if (onNotification) onNotification(notif);
