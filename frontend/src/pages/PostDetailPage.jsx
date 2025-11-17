@@ -55,9 +55,9 @@ export default function PostDetailPage() {
 
   // Restore original reaction types (including sad)
   const reactionTypes = [
-    { key: 'like', icon: '👍', color: 'bg-yellow-100', label: 'Like' },
+    { key: 'like', icon: '👍', color: '', label: 'Like' },
     { key: 'heart', icon: '❤️', color: 'bg-pink-100', label: 'Heart' },
-    { key: 'haha', icon: '😂', color: 'bg-yellow-100', label: 'Haha' },
+    { key: 'haha', icon: '😂', color: '', label: 'Haha' },
     { key: 'sad', icon: '😢', color: 'bg-blue-100', label: 'Sad' },
     { key: 'wow', icon: '😮', color: 'bg-purple-100', label: 'Wow' },
   ];
