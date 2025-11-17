@@ -126,7 +126,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             title="Report comment"
           >Report 🚩</button>
         </div>
-        {/* Playback for saved voice message */}
+        {/* Playback for saved voice message (single instance) */}
         {audio_url && (
           <div className="mb-2">
             <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
@@ -136,12 +136,6 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         <div className="text-gray-700 text-base font-medium">
           {content}
         </div>
-        {/* Playback for saved voice message */}
-        {audio_url && (
-          <div className="mt-2">
-            <audio controls src={audio_url} />
-          </div>
-        )}
         <span className="absolute right-4 bottom-2 text-gray-400 text-xs font-semibold comment-date-mobile">{time}</span>
       </div>
       {showConfirm && (
