@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connectNotifications } from '../lib/notifications';
+import { getNotifications } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function NotificationBell() {
@@ -10,6 +11,17 @@ export default function NotificationBell() {
 
   useEffect(() => {
     if (user?.id) {
+      // Fetch persistent notifications on mount/login
+      getNotifications()
+        .then(res => {
+          if (res?.data?.notifications) {
+            setNotifications(res.data.notifications);
+            // Count unread notifications
+            setUnread(res.data.notifications.filter(n => !n.read).length);
+          }
+        })
+        .catch(() => {});
+      // Setup real-time notifications
       connectNotifications(user.id, notif => {
         setNotifications(prev => [notif, ...prev]);
         setUnread(u => u + 1);
