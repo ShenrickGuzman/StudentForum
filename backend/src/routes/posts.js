@@ -26,6 +26,20 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
+    // Get all notifications for the logged-in user
+    router.get('/notifications', requireAuth, async (req, res) => {
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', req.user.id)
+          .order('created_at', { ascending: false });
+        if (error) return res.status(500).json({ error: 'Failed to fetch notifications' });
+        res.json({ notifications: data });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to fetch notifications' });
+      }
+    });
   const router = express.Router();
   // Admin: Delete a report log entry
   router.delete('/report-log/:id', requireAuth, isAdmin, async (req, res) => {
