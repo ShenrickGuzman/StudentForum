@@ -1,3 +1,7 @@
+// Fetch notifications for the logged-in user
+export function getNotifications() {
+  return api.get('/posts/notifications');
+}
 // Admin: Delete report log entry
 export function deleteReportLog(reportId) {
   return api.delete(`/posts/report-log/${reportId}`);
