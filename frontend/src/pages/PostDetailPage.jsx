@@ -6,6 +6,7 @@ import { useEffect, useState, useRef } from 'react';
 import api, { getAssetUrl, reportPost } from '../lib/api';
 import { useAuth } from '../state/auth';
 import CommentCard from '../components/CommentCard';
+import VoiceMessagePlayer from '../components/VoiceMessagePlayer';
 
 const categories = [
   { key: 'Academics', label: '📚 Academics', color: 'bg-gradient-to-r from-pink-400 to-pink-500 text-white' },
@@ -430,7 +431,7 @@ export default function PostDetailPage() {
                 {/* Voice message audio player for post */}
                 {post.audio_url && (
                   <div className="mt-3 w-full flex justify-center">
-                    <audio controls src={post.audio_url} style={{maxWidth: '100%'}} />
+                    <VoiceMessagePlayer src={post.audio_url} />
                   </div>
                 )}
                 {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
