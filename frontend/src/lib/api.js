@@ -1,3 +1,7 @@
+// Clear all notifications for the logged-in user
+export function clearNotifications() {
+  return api.delete('/posts/notifications/clear');
+}
 // Mark all notifications as read for the logged-in user
 export function markNotificationsRead() {
   return api.post('/posts/notifications/read');
