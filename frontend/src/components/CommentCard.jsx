@@ -1,5 +1,6 @@
 
 import React, { useState, useRef } from 'react';
+import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
 
@@ -130,7 +131,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         {audio_url && (
           <div className="mb-2">
             <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
-            <audio controls src={audio_url} />
+            <VoiceMessagePlayer src={audio_url} />
           </div>
         )}
         <div className="text-gray-700 text-base font-medium">
