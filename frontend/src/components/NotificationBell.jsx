@@ -1,10 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { connectNotifications } from '../lib/notifications';
 import { getNotifications } from '../lib/api';
+import { clearNotifications } from '../lib/api';
 import { markNotificationsRead } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function NotificationBell() {
+    const handleClearNotifications = async () => {
+      if (user?.id) {
+        try {
+          await clearNotifications();
+          setNotifications([]);
+          setUnread(0);
+        } catch {}
+      }
+    };
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -57,7 +67,16 @@ export default function NotificationBell() {
       </button>
       {dropdownOpen && (
         <div style={{ position: 'absolute', right: 0, top: '110%', minWidth: 260, background: '#fff', border: '1px solid #eee', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', zIndex: 100 }}>
-          <div style={{ padding: '10px 16px', fontWeight: 'bold', borderBottom: '1px solid #eee' }}>Notifications</div>
+          <div style={{ padding: '10px 16px', fontWeight: 'bold', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>Notifications</span>
+            <button
+              onClick={handleClearNotifications}
+              style={{ background: 'none', border: 'none', color: '#ff4081', fontWeight: 'bold', cursor: 'pointer', fontSize: 13 }}
+              title="Clear all notifications"
+            >
+              Clear
+            </button>
+          </div>
           {notifications.length === 0 ? (
             <div style={{ padding: '16px', color: '#888' }}>No notifications yet.</div>
           ) : (
