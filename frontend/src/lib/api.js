@@ -1,3 +1,7 @@
+// Mark all notifications as read for the logged-in user
+export function markNotificationsRead() {
+  return api.post('/posts/notifications/read');
+}
 // Fetch notifications for the logged-in user
 export function getNotifications() {
   return api.get('/posts/notifications');
