@@ -28,6 +28,20 @@ const isAdmin = (req, res, next) => {
 const createPostsRouter = () => {
   const router = express.Router();
 
+// Clear all notifications for the logged-in user
+    router.delete('/notifications/clear', requireAuth, async (req, res) => {
+      try {
+        const { error } = await supabase
+          .from('notifications')
+          .delete()
+          .eq('user_id', req.user.id);
+        if (error) return res.status(500).json({ error: 'Failed to clear notifications' });
+        res.json({ ok: true });
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to clear notifications' });
+      }
+    });
+
   // Mark all notifications as read for the logged-in user
     router.post('/notifications/read', requireAuth, async (req, res) => {
       try {
