@@ -879,14 +879,14 @@ const createPostsRouter = () => {
         // Get post author
         const { data: postData } = await supabase
           .from('posts')
-          .select('user_id, title')
+          .select('user_id')
           .eq('id', id)
           .single();
         if (postData && postData.user_id && postData.user_id !== req.user.id) {
           const { notifyUser } = await import('../lib/notify.js');
           await notifyUser(postData.user_id, {
             type: 'reaction',
-            message: `Your post "${postData.title}" received a new reaction!`,
+            message: 'Your post just got a new reaction!',
             link: `/post/${id}`
           });
         }
