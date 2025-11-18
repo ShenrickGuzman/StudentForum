@@ -26,7 +26,9 @@ const isAdmin = (req, res, next) => {
 };
 
 const createPostsRouter = () => {
-    // Mark all notifications as read for the logged-in user
+  const router = express.Router();
+
+  // Mark all notifications as read for the logged-in user
     router.post('/notifications/read', requireAuth, async (req, res) => {
       try {
         const { error } = await supabase
@@ -40,7 +42,6 @@ const createPostsRouter = () => {
         res.status(500).json({ error: 'Failed to mark notifications as read' });
       }
     });
-  const router = express.Router();
 
 // Get all notifications for the logged-in user
     router.get('/notifications', requireAuth, async (req, res) => {
