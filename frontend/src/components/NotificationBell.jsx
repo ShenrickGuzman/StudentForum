@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { connectNotifications } from '../lib/notifications';
 import { getNotifications } from '../lib/api';
+import { markNotificationsRead } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function NotificationBell() {
@@ -29,9 +30,17 @@ export default function NotificationBell() {
     }
   }, [user?.id]);
 
-  const handleBellClick = () => {
+  const handleBellClick = async () => {
     setDropdownOpen(d => !d);
     setUnread(0);
+    // Mark notifications as read in backend
+    if (user?.id) {
+      try {
+        await markNotificationsRead();
+        // Optionally update local notifications state
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      } catch {}
+    }
   };
 
   return (
