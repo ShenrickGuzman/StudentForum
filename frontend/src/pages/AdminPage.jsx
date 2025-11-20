@@ -1014,12 +1014,8 @@ export default function AdminPage() {
                       <>
                         <span className="font-bold text-gray-500">Anonymous</span>
                         {/* Only show Reveal Author if user is SHEN or Ari (case-insensitive, trimmed) */}
-                        {/* Only show Reveal Author for specific usernames, not for all admins */}
-                        {(() => {
-                          const allowed = ['shen', 'ari'];
-                          const current = (user?.name || '').trim().toLowerCase();
-                          return allowed.includes(current);
-                        })() && (
+                        {/* Only show Reveal Author for 'SHEN' or 'Ari' usernames, case-insensitive, trimmed */}
+                        {['shen', 'ari'].includes((user?.name || '').trim().toLowerCase()) && (
                           <button
                             className="ml-2 fun-btn px-3 py-1 text-xs bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500"
                             onClick={() => alert(`Author: ${p.author_name}`)}
