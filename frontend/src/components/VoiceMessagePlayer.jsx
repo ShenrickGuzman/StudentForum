@@ -36,19 +36,22 @@ export default function VoiceMessagePlayer({ src, duration = null }) {
   };
 
   return (
-    <div style={{
-      background: 'linear-gradient(90deg, #ffe0ec 0%, #e0f7fa 100%)',
-      borderRadius: 16,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-      padding: '16px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 16,
-      margin: '8px 0',
-      minWidth: 220,
-      maxWidth: 400
-    }}>
-      <span style={{ fontSize: 22, marginRight: 8, color: '#ff4081' }} title="Voice Message">🎤</span>
+    <div
+      style={{
+        background: 'linear-gradient(90deg, #ffe0ec 0%, #e0f7fa 100%)',
+        borderRadius: 16,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+        padding: '10px 12px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        margin: '6px 0',
+        minWidth: 0,
+        maxWidth: '100%',
+        width: '100%',
+      }}
+    >
+      <span style={{ fontSize: 20, marginRight: 6, color: '#ff4081' }} title="Voice Message">🎤</span>
       <button
         onClick={handlePlayPause}
         style={{
@@ -56,37 +59,40 @@ export default function VoiceMessagePlayer({ src, duration = null }) {
           color: isPlaying ? '#fff' : '#ff4081',
           border: '2px solid #ff4081',
           borderRadius: '50%',
-          width: 40,
-          height: 40,
-          fontSize: 20,
+          width: 34,
+          height: 34,
+          fontSize: 18,
           cursor: 'pointer',
           outline: 'none',
-          transition: 'background 0.2s, color 0.2s'
+          transition: 'background 0.2s, color 0.2s',
+          flexShrink: 0,
         }}
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? '⏸' : '▶️'}
       </button>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          height: 6,
+          height: 5,
           background: '#ffe0ec',
-          borderRadius: 3,
+          borderRadius: 2.5,
           position: 'relative',
-          marginBottom: 4
+          marginBottom: 2,
+          width: '100%',
         }}>
           <div style={{
             position: 'absolute',
             left: 0,
             top: 0,
-            height: 6,
+            height: 5,
             width: `${audioDuration ? (currentTime / audioDuration) * 100 : 0}%`,
             background: '#ff4081',
-            borderRadius: 3,
-            transition: 'width 0.2s'
+            borderRadius: 2.5,
+            transition: 'width 0.2s',
+            minWidth: 0,
           }} />
         </div>
-        <div style={{ fontSize: 13, color: '#888', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 12, color: '#888', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
           <span>{formatTime(currentTime)}</span>
           <span>{audioDuration ? formatTime(audioDuration) : '--:--'}</span>
         </div>
@@ -102,6 +108,14 @@ export default function VoiceMessagePlayer({ src, duration = null }) {
         onEnded={handleEnded}
         style={{ display: 'none' }}
       />
+      <style>{`
+        @media (max-width: 600px) {
+          .voice-message-player {
+            padding: 7px 6px !important;
+            gap: 6px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
