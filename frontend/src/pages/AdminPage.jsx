@@ -4,6 +4,8 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
+    // Debug: log current username for Reveal Author button logic
+    console.log('Current user.name:', user?.name);
   // State for report log post delete confirmation modal
   const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
