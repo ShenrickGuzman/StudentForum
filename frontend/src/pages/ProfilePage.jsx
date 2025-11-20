@@ -341,35 +341,41 @@ export default function ProfilePage() {
         @media (max-width: 600px) {
           .profile-mobile-card {
             border-radius: 1.2rem !important;
-            min-height: 400px !important;
-            padding: 0 !important;
+            min-height: 340px !important;
+            max-width: 98vw !important;
+            padding: 0.5rem !important;
           }
           .profile-mobile-header {
             padding: 1.2rem 0.5rem !important;
             border-radius: 1.2rem !important;
           }
           .profile-mobile-avatar-img {
-            width: 4.5rem !important;
-            height: 4.5rem !important;
-            border-width: 5px !important;
+            width: 3.5rem !important;
+            height: 3.5rem !important;
+            border-width: 4px !important;
           }
           .profile-mobile-name {
-            font-size: 2rem !important;
-            margin-bottom: 0.3rem !important;
+            font-size: 1.5rem !important;
+            margin-bottom: 0.2rem !important;
           }
           .profile-mobile-badges > div {
-            font-size: 0.9rem !important;
-            padding: 0.5rem 1.1rem !important;
+            font-size: 0.8rem !important;
+            padding: 0.3rem 0.7rem !important;
+          }
+          .profile-mobile-stats {
+            flex-direction: row !important;
+            gap: 0.7rem !important;
+            margin-bottom: 0.5rem !important;
           }
           .profile-mobile-stats > div {
-            min-width: 70px !important;
-            padding: 0.7rem 1.2rem !important;
-            font-size: 1rem !important;
+            min-width: 60px !important;
+            padding: 0.5rem 0.7rem !important;
+            font-size: 0.9rem !important;
           }
           .profile-mobile-edit-btn {
-            font-size: 1.1rem !important;
-            padding: 0.7rem 1.2rem !important;
-            margin-top: 1.2rem !important;
+            font-size: 1rem !important;
+            padding: 0.5rem 1rem !important;
+            margin-top: 0.8rem !important;
           }
         }
       `}</style>
