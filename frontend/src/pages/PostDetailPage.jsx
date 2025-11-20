@@ -608,7 +608,7 @@ export default function PostDetailPage() {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Write a comment... 💭"
-                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg"
+                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg comment-textarea-mobile"
                       style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
                       rows={1}
                       maxLength={500}
@@ -619,6 +619,14 @@ export default function PostDetailPage() {
                         }
                       }}
                     />
+                    <style>{`
+                      @media (max-width: 600px) {
+                        .comment-textarea-mobile {
+                          min-height: 90px !important;
+                          font-size: 1.08rem !important;
+                        }
+                      }
+                    `}</style>
                     <label className="flex items-center gap-2 mt-2">
                       <input
                         type="checkbox"
