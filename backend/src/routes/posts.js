@@ -676,9 +676,7 @@ const createPostsRouter = () => {
 
       // Mask author info if anonymous, unless admin
       let maskedPost = { ...postData };
-      const allowedRevealNames = ['shen', 'ari'];
-      const userName = (req.user?.name || '').trim().toLowerCase();
-      const canReveal = allowedRevealNames.includes(userName);
+      const canReveal = req.user?.name === 'SHEN' || req.user?.name === 'Ari';
       if (postData.anonymous && !canReveal) {
         maskedPost.users = {
           name: 'Anonymous',
