@@ -66,7 +66,22 @@ export default function NotificationBell() {
         )}
       </button>
       {dropdownOpen && (
-        <div style={{ position: 'absolute', right: 0, top: '110%', minWidth: 260, background: '#fff', border: '1px solid #eee', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', zIndex: 100 }}>
+        <div
+          className="notification-dropdown-mobile"
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: '110%',
+            minWidth: 260,
+            background: '#fff',
+            border: '1px solid #eee',
+            borderRadius: 12,
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            zIndex: 100,
+            left: undefined,
+            transform: undefined,
+          }}
+        >
           <div style={{ padding: '10px 16px', fontWeight: 'bold', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span>Notifications</span>
             <button
@@ -92,6 +107,17 @@ export default function NotificationBell() {
               </a>
             ))
           )}
+          <style>{`
+            @media (max-width: 600px) {
+              .notification-dropdown-mobile {
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                min-width: 90vw !important;
+                max-width: 98vw !important;
+              }
+            }
+          `}</style>
         </div>
       )}
     </div>
