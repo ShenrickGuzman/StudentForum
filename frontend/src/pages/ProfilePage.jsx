@@ -350,13 +350,13 @@ export default function ProfilePage() {
             border-radius: 1.2rem !important;
           }
           .profile-mobile-avatar-img {
-            width: 3.5rem !important;
-            height: 3.5rem !important;
-            border-width: 4px !important;
+            width: 5.5rem !important;
+            height: 5.5rem !important;
+            border-width: 6px !important;
           }
           .profile-mobile-name {
-            font-size: 1.5rem !important;
-            margin-bottom: 0.2rem !important;
+            font-size: 2.3rem !important;
+            margin-bottom: 0.3rem !important;
           }
           .profile-mobile-badges > div {
             font-size: 0.8rem !important;
