@@ -189,17 +189,18 @@ export default function ProfilePage() {
   // Only allow editing if viewing own profile
   const isOwnProfile = user && profile && String(user.id) === String(profile.id);
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
-      <div className="w-full max-w-4xl min-h-[600px] rounded-[2.5rem] shadow-2xl bg-white/80 backdrop-blur-lg p-0 overflow-hidden relative border-4 border-pink-200 flex flex-col items-center transition-all duration-300 sm:mt-8 mt-2">
-        {successMsg && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-400 text-white font-bold px-6 py-2 rounded-full shadow-lg z-50 animate-fadeIn">
-            {successMsg}
-          </div>
-        )}
-        {/* Header Gradient */}
-        <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 px-4 sm:px-8 md:px-16 py-8 sm:py-12 flex flex-col items-center relative rounded-b-[2.5rem] shadow-lg w-full">
-          <div className="relative mb-4">
-            <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-8 border-white shadow-2xl transition-transform duration-300 hover:scale-110 bg-white object-cover" />
+    <>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
+        <div className="w-full max-w-4xl min-h-[600px] rounded-[2.5rem] shadow-2xl bg-white/80 backdrop-blur-lg p-0 overflow-hidden relative border-4 border-pink-200 flex flex-col items-center transition-all duration-300 sm:mt-8 mt-2 profile-mobile-card">
+          {successMsg && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-400 text-white font-bold px-6 py-2 rounded-full shadow-lg z-50 animate-fadeIn">
+              {successMsg}
+            </div>
+          )}
+          {/* Header Gradient */}
+          <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 px-4 sm:px-8 md:px-16 py-8 sm:py-12 flex flex-col items-center relative rounded-b-[2.5rem] shadow-lg w-full profile-mobile-header">
+          <div className="relative mb-4 profile-mobile-avatar">
+            <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-8 border-white shadow-2xl transition-transform duration-300 hover:scale-110 bg-white object-cover profile-mobile-avatar-img" />
             {editing && isOwnProfile && (
               <>
                 <label className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white">
@@ -222,10 +223,10 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-1 tracking-wide animate-fadeInUp">{profile.name}</h2>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-1 tracking-wide animate-fadeInUp profile-mobile-name">{profile.name}</h2>
           {/* User Badges */}
           {Array.isArray(profile.badges) && profile.badges.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2 justify-center">
+            <div className="flex flex-wrap gap-2 mb-2 justify-center profile-mobile-badges">
               {profile.badges.map((badge, idx) => (
                 <div
                   key={idx}
@@ -238,7 +239,7 @@ export default function ProfilePage() {
             </div>
           )}
           {/* Stats + Like Button */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center items-center profile-mobile-stats">
             <div className="bg-blue-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
               <div className="text-lg sm:text-2xl">{profile.stats.posts}</div>
               <div className="text-xs sm:text-base">Posts</div>
@@ -265,12 +266,14 @@ export default function ProfilePage() {
           </div>
           {/* Edit Button: Only show for own profile */}
           {isOwnProfile && (
-            <button
-              className="mt-6 sm:mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-xl transition-all text-lg sm:text-xl animate-fadeIn"
-              onClick={() => setEditing(true)}
-            >
-              ✏️ Edit Profile
-            </button>
+            <>
+              <button
+                className="mt-6 sm:mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-xl transition-all text-lg sm:text-xl animate-fadeIn profile-mobile-edit-btn"
+                onClick={() => setEditing(true)}
+              >
+                ✏️ Edit Profile
+              </button>
+            </>
           )}
         </div>
         {/* About Me & Interests */}
@@ -331,7 +334,45 @@ export default function ProfilePage() {
             </button>
           </div>
         )}
+        </div>
       </div>
-    </div>
+      {/* Mobile styles for profile page */}
+      <style>{`
+        @media (max-width: 600px) {
+          .profile-mobile-card {
+            border-radius: 1.2rem !important;
+            min-height: 400px !important;
+            padding: 0 !important;
+          }
+          .profile-mobile-header {
+            padding: 1.2rem 0.5rem !important;
+            border-radius: 1.2rem !important;
+          }
+          .profile-mobile-avatar-img {
+            width: 4.5rem !important;
+            height: 4.5rem !important;
+            border-width: 5px !important;
+          }
+          .profile-mobile-name {
+            font-size: 2rem !important;
+            margin-bottom: 0.3rem !important;
+          }
+          .profile-mobile-badges > div {
+            font-size: 0.9rem !important;
+            padding: 0.5rem 1.1rem !important;
+          }
+          .profile-mobile-stats > div {
+            min-width: 70px !important;
+            padding: 0.7rem 1.2rem !important;
+            font-size: 1rem !important;
+          }
+          .profile-mobile-edit-btn {
+            font-size: 1.1rem !important;
+            padding: 0.7rem 1.2rem !important;
+            margin-top: 1.2rem !important;
+          }
+        }
+      `}</style>
+    </>
   );
 }
