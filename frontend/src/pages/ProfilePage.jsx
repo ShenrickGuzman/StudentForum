@@ -202,20 +202,20 @@ export default function ProfilePage() {
           <div className="relative mb-4 profile-mobile-avatar">
             <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-8 border-white shadow-2xl transition-transform duration-300 hover:scale-110 bg-white object-cover profile-mobile-avatar-img" />
             {editing && isOwnProfile && (
-              <>
-                <label className="absolute bottom-2 right-2 bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white">
+              <div className="profile-mobile-avatar-btns mt-2 flex justify-center gap-3">
+                <label className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white">
                   <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleAvatarChange} />
                   <span role="img" aria-label="upload" className="text-xl">📤</span>
                 </label>
                 <button
                   type="button"
-                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 sm:p-2 cursor-pointer shadow-lg border-2 border-white"
+                  className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white"
                   onClick={handleRemoveAvatar}
                   title="Remove avatar"
                 >
-                  <span role="img" aria-label="remove" className="text-lg">❌</span>
+                  <span role="img" aria-label="remove" className="text-xl">❌</span>
                 </button>
-              </>
+              </div>
             )}
             {avatarError && (
               <div className="absolute left-1/2 -translate-x-1/2 bottom-[-2.5rem] bg-red-400 text-white px-2 sm:px-4 py-2 rounded shadow-lg text-xs sm:text-sm animate-fadeIn">
@@ -353,6 +353,14 @@ export default function ProfilePage() {
             width: 7rem !important;
             height: 7rem !important;
             border-width: 7px !important;
+          }
+          .profile-mobile-avatar-btns {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: center !important;
+            gap: 1rem !important;
+            margin-top: 0.5rem !important;
+            position: static !important;
           }
           .profile-mobile-name {
             font-size: 3rem !important;
