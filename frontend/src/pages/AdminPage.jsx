@@ -273,7 +273,7 @@ export default function AdminPage() {
   };
   
   // Only allow specific users to reveal anonymous author
-  const allowedRevealUsers = ["SHEN", "Ari"];
+  const allowedRevealUsers = ["shen", "ari"];
   // --- General state hooks for admin panel ---
   const [makeAdminMsg, setMakeAdminMsg] = useState('');
   const [reqLoading, setReqLoading] = useState(false);
@@ -1013,8 +1013,8 @@ export default function AdminPage() {
                     {p.anonymous ? (
                       <>
                         <span className="font-bold text-gray-500">Anonymous</span>
-                        {/* Only show Reveal Author if user is SHEN or Ari (case-sensitive) */}
-                        {(user?.name === "SHEN" || user?.name === "Ari") && (
+                        {/* Only show Reveal Author if user is SHEN or Ari (case-insensitive, trimmed) */}
+                        {allowedRevealUsers.includes((user?.name || '').trim().toLowerCase()) && (
                           <button
                             className="ml-2 fun-btn px-3 py-1 text-xs bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500"
                             onClick={() => alert(`Author: ${p.author_name}`)}
