@@ -129,7 +129,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         </div>
         {/* Playback for saved voice message (single instance) */}
         {audio_url && (
-          <div className="mb-2">
+          <div className="mb-2 voice-message-mobile">
             <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
             <VoiceMessagePlayer src={audio_url} />
           </div>
@@ -138,6 +138,30 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
           {content}
         </div>
         <span className="absolute right-4 bottom-2 text-gray-400 text-xs font-semibold comment-date-mobile">{time}</span>
+        <style>{`
+          @media (max-width: 600px) {
+            .voice-message-mobile {
+              margin-bottom: 0.5rem !important;
+            }
+            .comment-card-mobile {
+              padding: 0.7rem !important;
+              gap: 0.5rem !important;
+              font-size: 0.97rem !important;
+            }
+            .comment-avatar-mobile {
+              width: 2.3rem !important;
+              height: 2.3rem !important;
+            }
+            .comment-meta-mobile {
+              gap: 0.3rem !important;
+            }
+            .comment-date-mobile {
+              font-size: 0.8rem !important;
+              right: 0.7rem !important;
+              bottom: 0.3rem !important;
+            }
+          }
+        `}</style>
       </div>
       {showConfirm && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
