@@ -4,8 +4,9 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
-    // Debug: log current username for Reveal Author button logic
-    console.log('Current user.name:', user?.name);
+  const { token, user, logout } = useAuth();
+  // Debug: log current username for Reveal Author button logic
+  console.log('Current user.name:', user?.name);
   // State for report log post delete confirmation modal
   const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
@@ -398,7 +399,6 @@ export default function AdminPage() {
   const [detailComments, setDetailComments] = useState([]);
   const [detailComment, setDetailComment] = useState('');
   const [detailCommentsLoading, setDetailCommentsLoading] = useState(false);
-  const { token, user, logout } = useAuth();
 
   // (removed duplicate openPostDetail)
 
