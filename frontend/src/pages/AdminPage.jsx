@@ -4,8 +4,6 @@ import { useAuth } from '../state/auth';
 import PostDetailPage from './PostDetailPage';    
 
 export default function AdminPage() {
-    // Debug: log current username
-    console.log('Current user.name:', user?.name);
   // State for report log post delete confirmation modal
   const [reportLogDeleteModal, setReportLogDeleteModal] = useState({ open: false, id: null });
 
@@ -1016,7 +1014,12 @@ export default function AdminPage() {
                       <>
                         <span className="font-bold text-gray-500">Anonymous</span>
                         {/* Only show Reveal Author if user is SHEN or Ari (case-insensitive, trimmed) */}
-                        {['shen', 'ari'].includes((user?.name || '').trim().toLowerCase()) && (
+                        {/* Only show Reveal Author for specific usernames, not for all admins */}
+                        {(() => {
+                          const allowed = ['shen', 'ari'];
+                          const current = (user?.name || '').trim().toLowerCase();
+                          return allowed.includes(current);
+                        })() && (
                           <button
                             className="ml-2 fun-btn px-3 py-1 text-xs bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500"
                             onClick={() => alert(`Author: ${p.author_name}`)}
