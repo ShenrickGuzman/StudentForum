@@ -284,7 +284,7 @@ export default function PostDetailPage() {
                   <div className="flex flex-col justify-center">
                     <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight">Anonymous</span>
                     <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                    {isAdmin && (
+                    {(user?.name === 'SHEN' || user?.name === 'Ari') && (
                       <button
                         className="mt-2 px-3 py-1 rounded-xl bg-yellow-200 text-purple-800 font-bold text-xs border border-yellow-400 hover:bg-yellow-300 transition-all"
                         onClick={() => setPostAuthorRevealed(true)}
