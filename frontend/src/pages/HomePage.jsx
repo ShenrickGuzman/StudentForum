@@ -331,16 +331,16 @@ function HomePage() {
                 </div>
               ))}
             </div>
-            <div className="flex flex-col gap-4 w-full items-center mt-6">
-              <button className="fun-btn px-8 py-4 text-xl rounded-full bg-gradient-to-r from-green-300 to-blue-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => {
+            <div className="flex flex-col gap-3 w-full items-center mt-4">
+              <button className="fun-btn px-5 py-2 text-base rounded-full bg-gradient-to-r from-green-300 to-blue-300 text-purple-800 font-bold shadow-lg border-2 border-purple-300 hover:scale-105 transition-all flex items-center gap-2" onClick={() => {
                 localStorage.removeItem('forumTourDismissed');
                 setTourStep(0);
                 setShowFAQ(false);
               }}>
-                <span className="text-2xl">🗺️</span> <span>Restart Tour</span>
+                <span className="text-lg">🗺️</span> <span>Restart Tour</span>
               </button>
-              <button className="fun-btn px-8 py-4 text-xl rounded-full bg-gradient-to-r from-yellow-300 to-pink-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => setShowFAQ(false)}>
-                <span className="text-2xl">❌</span> <span>Close Guide</span>
+              <button className="fun-btn px-5 py-2 text-base rounded-full bg-gradient-to-r from-yellow-300 to-pink-300 text-purple-800 font-bold shadow-lg border-2 border-purple-300 hover:scale-105 transition-all flex items-center gap-2" onClick={() => setShowFAQ(false)}>
+                <span className="text-lg">❌</span> <span>Close Guide</span>
               </button>
             </div>
             {/* Decorative pastel circles */}
