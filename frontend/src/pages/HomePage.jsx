@@ -83,6 +83,12 @@ function HomePage() {
         { q: "How do I report a post?", a: "Click the 'Report' button below any post or comment you think breaks the rules." },
         { q: "Where can I find the forum rules?", a: "Click the 'Rules' button at the top of the page." },
         { q: "How do I react to posts?", a: "Click any emoji below a post to react!" },
+        { q: "How do I comment?", a: "Open any post and scroll to the bottom. Type your message in the comment box and click 'Send'. You can also reply to other comments!" },
+        { q: "How can I view my classmates' profiles?", a: "Click on any username or avatar to view their profile, posts, and badges." },
+        { q: "How do I send or comment with a voice message?", a: "In the comment box, click the microphone icon to record and send a voice message. You can listen to voice comments by pressing the play button." },
+        { q: "How do I post pictures?", a: "When creating a post or comment, click the image icon to upload a picture from your device." },
+        { q: "How do I customize my profile?", a: "Go to your profile page by clicking your avatar at the top right. Here you can change your avatar, bio, and other details." },
+        { q: "About notifications", a: "Click the bell icon at the top to view new notifications. You'll get alerts for replies, reactions, and important updates!" },
       ];
     // Forum Guide: Welcome popup/banner for new users
     // Show every time unless 'Don't show again' is checked
@@ -282,6 +288,21 @@ function HomePage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Step-by-step Tour Overlay - always visible if tourStep !== null */}
+      {tourStep !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full animate-pop p-8">
+            <div className="text-5xl">🗺️</div>
+            <div className="text-2xl font-extrabold text-accent text-center">{tourSteps[tourStep].title}</div>
+            <div className="text-lg text-dark text-center">{tourSteps[tourStep].desc}</div>
+            <div className="flex gap-4 mt-4">
+              <button className="fun-btn px-4 py-2 text-base" onClick={handleTourPrev} disabled={tourStep === 0}>Back</button>
+              <button className="fun-btn px-4 py-2 text-base" onClick={handleTourNext}>{tourStep === tourSteps.length - 1 ? 'Finish' : 'Next'}</button>
+              <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600" onClick={handleTourSkip}>Skip Tour</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Need Help Button - cartoon style, fixed bottom right */}
       <button
         className="fixed bottom-8 right-8 z-40 fun-btn px-6 py-3 text-lg rounded-full shadow-lg bg-gradient-to-r from-pink-400 to-yellow-300 text-purple-800 font-bold border-4 border-purple-300 hover:scale-105 transition-all"
