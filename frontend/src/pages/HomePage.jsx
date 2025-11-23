@@ -315,13 +315,13 @@ function HomePage() {
       {/* FAQ Modal - cartoon style */}
       {showFAQ && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">
-          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-6 max-w-lg w-full animate-pop p-10 relative">
+          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-6 max-w-lg w-full animate-pop p-10 relative" style={{ maxHeight: '90vh', overflow: 'hidden' }}>
             <div className="flex flex-col items-center mb-2">
               <div className="text-6xl mb-2 animate-wiggle">📚</div>
               <div className="text-3xl font-extrabold text-accent text-center mb-2 drop-shadow-lg" style={{fontFamily: 'Fredoka, Baloo, Comic Neue, cursive'}}>Forum Guide & FAQ</div>
               <div className="text-base text-dark text-center mb-2">Everything you need to know to get started!</div>
             </div>
-            <div className="flex flex-col gap-5 w-full">
+            <div className="flex flex-col gap-5 w-full overflow-y-auto px-1" style={{ maxHeight: '55vh', scrollbarWidth: 'thin' }}>
               {faqList.map((item, idx) => (
                 <div key={idx} className="rounded-2xl border-4 border-pink-300 bg-gradient-to-r from-pink-50 via-yellow-50 to-blue-50 p-5 shadow-fun transition-transform hover:scale-105 animate-pop">
                   <div className="font-extrabold text-purple-700 text-lg mb-1 flex items-center gap-2">
