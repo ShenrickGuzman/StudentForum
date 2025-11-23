@@ -18,6 +18,19 @@ const categories = [
 
 
 function HomePage() {
+    // Forum Guide: Welcome popup/banner for new users
+    // Show every time unless 'Don't show again' is checked
+    const [showWelcome, setShowWelcome] = useState(() => {
+      return localStorage.getItem('forumWelcomeDontShow') !== '1';
+    });
+    const [dontShowAgain, setDontShowAgain] = useState(false);
+
+    const handleDismissWelcome = () => {
+      setShowWelcome(false);
+      if (dontShowAgain) {
+        localStorage.setItem('forumWelcomeDontShow', '1');
+      }
+    };
   // ...existing code...
   const [warnings, setWarnings] = useState([]);
   const [showWarningModal, setShowWarningModal] = useState(false);
@@ -186,6 +199,21 @@ function HomePage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Forum Guide Welcome Popup */}
+      {showWelcome && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full animate-pop p-8">
+            <div className="text-5xl">👋</div>
+            <div className="text-2xl font-extrabold text-accent text-center">Welcome to the Student Forum!</div>
+            <div className="text-lg text-dark text-center">Here you can ask questions, share ideas, and connect with classmates. Need help? Check the Rules or use the search bar above!</div>
+            <label className="flex items-center gap-2 mt-2">
+              <input type="checkbox" checked={dontShowAgain} onChange={e => setDontShowAgain(e.target.checked)} />
+              <span className="text-base text-gray-700">Don't show again</span>
+            </label>
+            <button className="fun-btn px-6 py-3 text-lg mt-2" onClick={handleDismissWelcome}>Got it!</button>
+          </div>
+        </div>
+      )}
       <RulesPopup open={showRules} onAgree={() => setShowRules(false)} onClose={() => setShowRules(false)} onDontShowAgain={() => {}} />
 
       {/* Warning Modal for users */}
