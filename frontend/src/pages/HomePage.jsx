@@ -18,6 +18,72 @@ const categories = [
 
 
 function HomePage() {
+        // Step-by-step tour state
+        const [tourStep, setTourStep] = useState(() => {
+          // Show tour unless dismissed (can be improved for per-user)
+          return localStorage.getItem('forumTourDismissed') === '1' ? null : 0;
+        });
+        const tourSteps = [
+          {
+            title: "Welcome to the Student Forum!",
+            desc: "Let's take a quick tour of the main features.",
+            target: null
+          },
+          {
+            title: "New Post",
+            desc: "Click 'New Post' at the top to ask questions or share ideas.",
+            target: "#new-post-btn"
+          },
+          {
+            title: "Rules",
+            desc: "Check the forum rules by clicking 'Rules' at the top.",
+            target: "#rules-btn"
+          },
+          {
+            title: "Search",
+            desc: "Use the search bar to find posts, users, or topics.",
+            target: "#search-bar"
+          },
+          {
+            title: "Reactions",
+            desc: "React to posts with emojis below each post.",
+            target: "#reactions-section"
+          },
+          {
+            title: "Need Help?",
+            desc: "Click the 'Need Help?' button for FAQ and guidance.",
+            target: "#need-help-btn"
+          },
+          {
+            title: "Enjoy!",
+            desc: "You're ready to explore and connect!",
+            target: null
+          }
+        ];
+
+        const handleTourNext = () => {
+          if (tourStep < tourSteps.length - 1) setTourStep(tourStep + 1);
+          else {
+            setTourStep(null);
+            localStorage.setItem('forumTourDismissed', '1');
+          }
+        };
+        const handleTourPrev = () => {
+          if (tourStep > 0) setTourStep(tourStep - 1);
+        };
+        const handleTourSkip = () => {
+          setTourStep(null);
+          localStorage.setItem('forumTourDismissed', '1');
+        };
+      // Forum Guide: FAQ modal
+      const [showFAQ, setShowFAQ] = useState(false);
+      const faqList = [
+        { q: "How do I post a question?", a: "Click 'New Post' at the top, choose a category, and write your question." },
+        { q: "How do I stay anonymous?", a: "Check the 'Post as Anonymous' option when creating your post or comment." },
+        { q: "How do I report a post?", a: "Click the 'Report' button below any post or comment you think breaks the rules." },
+        { q: "Where can I find the forum rules?", a: "Click the 'Rules' button at the top of the page." },
+        { q: "How do I react to posts?", a: "Click any emoji below a post to react!" },
+      ];
     // Forum Guide: Welcome popup/banner for new users
     // Show every time unless 'Don't show again' is checked
     const [showWelcome, setShowWelcome] = useState(() => {
@@ -153,29 +219,46 @@ function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100 relative overflow-hidden">
-        {/* Animated pastel circles */}
-        <div className="absolute inset-0 z-0 pointer-events-none select-none">
-          <span className="absolute left-8 top-8 w-24 h-24 rounded-full bg-yellow-200 opacity-30 animate-pulse"></span>
-          <span className="absolute right-10 top-24 w-16 h-16 rounded-full bg-green-200 opacity-20 animate-bounce"></span>
-          <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20 animate-pulse"></span>
-          <span className="absolute right-1/3 top-1/2 w-20 h-20 rounded-full bg-blue-200 opacity-20 animate-bounce"></span>
-          <span className="absolute left-10 bottom-24 w-16 h-16 rounded-full bg-purple-200 opacity-20 animate-pulse"></span>
-          <span className="absolute right-8 bottom-8 w-28 h-28 rounded-full bg-yellow-100 opacity-30 animate-bounce"></span>
-        </div>
-        <div className="relative z-10 flex flex-col items-center">
-          {/* Fun animated spinner */}
-          <div className="mb-6">
-            <div className="w-20 h-20 rounded-full border-8 border-pink-300 border-t-yellow-300 border-b-blue-300 animate-spin shadow-lg flex items-center justify-center">
-              <span className="text-4xl">🎈</span>
+      <>
+        {/* Step-by-step Tour Overlay */}
+        {tourStep !== null && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+            <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full animate-pop p-8">
+              <div className="text-5xl">🗺️</div>
+              <div className="text-2xl font-extrabold text-accent text-center">{tourSteps[tourStep].title}</div>
+              <div className="text-lg text-dark text-center">{tourSteps[tourStep].desc}</div>
+              <div className="flex gap-4 mt-4">
+                <button className="fun-btn px-4 py-2 text-base" onClick={handleTourPrev} disabled={tourStep === 0}>Back</button>
+                <button className="fun-btn px-4 py-2 text-base" onClick={handleTourNext}>{tourStep === tourSteps.length - 1 ? 'Finish' : 'Next'}</button>
+                <button className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-gray-400 to-gray-600" onClick={handleTourSkip}>Skip Tour</button>
+              </div>
             </div>
           </div>
-          <div className="cartoon-card text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun flex flex-col items-center gap-2 rounded-3xl">
-            <span className="text-4xl mb-2">🎉 Loading Forums...</span>
-            <span className="text-lg text-pink-400 font-bold flex items-center gap-2">Please wait <span className="animate-bounce">💬</span> <span className="animate-pulse">✨</span></span>
+        )}
+        <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100 relative overflow-hidden">
+          {/* Animated pastel circles */}
+          <div className="absolute inset-0 z-0 pointer-events-none select-none">
+            <span className="absolute left-8 top-8 w-24 h-24 rounded-full bg-yellow-200 opacity-30 animate-pulse"></span>
+            <span className="absolute right-10 top-24 w-16 h-16 rounded-full bg-green-200 opacity-20 animate-bounce"></span>
+            <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20 animate-pulse"></span>
+            <span className="absolute right-1/3 top-1/2 w-20 h-20 rounded-full bg-blue-200 opacity-20 animate-bounce"></span>
+            <span className="absolute left-10 bottom-24 w-16 h-16 rounded-full bg-purple-200 opacity-20 animate-pulse"></span>
+            <span className="absolute right-8 bottom-8 w-28 h-28 rounded-full bg-yellow-100 opacity-30 animate-bounce"></span>
+          </div>
+          <div className="relative z-10 flex flex-col items-center">
+            {/* Fun animated spinner */}
+            <div className="mb-6">
+              <div className="w-20 h-20 rounded-full border-8 border-pink-300 border-t-yellow-300 border-b-blue-300 animate-spin shadow-lg flex items-center justify-center">
+                <span className="text-4xl">🎈</span>
+              </div>
+            </div>
+            <div className="cartoon-card text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun flex flex-col items-center gap-2 rounded-3xl">
+              <span className="text-4xl mb-2">🎉 Loading Forums...</span>
+              <span className="text-lg text-pink-400 font-bold flex items-center gap-2">Please wait <span className="animate-bounce">💬</span> <span className="animate-pulse">✨</span></span>
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -199,6 +282,33 @@ function HomePage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
+      {/* Need Help Button - cartoon style, fixed bottom right */}
+      <button
+        className="fixed bottom-8 right-8 z-40 fun-btn px-6 py-3 text-lg rounded-full shadow-lg bg-gradient-to-r from-pink-400 to-yellow-300 text-purple-800 font-bold border-4 border-purple-300 hover:scale-105 transition-all"
+        style={{ fontFamily: 'Baloo, Fredoka, Comic Neue, cursive' }}
+        onClick={() => setShowFAQ(true)}
+      >
+        <span className="mr-2">❓</span> Need Help?
+      </button>
+
+      {/* FAQ Modal - cartoon style */}
+      {showFAQ && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-lg w-full animate-pop p-8">
+            <div className="text-4xl mb-2">🤔</div>
+            <div className="text-2xl font-extrabold text-accent text-center mb-2">Forum Guide & FAQ</div>
+            <div className="flex flex-col gap-4 w-full">
+              {faqList.map((item, idx) => (
+                <div key={idx} className="rounded-xl border-2 border-pink-200 bg-pink-50/80 p-4 shadow-fun">
+                  <div className="font-bold text-purple-700 text-lg mb-1">{item.q}</div>
+                  <div className="text-base text-gray-700">{item.a}</div>
+                </div>
+              ))}
+            </div>
+            <button className="fun-btn px-6 py-3 text-lg mt-4" onClick={() => setShowFAQ(false)}>Close</button>
+          </div>
+        </div>
+      )}
       {/* Forum Guide Welcome Popup */}
       {showWelcome && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
