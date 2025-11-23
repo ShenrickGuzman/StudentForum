@@ -331,9 +331,18 @@ function HomePage() {
                 </div>
               ))}
             </div>
-            <button className="fun-btn px-8 py-4 text-xl mt-6 rounded-full bg-gradient-to-r from-yellow-300 to-pink-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => setShowFAQ(false)}>
-              <span className="text-2xl">❌</span> <span>Close Guide</span>
-            </button>
+            <div className="flex flex-col gap-4 w-full items-center mt-6">
+              <button className="fun-btn px-8 py-4 text-xl rounded-full bg-gradient-to-r from-green-300 to-blue-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => {
+                localStorage.removeItem('forumTourDismissed');
+                setTourStep(0);
+                setShowFAQ(false);
+              }}>
+                <span className="text-2xl">🗺️</span> <span>Restart Tour</span>
+              </button>
+              <button className="fun-btn px-8 py-4 text-xl rounded-full bg-gradient-to-r from-yellow-300 to-pink-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => setShowFAQ(false)}>
+                <span className="text-2xl">❌</span> <span>Close Guide</span>
+              </button>
+            </div>
             {/* Decorative pastel circles */}
             <span className="absolute left-4 top-4 w-12 h-12 rounded-full bg-yellow-200 opacity-30 animate-pulse"></span>
             <span className="absolute right-8 top-8 w-16 h-16 rounded-full bg-pink-200 opacity-20 animate-bounce"></span>
