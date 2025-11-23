@@ -288,8 +288,8 @@ function HomePage() {
 
   return (
     <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
-      {/* Step-by-step Tour Overlay - always visible if tourStep !== null */}
-      {tourStep !== null && (
+      {/* Step-by-step Tour Overlay - only visible if tourStep !== null and FAQ modal is not open */}
+      {tourStep !== null && !showFAQ && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full animate-pop p-8">
             <div className="text-5xl">🗺️</div>
@@ -314,19 +314,32 @@ function HomePage() {
 
       {/* FAQ Modal - cartoon style */}
       {showFAQ && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-4 max-w-lg w-full animate-pop p-8">
-            <div className="text-4xl mb-2">🤔</div>
-            <div className="text-2xl font-extrabold text-accent text-center mb-2">Forum Guide & FAQ</div>
-            <div className="flex flex-col gap-4 w-full">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-pink-100 via-yellow-100 to-blue-100">
+          <div className="cartoon-card border-4 border-accent bg-white/95 shadow-2xl flex flex-col items-center gap-6 max-w-lg w-full animate-pop p-10 relative">
+            <div className="flex flex-col items-center mb-2">
+              <div className="text-6xl mb-2 animate-wiggle">📚</div>
+              <div className="text-3xl font-extrabold text-accent text-center mb-2 drop-shadow-lg" style={{fontFamily: 'Fredoka, Baloo, Comic Neue, cursive'}}>Forum Guide & FAQ</div>
+              <div className="text-base text-dark text-center mb-2">Everything you need to know to get started!</div>
+            </div>
+            <div className="flex flex-col gap-5 w-full">
               {faqList.map((item, idx) => (
-                <div key={idx} className="rounded-xl border-2 border-pink-200 bg-pink-50/80 p-4 shadow-fun">
-                  <div className="font-bold text-purple-700 text-lg mb-1">{item.q}</div>
-                  <div className="text-base text-gray-700">{item.a}</div>
+                <div key={idx} className="rounded-2xl border-4 border-pink-300 bg-gradient-to-r from-pink-50 via-yellow-50 to-blue-50 p-5 shadow-fun transition-transform hover:scale-105 animate-pop">
+                  <div className="font-extrabold text-purple-700 text-lg mb-1 flex items-center gap-2">
+                    <span className="text-xl">💡</span> {item.q}
+                  </div>
+                  <div className="text-base text-gray-700 pl-6">{item.a}</div>
                 </div>
               ))}
             </div>
-            <button className="fun-btn px-6 py-3 text-lg mt-4" onClick={() => setShowFAQ(false)}>Close</button>
+            <button className="fun-btn px-8 py-4 text-xl mt-6 rounded-full bg-gradient-to-r from-yellow-300 to-pink-300 text-purple-800 font-bold shadow-lg border-4 border-purple-300 hover:scale-110 transition-all flex items-center gap-2" onClick={() => setShowFAQ(false)}>
+              <span className="text-2xl">❌</span> <span>Close Guide</span>
+            </button>
+            {/* Decorative pastel circles */}
+            <span className="absolute left-4 top-4 w-12 h-12 rounded-full bg-yellow-200 opacity-30 animate-pulse"></span>
+            <span className="absolute right-8 top-8 w-16 h-16 rounded-full bg-pink-200 opacity-20 animate-bounce"></span>
+            <span className="absolute left-1/4 bottom-8 w-20 h-20 rounded-full bg-blue-200 opacity-20 animate-pulse"></span>
+            <span className="absolute right-1/3 top-1/2 w-10 h-10 rounded-full bg-purple-200 opacity-20 animate-bounce"></span>
+            <span className="absolute left-10 bottom-10 w-14 h-14 rounded-full bg-green-200 opacity-20 animate-pulse"></span>
           </div>
         </div>
       )}
