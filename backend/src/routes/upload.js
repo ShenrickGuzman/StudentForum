@@ -22,45 +22,28 @@ router.post('/', upload.single('file'), async (req, res) => {
   console.log('Request headers:', req.headers);
   console.log('Request body:', req.body);
   console.log('Request file:', req.file);
-  if (!req.file) {
-    console.log('No file uploaded');
-    return res.status(400).json({ error: 'No file uploaded' });
-  }
   try {
-    console.log('Uploading file to Cloudinary:', {
+    console.log('Uploading image to Supabase Storage:', {
       originalname: req.file.originalname,
       mimetype: req.file.mimetype,
       size: req.file.size
     });
-    const result = await new Promise((resolve, reject) => {
-      let settled = false;
-      const timeout = setTimeout(() => {
-        if (!settled) {
-          settled = true;
-          console.error('Cloudinary upload timed out');
-          reject(new Error('Cloudinary upload timed out'));
-        }
-      }, 20000); // 20 seconds
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: 'margaretforum' },
-        (error, result) => {
-          if (!settled) {
-            clearTimeout(timeout);
-            settled = true;
-            if (error) {
-              console.error('Cloudinary upload error:', error);
-              reject(error);
-            } else {
-              console.log('Cloudinary upload result:', result);
-              resolve(result);
-            }
-          }
-        }
-      );
-      stream.end(req.file.buffer);
-    });
-    console.log('File upload successful, preparing to send response:', result.secure_url);
-    res.json({ url: result.secure_url });
+    const ext = req.file.originalname.split('.').pop();
+    const filename = `images/${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+    const { data, error } = await supabase.storage
+      .from('forum-files')
+      .upload(filename, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
+    if (error) {
+      console.error('Supabase image upload error:', error);
+      return res.status(500).json({ error: 'Image upload failed' });
+    }
+    const projectRef = 'xuezboawkhqlkdaspkos';
+    const publicUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/forum-files/${data.path}`;
+    console.log('Image upload successful, preparing to send response:', publicUrl);
+    res.json({ url: publicUrl });
     console.log('Response sent to client for image upload.');
   } catch (error) {
     console.error('Upload error:', error);
