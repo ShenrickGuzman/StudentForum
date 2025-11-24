@@ -94,7 +94,7 @@ export default function NewPostPage() {
       if (imageFile) {
         const formData = new FormData();
         formData.append('file', imageFile);
-        const uploadRes = await api.post('/api/upload', formData, {
+        const uploadRes = await api.post('/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         imageUrl = uploadRes.data.url;
