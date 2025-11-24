@@ -44,8 +44,9 @@ router.post('/', upload.single('file'), async (req, res) => {
       );
       stream.end(req.file.buffer);
     });
-    console.log('File upload successful, responding with URL:', result.secure_url);
+    console.log('File upload successful, preparing to send response:', result.secure_url);
     res.json({ url: result.secure_url });
+    console.log('Response sent to client for image upload.');
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: 'Upload failed' });
