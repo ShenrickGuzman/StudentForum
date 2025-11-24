@@ -92,24 +92,29 @@ export default function NewPostPage() {
     try {
       let imageUrl = '';
       if (imageFile) {
+        console.log('Starting image upload...');
         const formData = new FormData();
         formData.append('file', imageFile);
         const uploadRes = await api.post('/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
+        console.log('Image upload response:', uploadRes);
         imageUrl = uploadRes.data.url;
+        console.log('Image URL:', imageUrl);
       }
 
       let audioFileUrl = '';
       console.log('audioBlob:', audioBlob);
       if (audioBlob) {
+        console.log('Starting audio upload...');
         const audioForm = new FormData();
         audioForm.append('file', audioBlob, 'voice-message.webm');
         const audioRes = await api.post('/api/upload/audio', audioForm, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        console.log('audioRes:', audioRes);
+        console.log('Audio upload response:', audioRes);
         audioFileUrl = audioRes.data.url;
+        console.log('Audio URL:', audioFileUrl);
       }
 
       const payload = {
@@ -122,11 +127,14 @@ export default function NewPostPage() {
         anonymous: anonymous === true ? true : false,
       };
       console.log('POST PAYLOAD:', payload);
-      await api.post('/api/posts', payload);
+      console.log('Posting to /api/posts...');
+      const postRes = await api.post('/api/posts', payload);
+      console.log('Post response:', postRes);
       // Clear draft on successful submit
       localStorage.removeItem(DRAFT_KEY);
       navigate('/');
     } catch (err) {
+      console.error('Error during post submit:', err);
       alert('Failed to post. Please try again!');
     } finally {
       setUploading(false);
