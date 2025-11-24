@@ -19,6 +19,9 @@ const upload = multer({ storage });
 // General file upload (POST /api/upload)
 router.post('/', upload.single('file'), async (req, res) => {
   console.log('--- File upload request received ---');
+  console.log('Request headers:', req.headers);
+  console.log('Request body:', req.body);
+  console.log('Request file:', req.file);
   if (!req.file) {
     console.log('No file uploaded');
     return res.status(400).json({ error: 'No file uploaded' });
