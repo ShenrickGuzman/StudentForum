@@ -109,7 +109,7 @@ export default function NewPostPage() {
         console.log('Starting audio upload...');
         const audioForm = new FormData();
         audioForm.append('file', audioBlob, 'voice-message.webm');
-        const audioRes = await api.post('/api/upload/audio', audioForm, {
+        const audioRes = await api.post('/upload/audio', audioForm, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
         console.log('Audio upload response:', audioRes);
@@ -128,7 +128,7 @@ export default function NewPostPage() {
       };
       console.log('POST PAYLOAD:', payload);
       console.log('Posting to /api/posts...');
-      const postRes = await api.post('/api/posts', payload);
+      const postRes = await api.post('/posts', payload);
       console.log('Post response:', postRes);
       // Clear draft on successful submit
       localStorage.removeItem(DRAFT_KEY);
