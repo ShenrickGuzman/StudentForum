@@ -33,15 +33,27 @@ router.post('/', upload.single('file'), async (req, res) => {
       size: req.file.size
     });
     const result = await new Promise((resolve, reject) => {
+      let settled = false;
+      const timeout = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          console.error('Cloudinary upload timed out');
+          reject(new Error('Cloudinary upload timed out'));
+        }
+      }, 20000); // 20 seconds
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'margaretforum' },
         (error, result) => {
-          if (error) {
-            console.error('Cloudinary upload error:', error);
-            reject(error);
-          } else {
-            console.log('Cloudinary upload result:', result);
-            resolve(result);
+          if (!settled) {
+            clearTimeout(timeout);
+            settled = true;
+            if (error) {
+              console.error('Cloudinary upload error:', error);
+              reject(error);
+            } else {
+              console.log('Cloudinary upload result:', result);
+              resolve(result);
+            }
           }
         }
       );
@@ -52,7 +64,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     console.log('Response sent to client for image upload.');
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ error: 'Upload failed' });
+    res.status(500).json({ error: error.message || 'Upload failed' });
   }
 });
 
