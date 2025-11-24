@@ -18,18 +18,33 @@ const upload = multer({ storage });
 
 // General file upload (POST /api/upload)
 router.post('/', upload.single('file'), async (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+  console.log('--- File upload request received ---');
+  if (!req.file) {
+    console.log('No file uploaded');
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
   try {
+    console.log('Uploading file to Cloudinary:', {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size
+    });
     const result = await new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         { folder: 'margaretforum' },
         (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            console.log('Cloudinary upload result:', result);
+            resolve(result);
+          }
         }
       );
       stream.end(req.file.buffer);
     });
+    console.log('File upload successful, responding with URL:', result.secure_url);
     res.json({ url: result.secure_url });
   } catch (error) {
     console.error('Upload error:', error);
