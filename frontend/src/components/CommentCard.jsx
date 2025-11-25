@@ -1,7 +1,6 @@
+import React, { useState, useRef } from 'react';
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
-
-import React, { useState, useRef } from 'react';
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
