@@ -654,6 +654,7 @@ export default function PostDetailPage() {
                         setComments(response.data);
                       }}
                       audio_url={comment.audio_url}
+                      image_url={comment.image_url}
                     />
                   );
                 })}
