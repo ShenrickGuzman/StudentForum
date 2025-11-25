@@ -1,7 +1,11 @@
-// Recursive comment renderer with reply form
-// ...existing code...
-// ...existing code...
-// ...existing code...
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
+import { format, utcToZonedTime } from 'date-fns-tz';
+import { useAuth } from '../state/auth';
+import api, { getAssetUrl, reportPost } from '../lib/api';
+import CommentCard from '../components/CommentCard';
+import VoiceMessagePlayer from '../components/VoiceMessagePlayer';
+
 function RecursiveComment({ comment, depth }) {
   const { user } = useAuth();
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -191,12 +195,6 @@ function RecursiveComment({ comment, depth }) {
 }
 
 
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { format, utcToZonedTime } from 'date-fns-tz';
-import { useEffect } from 'react';
-// ...existing code...
-import { useAuth } from '../state/auth';
-import CommentCard from '../components/CommentCard';
 // ...existing code...
 
 const categories = [
