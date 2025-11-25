@@ -1,3 +1,15 @@
+-- Table to store tags
+CREATE TABLE tags (
+  id INT8 PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  name VARCHAR(50) UNIQUE NOT NULL
+);
+
+-- Table to associate posts with tags
+CREATE TABLE post_tags (
+  post_id INT8 NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  tag_id INT8 NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+  PRIMARY KEY (post_id, tag_id)
+);
 
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY,
@@ -40,6 +52,7 @@ CREATE TABLE IF NOT EXISTS comments (
   post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   content TEXT NOT NULL,
+  image_url TEXT,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
