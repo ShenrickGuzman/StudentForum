@@ -1,3 +1,194 @@
+// Recursive comment renderer with reply form
+import React, { useState, useRef } from 'react';
+import { useAuth } from '../state/auth';
+import CommentCard from '../components/CommentCard';
+function RecursiveComment({ comment, depth }) {
+  const { user } = useAuth();
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyText, setReplyText] = useState('');
+  const [replyLoading, setReplyLoading] = useState(false);
+  const [replyImageFile, setReplyImageFile] = useState(null);
+  const [replyImageUrl, setReplyImageUrl] = useState('');
+  const [replyAudioBlob, setReplyAudioBlob] = useState(null);
+  const [replyAudioUrl, setReplyAudioUrl] = useState('');
+  const [replyAudioUploading, setReplyAudioUploading] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  // Voice recording handlers for reply
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderRef.current = new window.MediaRecorder(stream);
+    audioChunksRef.current = [];
+    mediaRecorderRef.current.ondataavailable = e => {
+      audioChunksRef.current.push(e.data);
+    };
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      setReplyAudioBlob(blob);
+      setReplyAudioUrl(URL.createObjectURL(blob));
+    };
+    mediaRecorderRef.current.start();
+    setRecording(true);
+  };
+  const stopRecording = () => {
+    mediaRecorderRef.current.stop();
+    setRecording(false);
+  };
+
+  // Submit reply
+  const handleReplySubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!replyText.trim()) return;
+    setReplyLoading(true);
+    try {
+      let imageUrl = '';
+      if (replyImageFile) {
+        const formData = new FormData();
+        formData.append('file', replyImageFile);
+        const uploadRes = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        imageUrl = uploadRes.data?.url || uploadRes.data?.imageUrl || '';
+      }
+      // Create reply comment
+      const res = await api.post(`/posts/${comment.post_id || comment.postId || comment.postid || comment.postID || comment.post || window.location.pathname.split('/').pop()}/comments`, {
+        content: replyText,
+        anonymous: false,
+        image_url: imageUrl,
+        parent_comment_id: comment.id,
+      });
+      const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
+      if (replyAudioBlob && commentId) {
+        setReplyAudioUploading(true);
+        const audioForm = new FormData();
+        audioForm.append('file', replyAudioBlob, 'voice-message.webm');
+        await api.post(`/upload/audio/comment/${commentId}`, audioForm, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setReplyAudioUploading(false);
+        setReplyAudioBlob(null);
+        setReplyAudioUrl('');
+      }
+      setReplyText('');
+      setReplyImageFile(null);
+      setReplyImageUrl('');
+      setShowReplyForm(false);
+      // Optionally, trigger a refresh of comments in parent
+      window.location.reload(); // Simple way to refresh for now
+    } catch (err) {
+      alert('Failed to submit reply. Please try again.');
+    } finally {
+      setReplyLoading(false);
+    }
+  };
+
+  // Render badges
+  let badges = Array.isArray(comment.users?.badges) ? [...comment.users.badges] : [];
+  if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
+    badges = [...badges, 'ADMIN'];
+  }
+  const isCommentAnonymous = comment.anonymous;
+
+  return (
+    <div style={{ marginLeft: depth * 24, marginTop: 8 }}>
+      <CommentCard
+        key={comment.id}
+        avatar={isCommentAnonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
+          <img
+            src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'}
+            alt="author avatar"
+            className="w-12 h-12 rounded-full object-cover border-2 border-purple-300 shadow"
+            onError={e => { e.target.src = '/Cute-Cat.png'; }}
+          />
+        )}
+        username={comment.anonymous ? (
+          <span className="font-bold text-gray-500">Anonymous</span>
+        ) : (
+          <span className="font-bold text-purple-800">{comment.author_name || 'User'}</span>
+        )}
+        badges={isCommentAnonymous ? [] : badges}
+        time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
+        content={<span style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{comment.content}</span>}
+        canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
+        onDelete={async () => {
+          await api.delete(`/posts/comments/${comment.id}`);
+          window.location.reload();
+        }}
+        audio_url={comment.audio_url}
+        image_url={comment.image_url}
+      />
+      {/* Reply button and form */}
+      <div className="ml-14 mt-2">
+        <button
+          className="px-3 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs"
+          onClick={() => setShowReplyForm(v => !v)}
+        >{showReplyForm ? 'Cancel' : 'Reply'}</button>
+        {showReplyForm && (
+          <form onSubmit={handleReplySubmit} className="flex flex-col gap-2 mt-2">
+            <textarea
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              placeholder="Write a reply..."
+              className="w-full p-2 rounded border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[40px] max-h-[120px]"
+              rows={1}
+              maxLength={500}
+              disabled={replyLoading}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={e => {
+                const file = e.target.files[0];
+                setReplyImageFile(file);
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = ev => setReplyImageUrl(ev.target.result);
+                  reader.readAsDataURL(file);
+                } else {
+                  setReplyImageUrl('');
+                }
+              }}
+              disabled={replyLoading}
+            />
+            {replyImageUrl && (
+              <img src={replyImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-24 border-2 border-pink-200 shadow" />
+            )}
+            {/* Voice Message UI for Reply */}
+            <div className="flex gap-2 items-center">
+              <button
+                type="button"
+                className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+                onClick={recording ? stopRecording : startRecording}
+                disabled={replyAudioUploading}
+              >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+              {replyAudioUrl && (
+                <audio controls src={replyAudioUrl} className="ml-2" />
+              )}
+              {replyAudioUrl && (
+                <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setReplyAudioBlob(null); setReplyAudioUrl(''); }}>Remove</button>
+              )}
+            </div>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-sm"
+              disabled={replyLoading}
+            >Send Reply</button>
+          </form>
+        )}
+      </div>
+      {/* Render replies recursively */}
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="ml-8">
+          {comment.replies.map(reply => (
+            <RecursiveComment key={reply.id} comment={reply} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 
 import { Link, useParams, useNavigate } from 'react-router-dom';
