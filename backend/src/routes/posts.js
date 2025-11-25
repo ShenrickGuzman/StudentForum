@@ -698,7 +698,7 @@ const createPostsRouter = () => {
       // Get comments
       const { data: commentsRaw, error: commentsError } = await supabase
         .from('comments')
-        .select('*, users(name, role, avatar, badges), anonymous')
+        .select('*, users(name, role, avatar, badges), anonymous, image_url')
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
@@ -761,7 +761,7 @@ const createPostsRouter = () => {
 
   // Comment (prevent if locked)
   router.post('/:id/comments', requireAuth, async (req, res) => {
-    const { content, anonymous } = req.body || {};
+    const { content, anonymous, image_url } = req.body || {};
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
       const { data: postRes } = await supabase
@@ -781,7 +781,7 @@ const createPostsRouter = () => {
       }
       const { data, error } = await supabase
         .from('comments')
-        .insert([{ post_id: req.params.id, user_id: req.user.id, content, anonymous: anonBool }])
+        .insert([{ post_id: req.params.id, user_id: req.user.id, content, anonymous: anonBool, image_url }])
         .select('*')
         .single();
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
