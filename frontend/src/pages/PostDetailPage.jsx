@@ -19,6 +19,9 @@ const categories = [
 ];
 
 export default function PostDetailPage() {
+    // State for comment image upload
+    const [commentImageFile, setCommentImageFile] = useState(null);
+    const [commentImageUrl, setCommentImageUrl] = useState('');
   // State for reporting post (moved inside component)
   // Image modal state
   const [showImageModal, setShowImageModal] = useState(false);
@@ -187,10 +190,24 @@ export default function PostDetailPage() {
     if (!newComment.trim()) return;
     setCommentLoading(true);
     try {
-      // 1. Create comment
-      const res = await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous });
+      let imageUrl = '';
+      // 1. Upload image if present
+      if (commentImageFile) {
+        const formData = new FormData();
+        formData.append('file', commentImageFile);
+        const uploadRes = await api.post('/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        imageUrl = uploadRes.data?.url || uploadRes.data?.imageUrl || '';
+      }
+      // 2. Create comment with imageUrl
+      const res = await api.post(`/posts/${id}/comments`, {
+        content: newComment,
+        anonymous: commentAnonymous,
+        image_url: imageUrl,
+      });
       const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
-      // 2. If audio, upload it
+      // 3. If audio, upload it
       if (audioBlob && commentId) {
         setAudioUploading(true);
         const audioForm = new FormData();
@@ -201,16 +218,14 @@ export default function PostDetailPage() {
         setAudioUploading(false);
         setAudioBlob(null);
         setAudioUrl('');
-        // Re-fetch comments after uploading audio
-        const response = await api.get(`/posts/${id}/comments`);
-        setComments(response.data);
-      } else {
-        setNewComment('');
-        setCommentAnonymous(false);
-        // Re-fetch comments after adding a new one
-        const response = await api.get(`/posts/${id}/comments`);
-        setComments(response.data);
       }
+      setNewComment('');
+      setCommentAnonymous(false);
+      setCommentImageFile(null);
+      setCommentImageUrl('');
+      // Re-fetch comments after adding a new one
+      const response = await api.get(`/posts/${id}/comments`);
+      setComments(response.data);
     } catch (err) {
       alert('Failed to submit comment. Please try again.');
     } finally {
@@ -687,6 +702,30 @@ export default function PostDetailPage() {
                       />
                       <span className="font-bold text-pink-500">Comment Anonymously</span>
                     </label>
+                    {/* Image upload for comment */}
+                    <div className="mt-2">
+                      <label className="block mb-1 font-bold text-pink-500 text-sm">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => {
+                          const file = e.target.files[0];
+                          setCommentImageFile(file);
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onload = ev => setCommentImageUrl(ev.target.result);
+                            reader.readAsDataURL(file);
+                          } else {
+                            setCommentImageUrl('');
+                          }
+                        }}
+                        disabled={commentLoading}
+                        className="block w-full mt-1"
+                      />
+                      {commentImageUrl && (
+                        <img src={commentImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-32 border-2 border-pink-200 shadow" />
+                      )}
+                    </div>
                     {/* Voice Message UI for Comment - only in input form */}
                     <div className="mt-2">
                       <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
