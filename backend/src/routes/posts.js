@@ -804,6 +804,23 @@ const createPostsRouter = () => {
           console.error('Notification error after comment creation:', notifyErr);
         }
       })();
+        // After creating a reply comment, send notification to parent comment author
+        // Notify parent comment author if this is a reply
+        if (parent_comment_id) {
+          // Fetch parent comment to get author
+          const parentComment = await db('comments').where({ id: parent_comment_id }).first();
+          if (parentComment && parentComment.user_id && parentComment.user_id !== req.user.id) {
+            // Create notification for parent comment author
+            await db('notifications').insert({
+              user_id: parentComment.user_id,
+              type: 'reply',
+              message: `${req.user.username || 'Someone'} replied to your comment.`,
+              link: `/post/${req.params.id}#comment-${parent_comment_id}`,
+              created_at: new Date().toISOString(),
+              read: false
+            });
+          }
+        }
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
     }
