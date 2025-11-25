@@ -20,6 +20,9 @@ const categories = [
 
 export default function PostDetailPage() {
   // State for reporting post (moved inside component)
+  // Image modal state
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
   const [reportMsg, setReportMsg] = useState('');
@@ -426,7 +429,45 @@ export default function PostDetailPage() {
           <div className="px-8 pt-4 pb-4">
             <div className="rounded-3xl p-1" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
               <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
-                {post.image_url && <img alt="" className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100" src={getAssetUrl(post.image_url)} />}
+                {post.image_url && (
+                  <>
+                    <img
+                      alt="Post"
+                      className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
+                      src={getAssetUrl(post.image_url)}
+                      onClick={() => {
+                        setModalImageUrl(getAssetUrl(post.image_url));
+                        setShowImageModal(true);
+                      }}
+                    />
+                  </>
+                )}
+                      {/* Image Modal */}
+                      {showImageModal && (
+                        <div
+                          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
+                          onClick={() => setShowImageModal(false)}
+                        >
+                          <div
+                            className="relative max-w-3xl w-full flex items-center justify-center"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <img
+                              src={modalImageUrl}
+                              alt="Preview"
+                              className="rounded-2xl max-h-[80vh] object-contain shadow-2xl border-4 border-pink-200 bg-white"
+                              style={{ background: 'white' }}
+                            />
+                            <button
+                              className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-2 shadow-lg hover:bg-pink-700 transition"
+                              onClick={() => setShowImageModal(false)}
+                              aria-label="Close image preview"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      )}
                 <p className="whitespace-pre-wrap break-words text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
                 {/* Voice message audio player for post */}
                 {post.audio_url && (
