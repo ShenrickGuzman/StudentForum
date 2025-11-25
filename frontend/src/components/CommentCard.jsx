@@ -193,6 +193,10 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             {content}
           </div>
         )}
+        {/* Reply button (if provided) */}
+        {replyButton && (
+          <div className="mt-2">{replyButton}</div>
+        )}
         <span className="absolute right-4 bottom-2 text-gray-400 text-xs font-semibold comment-date-mobile">{time}</span>
         <style>{`
           @media (max-width: 600px) {
