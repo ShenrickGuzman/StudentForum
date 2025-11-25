@@ -705,23 +705,30 @@ export default function PostDetailPage() {
                     {/* Image upload for comment */}
                     <div className="mt-2">
                       <label className="block mb-1 font-bold text-pink-500 text-sm">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={e => {
-                          const file = e.target.files[0];
-                          setCommentImageFile(file);
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onload = ev => setCommentImageUrl(ev.target.result);
-                            reader.readAsDataURL(file);
-                          } else {
-                            setCommentImageUrl('');
-                          }
-                        }}
-                        disabled={commentLoading}
-                        className="block w-full mt-1"
-                      />
+                      <div className="relative w-full">
+                        <input
+                          id="comment-image-upload"
+                          type="file"
+                          accept="image/*"
+                          onChange={e => {
+                            const file = e.target.files[0];
+                            setCommentImageFile(file);
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onload = ev => setCommentImageUrl(ev.target.result);
+                              reader.readAsDataURL(file);
+                            } else {
+                              setCommentImageUrl('');
+                            }
+                          }}
+                          disabled={commentLoading}
+                          className="hidden"
+                        />
+                        <label htmlFor="comment-image-upload" className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow-fun border-2 border-pink-300 cursor-pointer hover:bg-pink-300 transition-all">
+                          <span className="mr-2">📷</span> Choose File
+                        </label>
+                        <span className="ml-2 text-sm text-gray-500 font-semibold">{commentImageFile ? commentImageFile.name : 'No file chosen'}</span>
+                      </div>
                       {commentImageUrl && (
                         <img src={commentImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-32 border-2 border-pink-200 shadow" />
                       )}
