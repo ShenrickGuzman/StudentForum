@@ -1,3 +1,5 @@
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
 
 import React, { useState, useRef } from 'react';
 import VoiceMessagePlayer from './VoiceMessagePlayer';
@@ -132,6 +134,55 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
           <div className="mb-2 voice-message-mobile">
             <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
             <VoiceMessagePlayer src={audio_url} />
+          </div>
+        )}
+        {/* Display comment image if present */}
+        {image_url && (
+          <div className="mb-2 flex justify-center">
+            <img
+              src={image_url}
+              alt="Comment"
+              className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
+              onClick={() => {
+                setModalImageUrl(image_url);
+                setShowImageModal(true);
+              }}
+            />
+          </div>
+        )}
+        {showImageModal && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
+            onClick={() => setShowImageModal(false)}
+          >
+            <div
+              className="relative w-full h-full flex items-center justify-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <img
+                src={modalImageUrl}
+                alt="Preview"
+                className="rounded-2xl object-contain shadow-2xl border-4 border-pink-200 bg-white"
+                style={{
+                  background: 'white',
+                  maxWidth: '100vw',
+                  maxHeight: '90vh',
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                  margin: 'auto',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-3 shadow-lg hover:bg-pink-700 transition text-xl focus:outline-none"
+                style={{ fontSize: '2rem', minWidth: '44px', minHeight: '44px', touchAction: 'manipulation' }}
+                onClick={() => setShowImageModal(false)}
+                aria-label="Close image preview"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         )}
         <div className="text-gray-700 text-base font-medium">
