@@ -1,6 +1,4 @@
 import React, { useState, useRef } from 'react';
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [modalImageUrl, setModalImageUrl] = useState('');
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
@@ -11,6 +9,8 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   const [reportReason, setReportReason] = useState('');
   const [reportMsg, setReportMsg] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
   // Voice message states
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
