@@ -122,66 +122,67 @@ function RecursiveComment({ comment, depth }) {
         }}
         audio_url={comment.audio_url}
         image_url={comment.image_url}
-      />
-      {/* Reply button and form */}
-      <div className="ml-14 mt-2">
-        <button
-          className="px-3 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs"
-          onClick={() => setShowReplyForm(v => !v)}
-        >{showReplyForm ? 'Cancel' : 'Reply'}</button>
-        {showReplyForm && (
-          <form onSubmit={handleReplySubmit} className="flex flex-col gap-2 mt-2">
-            <textarea
-              value={replyText}
-              onChange={e => setReplyText(e.target.value)}
-              placeholder="Write a reply..."
-              className="w-full p-2 rounded border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[40px] max-h-[120px]"
-              rows={1}
-              maxLength={500}
-              disabled={replyLoading}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={e => {
-                const file = e.target.files[0];
-                setReplyImageFile(file);
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = ev => setReplyImageUrl(ev.target.result);
-                  reader.readAsDataURL(file);
-                } else {
-                  setReplyImageUrl('');
-                }
-              }}
-              disabled={replyLoading}
-            />
-            {replyImageUrl && (
-              <img src={replyImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-24 border-2 border-pink-200 shadow" />
-            )}
-            {/* Voice Message UI for Reply */}
-            <div className="flex gap-2 items-center">
-              <button
-                type="button"
-                className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
-                onClick={recording ? stopRecording : startRecording}
-                disabled={replyAudioUploading}
-              >{recording ? 'Stop Recording' : 'Record Voice'}</button>
-              {replyAudioUrl && (
-                <audio controls src={replyAudioUrl} className="ml-2" />
-              )}
-              {replyAudioUrl && (
-                <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setReplyAudioBlob(null); setReplyAudioUrl(''); }}>Remove</button>
-              )}
-            </div>
+        replyButton={(
+          <>
             <button
-              type="submit"
-              className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-sm"
-              disabled={replyLoading}
-            >Send Reply</button>
-          </form>
+              className="px-3 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs"
+              onClick={() => setShowReplyForm(v => !v)}
+            >{showReplyForm ? 'Cancel' : 'Reply'}</button>
+            {showReplyForm && (
+              <form onSubmit={handleReplySubmit} className="flex flex-col gap-2 mt-2">
+                <textarea
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="w-full p-2 rounded border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[40px] max-h-[120px]"
+                  rows={1}
+                  maxLength={500}
+                  disabled={replyLoading}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    const file = e.target.files[0];
+                    setReplyImageFile(file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = ev => setReplyImageUrl(ev.target.result);
+                      reader.readAsDataURL(file);
+                    } else {
+                      setReplyImageUrl('');
+                    }
+                  }}
+                  disabled={replyLoading}
+                />
+                {replyImageUrl && (
+                  <img src={replyImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-24 border-2 border-pink-200 shadow" />
+                )}
+                {/* Voice Message UI for Reply */}
+                <div className="flex gap-2 items-center">
+                  <button
+                    type="button"
+                    className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+                    onClick={recording ? stopRecording : startRecording}
+                    disabled={replyAudioUploading}
+                  >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+                  {replyAudioUrl && (
+                    <audio controls src={replyAudioUrl} className="ml-2" />
+                  )}
+                  {replyAudioUrl && (
+                    <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setReplyAudioBlob(null); setReplyAudioUrl(''); }}>Remove</button>
+                  )}
+                </div>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-sm"
+                  disabled={replyLoading}
+                >Send Reply</button>
+              </form>
+            )}
+          </>
         )}
-      </div>
+      />
       {/* Render replies recursively */}
       {comment.replies && comment.replies.length > 0 && (
         <div className="ml-8">
