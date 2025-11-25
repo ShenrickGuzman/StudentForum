@@ -193,7 +193,7 @@ function RecursiveComment({ comment, depth }) {
 
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { format, utcToZonedTime } from 'date-fns-tz';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect } from 'react';
 import api, { getAssetUrl, reportPost } from '../lib/api';
 import { useAuth } from '../state/auth';
 import CommentCard from '../components/CommentCard';
