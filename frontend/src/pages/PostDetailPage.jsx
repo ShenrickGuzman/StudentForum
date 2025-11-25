@@ -95,6 +95,7 @@ function RecursiveComment({ comment, depth }) {
   }
   const isCommentAnonymous = comment.anonymous;
 
+  const [showReplies, setShowReplies] = useState(false);
   return (
     <div style={{ marginLeft: depth * 24, marginTop: 8 }}>
       <CommentCard
@@ -187,12 +188,25 @@ function RecursiveComment({ comment, depth }) {
           </>
         )}
       />
-      {/* Render replies recursively */}
+      {/* Render replies recursively, hidden by default */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-8">
-          {comment.replies.map(reply => (
-            <RecursiveComment key={reply.id} comment={reply} depth={depth + 1} />
-          ))}
+        <div className="ml-8 mt-2">
+          {!showReplies ? (
+            <button
+              className="px-2 py-1 rounded bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs mb-2"
+              onClick={() => setShowReplies(true)}
+            >Show Replies ({comment.replies.length})</button>
+          ) : (
+            <>
+              <button
+                className="px-2 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-yellow-300 transition-all text-xs mb-2"
+                onClick={() => setShowReplies(false)}
+              >Hide Replies</button>
+              {comment.replies.map(reply => (
+                <RecursiveComment key={reply.id} comment={reply} depth={depth + 1} />
+              ))}
+            </>
+          )}
         </div>
       )}
     </div>
