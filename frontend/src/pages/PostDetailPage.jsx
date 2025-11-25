@@ -449,17 +449,27 @@ export default function PostDetailPage() {
                           onClick={() => setShowImageModal(false)}
                         >
                           <div
-                            className="relative max-w-3xl w-full flex items-center justify-center"
+                            className="relative w-full h-full flex items-center justify-center"
                             onClick={e => e.stopPropagation()}
                           >
                             <img
                               src={modalImageUrl}
                               alt="Preview"
-                              className="rounded-2xl max-h-[80vh] object-contain shadow-2xl border-4 border-pink-200 bg-white"
-                              style={{ background: 'white' }}
+                              className="rounded-2xl object-contain shadow-2xl border-4 border-pink-200 bg-white"
+                              style={{
+                                background: 'white',
+                                maxWidth: '100vw',
+                                maxHeight: '90vh',
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                                margin: 'auto',
+                                boxSizing: 'border-box',
+                              }}
                             />
                             <button
-                              className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-2 shadow-lg hover:bg-pink-700 transition"
+                              className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-3 shadow-lg hover:bg-pink-700 transition text-xl focus:outline-none"
+                              style={{ fontSize: '2rem', minWidth: '44px', minHeight: '44px', touchAction: 'manipulation' }}
                               onClick={() => setShowImageModal(false)}
                               aria-label="Close image preview"
                             >
