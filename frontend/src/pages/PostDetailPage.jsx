@@ -139,22 +139,26 @@ function RecursiveComment({ comment, depth }) {
                   maxLength={500}
                   disabled={replyLoading}
                 />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={e => {
-                    const file = e.target.files[0];
-                    setReplyImageFile(file);
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = ev => setReplyImageUrl(ev.target.result);
-                      reader.readAsDataURL(file);
-                    } else {
-                      setReplyImageUrl('');
-                    }
-                  }}
-                  disabled={replyLoading}
-                />
+                <label className="inline-block cursor-pointer px-4 py-2 rounded-xl bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs mt-2">
+                  <span role="img" aria-label="image" className="mr-2">🖼️</span> Choose File
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={e => {
+                      const file = e.target.files[0];
+                      setReplyImageFile(file);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = ev => setReplyImageUrl(ev.target.result);
+                        reader.readAsDataURL(file);
+                      } else {
+                        setReplyImageUrl('');
+                      }
+                    }}
+                    disabled={replyLoading}
+                    style={{ display: 'none' }}
+                  />
+                </label>
                 {replyImageUrl && (
                   <img src={replyImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-24 border-2 border-pink-200 shadow" />
                 )}
