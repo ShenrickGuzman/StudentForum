@@ -19,6 +19,24 @@ const categories = [
 ];
 
 export default function PostDetailPage() {
+      // Utility: Build nested comment tree from flat list
+      function buildCommentTree(flatComments) {
+        const map = {};
+        const roots = [];
+        flatComments.forEach(c => {
+          map[c.id] = { ...c, replies: [] };
+        });
+        flatComments.forEach(c => {
+          if (c.parent_comment_id) {
+            if (map[c.parent_comment_id]) {
+              map[c.parent_comment_id].replies.push(map[c.id]);
+            }
+          } else {
+            roots.push(map[c.id]);
+          }
+        });
+        return roots;
+      }
     // State for comment image upload
     const [commentImageFile, setCommentImageFile] = useState(null);
     const [commentImageUrl, setCommentImageUrl] = useState('');
@@ -586,78 +604,16 @@ export default function PostDetailPage() {
                 {comments.length === 0 && (
                   <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
                 )}
-                {comments.map((comment) => {
-                  let badges = Array.isArray(comment.users?.badges) ? [...comment.users.badges] : [];
-                  if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
-                    badges = [...badges, 'ADMIN'];
-                  }
-                  const isCommentAnonymous = comment.anonymous && !revealedComments[comment.id];
-                  return (
-                    <CommentCard
-                      key={comment.id}
-                      avatar={isCommentAnonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
-                        <img
-                          src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'}
-                          alt="author avatar"
-                          className="w-12 h-12 rounded-full object-cover border-2 border-purple-300 shadow"
-                          onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                        />
-                      )}
-                      username={comment.anonymous ? (
-                        <span className="font-bold text-gray-500">
-                          {revealedComments[comment.id] ? (
-                            <>
-                              {comment.author_name || 'User'}
-                              {isAdmin && (
-                                <button
-                                  className="ml-2 px-2 py-0.5 rounded bg-yellow-100 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-200 transition-all"
-                                  onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: false }))}
-                                >Hide Author</button>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              Anonymous
-                              {isAdmin && (
-                                <button
-                                  className="ml-2 px-2 py-0.5 rounded bg-yellow-200 text-purple-800 text-xs font-bold border border-yellow-400 hover:bg-yellow-300 transition-all"
-                                  onClick={() => setRevealedComments(rc => ({ ...rc, [comment.id]: true }))}
-                                >Reveal Author</button>
-                              )}
-                            </>
-                          )}
-                        </span>
-                      ) : (
-                        <div className="relative inline-block">
-                          <button
-                            className="font-bold text-purple-800 hover:text-purple-600 transition-all bg-transparent border-none p-0 cursor-pointer"
-                            onClick={() => setShowProfileBtnFor(showProfileBtnFor === comment.id ? null : comment.id)}
-                            style={{ background: 'none' }}
-                          >
-                            {comment.author_name || 'User'}
-                          </button>
-                          {showProfileBtnFor === comment.id && (
-                            <Link to={`/profile/${comment.user_id}`} className="ml-2 px-3 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs absolute left-full top-1/2 -translate-y-1/2 z-10 shadow-lg">
-                              View Profile
-                            </Link>
-                          )}
-                        </div>
-                      )}
-                      badges={isCommentAnonymous ? [] : badges}
-                      time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
-                      content={<span style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{comment.content}</span>}
-                      canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
-                      onDelete={async () => {
-                        await api.delete(`/posts/comments/${comment.id}`);
-                        // Re-fetch comments after deleting
-                        const response = await api.get(`/posts/${id}/comments`);
-                        setComments(response.data);
-                      }}
-                      audio_url={comment.audio_url}
-                      image_url={comment.image_url}
-                    />
-                  );
-                })}
+                {/* Render nested comments recursively */}
+                {buildCommentTree(comments).map((comment) => (
+                  <RecursiveComment
+                    key={comment.id}
+                    comment={comment}
+                    depth={0}
+                  />
+                ))}
+
+
               </div>
               {post.locked ? (
                 <div className="flex flex-col items-center justify-center mt-6">
