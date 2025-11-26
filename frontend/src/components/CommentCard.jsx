@@ -94,40 +94,46 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
 
   return (
     <div className="flex gap-3 items-start bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
-      <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
-        {React.isValidElement(avatar) ? avatar : (
-          <img
-            src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
-            alt="avatar"
-            className="w-12 h-12 rounded-full object-cover"
-            style={{objectFit:'cover'}}
-            onError={e => { e.target.src = '/Cute-Cat.png'; }}
-          />
-        )}
-      </div>
-      <div className="flex-1 flex flex-col justify-center">
-        <div className="flex items-center gap-2 mb-1 comment-meta-mobile">
-          <span className="font-extrabold text-purple-800 text-base">{username}</span>
-          {Array.isArray(badges) && badges.length > 0 && (
-            <span className="flex gap-1 ml-2">
-              {badges.map((badge, idx) => (
-                <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-              ))}
-            </span>
+      {/* Avatar and username row for mobile with image */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
+          {React.isValidElement(avatar) ? avatar : (
+            <img
+              src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
+              alt="avatar"
+              className="w-12 h-12 rounded-full object-cover"
+              style={{objectFit:'cover'}}
+              onError={e => { e.target.src = '/Cute-Cat.png'; }}
+            />
           )}
-          {canDelete && (
-            <button
-              className="ml-2 px-2 py-1 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-xs font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
-              onClick={handleDeleteClick}
-              title="Delete comment"
-            >Delete 🗑️</button>
-          )}
-          <button
-            className="ml-2 px-2 py-1 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-xs font-bold shadow hover:scale-105 transition-all comment-report-mobile"
-            onClick={handleReportClick}
-            title="Report comment"
-          >Report 🚩</button>
         </div>
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="flex items-center gap-2 mb-1 comment-meta-mobile">
+            <span className="font-extrabold text-purple-800 text-base">{username}</span>
+            {Array.isArray(badges) && badges.length > 0 && (
+              <span className="flex gap-1 ml-2">
+                {badges.map((badge, idx) => (
+                  <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                ))}
+              </span>
+            )}
+            {canDelete && (
+              <button
+                className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
+                onClick={handleDeleteClick}
+                title="Delete comment"
+                style={{minWidth:'44px', minHeight:'24px', padding:'2px 8px'}}
+              >🗑️</button>
+            )}
+            <button
+              className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
+              onClick={handleReportClick}
+              title="Report comment"
+              style={{minWidth:'44px', minHeight:'24px', padding:'2px 8px'}}
+            >🚩</button>
+          </div>
+        </div>
+      </div>
         {/* Playback for saved voice message (single instance) */}
         {audio_url && (
           <div className="mb-2 voice-message-mobile">
@@ -135,12 +141,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             <VoiceMessagePlayer src={audio_url} />
           </div>
         )}
-        {/* Improved: If comment has image, show text above image */}
+        {/* Improved: If comment has image, show avatar/username row above image and content below image for mobile */}
         {image_url ? (
           <>
-            <div className="text-gray-700 text-base font-medium mb-2">
-              {content}
-            </div>
             <div className="mb-2 flex justify-center">
               <img
                 src={image_url}
@@ -151,6 +154,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
                   setShowImageModal(true);
                 }}
               />
+            </div>
+            <div className="text-gray-700 text-base font-medium mb-2">
+              {content}
             </div>
             {showImageModal && (
               <div
@@ -222,7 +228,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             }
           }
         `}</style>
-      </div>
+      {/* End of style block, continue with modals below */}
       {showConfirm && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
           <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
