@@ -841,7 +841,7 @@ export default function PostDetailPage() {
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       placeholder="Write a comment... 💭"
-                      className="w-full p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg comment-textarea-mobile"
+                      className="w-full max-w-[600px] p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg comment-textarea-mobile"
                       style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
                       rows={1}
                       maxLength={500}
@@ -871,53 +871,55 @@ export default function PostDetailPage() {
                     </label>
                     {/* Image upload for comment */}
                     <div className="mt-2 flex gap-4 items-start">
-                      {/* Image Upload */}
-                      <div className="flex flex-col items-start">
-                        <label className="mb-1 font-bold text-pink-500 text-xs">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
-                        <div className="relative">
-                          <input
-                            id="comment-image-upload"
-                            type="file"
-                            accept="image/*"
-                            onChange={e => {
-                              const file = e.target.files[0];
-                              setCommentImageFile(file);
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onload = ev => setCommentImageUrl(ev.target.result);
-                                reader.readAsDataURL(file);
-                              } else {
-                                setCommentImageUrl('');
-                              }
-                            }}
-                            disabled={commentLoading}
-                            className="hidden"
-                          />
-                          <label htmlFor="comment-image-upload" className="inline-block px-2 py-1 rounded-lg bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 font-bold shadow border border-pink-200 cursor-pointer hover:bg-pink-200 transition-all text-xs">
-                            <span className="mr-1">📷</span> Choose File
-                          </label>
-                          <span className="ml-1 text-xs text-gray-500 font-semibold">{commentImageFile ? commentImageFile.name : 'No file'}</span>
+                      <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch">
+                        {/* Image Upload */}
+                        <div className="flex flex-col items-start flex-1">
+                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
+                          <div className="relative">
+                            <input
+                              id="comment-image-upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={e => {
+                                const file = e.target.files[0];
+                                setCommentImageFile(file);
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onload = ev => setCommentImageUrl(ev.target.result);
+                                  reader.readAsDataURL(file);
+                                } else {
+                                  setCommentImageUrl('');
+                                }
+                              }}
+                              disabled={commentLoading}
+                              className="hidden"
+                            />
+                            <label htmlFor="comment-image-upload" className="inline-block px-3 py-2 rounded-lg bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 font-bold shadow border border-pink-200 cursor-pointer hover:bg-pink-200 transition-all text-xs sm:text-sm">
+                              <span className="mr-1">📷</span> Choose File
+                            </label>
+                            <span className="ml-1 text-xs sm:text-sm text-gray-500 font-semibold break-all block max-w-[120px] sm:max-w-none">{commentImageFile ? commentImageFile.name : 'No file'}</span>
+                          </div>
+                          {commentImageUrl && (
+                            <img src={commentImageUrl} alt="Preview" className="mt-1 rounded-lg max-h-20 border border-pink-100 shadow" />
+                          )}
                         </div>
-                        {commentImageUrl && (
-                          <img src={commentImageUrl} alt="Preview" className="mt-1 rounded-lg max-h-20 border border-pink-100 shadow" />
-                        )}
-                      </div>
-                      {/* Voice Message */}
-                      <div className="flex flex-col items-start">
-                        <label className="mb-1 font-bold text-pink-500 text-xs">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
-                        <div className="flex gap-2 items-center">
-                          <button
-                            type="button"
-                            className={`rounded px-2 py-1 font-bold shadow border border-pink-200 bg-gradient-to-r from-pink-50 to-yellow-50 text-purple-700 transition-all text-xs ${recording ? 'bg-yellow-100' : ''}`}
-                            onClick={recording ? stopRecording : startRecording}
-                            disabled={audioUploading}
-                          >{recording ? 'Stop Recording' : 'Record Voice'}</button>
-                          {audioUrl && (
-                            <audio controls src={audioUrl} className="ml-1" style={{ height: '28px' }} />
-                          )}
-                          {audioUrl && (
-                            <button type="button" className="ml-1 text-red-500 font-bold text-xs" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
-                          )}
+                        {/* Voice Message */}
+                        <div className="flex flex-col items-start flex-1">
+                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
+                          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 items-start sm:items-center">
+                            <button
+                              type="button"
+                              className={`rounded px-3 py-2 font-bold shadow border border-pink-200 bg-gradient-to-r from-pink-50 to-yellow-50 text-purple-700 transition-all text-xs sm:text-sm ${recording ? 'bg-yellow-100' : ''}`}
+                              onClick={recording ? stopRecording : startRecording}
+                              disabled={audioUploading}
+                            >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+                            {audioUrl && (
+                              <audio controls src={audioUrl} className="ml-0 sm:ml-1" style={{ height: '32px', width: '120px' }} />
+                            )}
+                            {audioUrl && (
+                              <button type="button" className="ml-0 sm:ml-1 text-red-500 font-bold text-xs sm:text-sm" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
