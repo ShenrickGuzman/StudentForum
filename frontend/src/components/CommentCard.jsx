@@ -93,35 +93,35 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   };
 
   return (
-    <div className="bg-white rounded-xl p-5 mb-4 border border-gray-200 shadow-sm relative comment-card-mobile">
+    <div className="bg-gradient-to-br from-pink-100 via-yellow-100 to-purple-100 rounded-2xl p-5 mb-4 border-2 border-pink-200 shadow-fun relative comment-card-mobile">
       {/* Header: Author info */}
-      <div className="flex items-center gap-3 pb-2 border-b border-gray-100 mb-3">
-        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 text-2xl font-bold overflow-hidden comment-avatar-mobile">
+      <div className="flex items-center gap-3 pb-2 border-b-2 border-pink-200 mb-3">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile shadow-fun">
           {React.isValidElement(avatar) ? avatar : (
             <img
               src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
               alt="avatar"
-              className="w-11 h-11 rounded-full object-cover"
+              className="w-12 h-12 rounded-full object-cover"
               style={{objectFit:'cover'}}
               onError={e => { e.target.src = '/Cute-Cat.png'; }}
             />
           )}
         </div>
         <div className="flex flex-col">
-          <span className="font-semibold text-gray-900 text-base">{username}</span>
+          <span className="font-extrabold text-pink-500 text-lg font-cartoony drop-shadow">{username}</span>
           <div className="flex gap-1 mt-1">
             {Array.isArray(badges) && badges.length > 0 && badges.map((badge, idx) => (
-              <span key={idx} className="px-2 py-0.5 rounded bg-gray-100 border border-gray-300 text-gray-700 text-xs font-medium uppercase tracking-wide">{badge}</span>
+              <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border-2 border-yellow-300 text-yellow-700 text-xs font-bold uppercase tracking-wide shadow-fun font-cartoony">{badge}</span>
             ))}
           </div>
         </div>
       </div>
       {/* Content: Comment text, voice, image */}
       <div className="pb-2">
-        <div className="text-gray-800 text-base font-normal mb-2 break-words whitespace-pre-line">{content}</div>
+        <div className="text-purple-700 text-base font-cartoony font-semibold mb-2 break-words whitespace-pre-line drop-shadow">{content}</div>
         {audio_url && (
           <div className="mb-2">
-            <label className="block mb-1 font-semibold text-gray-600 text-sm">Voice Message</label>
+            <label className="block mb-1 font-bold text-pink-500 text-sm font-cartoony">Voice Message</label>
             <VoiceMessagePlayer src={audio_url} />
           </div>
         )}
@@ -130,7 +130,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             <img
               src={image_url}
               alt="Comment"
-              className="rounded-lg max-h-56 border border-gray-200 shadow cursor-pointer hover:scale-105 transition duration-150"
+              className="rounded-xl max-h-56 border-4 border-pink-200 shadow-fun cursor-pointer hover:scale-105 transition duration-150 bg-white"
               onClick={() => {
                 setModalImageUrl(image_url);
                 setShowImageModal(true);
@@ -140,23 +140,23 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         )}
       </div>
       {/* Footer: Actions */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 mt-3">
+      <div className="flex items-center justify-end gap-2 pt-2 border-t-2 border-pink-200 mt-3">
         {canDelete && (
           <button
-            className="px-2 py-1 rounded bg-gradient-to-r from-gray-300 to-red-300 text-gray-800 text-xs font-semibold shadow hover:scale-105 transition-all comment-delete-mobile"
+            className="px-2 py-1 rounded-xl bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-xs font-bold shadow-fun hover:scale-105 transition-all comment-delete-mobile font-cartoony"
             onClick={handleDeleteClick}
             title="Delete comment"
-            style={{minWidth:'36px', minHeight:'22px', padding:'2px 8px'}}
+            style={{minWidth:'36px', minHeight:'22px', padding:'2px 10px'}}
           >🗑️</button>
         )}
         <button
-          className="px-2 py-1 rounded bg-gradient-to-r from-gray-200 to-yellow-200 text-gray-800 text-xs font-semibold shadow hover:scale-105 transition-all comment-report-mobile"
+          className="px-2 py-1 rounded-xl bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 text-xs font-bold shadow-fun hover:scale-105 transition-all comment-report-mobile font-cartoony"
           onClick={handleReportClick}
           title="Report comment"
-          style={{minWidth:'36px', minHeight:'22px', padding:'2px 8px'}}
+          style={{minWidth:'36px', minHeight:'22px', padding:'2px 10px'}}
         >🚩</button>
         {replyButton}
-        <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap ml-2">{time}</span>
+        <span className="text-xs text-purple-400 font-cartoony comment-date-mobile whitespace-nowrap ml-2">{time}</span>
       </div>
       {showImageModal && (
         <div
