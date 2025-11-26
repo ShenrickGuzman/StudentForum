@@ -140,23 +140,28 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         )}
       </div>
       {/* Footer: Actions */}
-      <div className="flex items-center justify-start gap-2 pt-2 border-t-2 border-pink-200 mt-3">
-        {canDelete && (
+      <div className="flex flex-col items-start pt-2 border-t-2 border-pink-200 mt-3">
+        <span className="text-xs text-purple-400 font-cartoony mb-1 ml-1">Actions</span>
+        <div className="flex gap-2 rounded-2xl bg-gradient-to-r from-pink-100 via-yellow-100 to-orange-100 px-3 py-2 shadow-fun">
+          {canDelete && (
+            <button
+              className="rounded-full p-2 bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150"
+              onClick={handleDeleteClick}
+              title="Delete comment"
+              aria-label="Delete"
+            >🗑️</button>
+          )}
           <button
-            className="px-2 py-1 rounded-xl bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-xs font-bold shadow-fun hover:scale-105 transition-all comment-delete-mobile font-cartoony"
-            onClick={handleDeleteClick}
-            title="Delete comment"
-            style={{minWidth:'36px', minHeight:'22px', padding:'2px 10px'}}
-          >🗑️</button>
-        )}
-        <button
-          className="px-2 py-1 rounded-xl bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 text-xs font-bold shadow-fun hover:scale-105 transition-all comment-report-mobile font-cartoony"
-          onClick={handleReportClick}
-          title="Report comment"
-          style={{minWidth:'36px', minHeight:'22px', padding:'2px 10px'}}
-        >🚩</button>
-        {replyButton}
-        <span className="text-xs text-purple-400 font-cartoony comment-date-mobile whitespace-nowrap ml-2">{time}</span>
+            className="rounded-full p-2 bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150"
+            onClick={handleReportClick}
+            title="Report comment"
+            aria-label="Report"
+          >🚩</button>
+          <span className="hover:scale-110 hover:-translate-y-1 transition-transform duration-150">
+            {replyButton}
+          </span>
+        </div>
+        <span className="text-xs text-purple-400 font-cartoony comment-date-mobile whitespace-nowrap mt-2 ml-1">{time}</span>
       </div>
       {showImageModal && (
         <div
