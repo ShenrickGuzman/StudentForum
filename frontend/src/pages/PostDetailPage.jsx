@@ -140,37 +140,39 @@ function RecursiveComment({ comment, depth }) {
                   maxLength={500}
                   disabled={replyLoading}
                 />
-                <label className="inline-block cursor-pointer px-4 py-2 rounded-xl bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs mt-2">
-                  <span role="img" aria-label="image" className="mr-2">🖼️</span> Choose File
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => {
-                      const file = e.target.files[0];
-                      setReplyImageFile(file);
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onload = ev => setReplyImageUrl(ev.target.result);
-                        reader.readAsDataURL(file);
-                      } else {
-                        setReplyImageUrl('');
-                      }
-                    }}
-                    disabled={replyLoading}
-                    style={{ display: 'none' }}
-                  />
-                </label>
-                {replyImageUrl && (
-                  <img src={replyImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-24 border-2 border-pink-200 shadow" />
-                )}
-                {/* Voice Message UI for Reply */}
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-3 mt-2">
+                  <label htmlFor="reply-image-upload" className="flex items-center gap-1 px-2 py-1 rounded-lg bg-pink-100 text-pink-700 font-bold shadow hover:bg-pink-200 transition-all text-xs cursor-pointer">
+                    <span role="img" aria-label="image" className="text-base">🖼️</span> File
+                    <input
+                      id="reply-image-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={e => {
+                        const file = e.target.files[0];
+                        setReplyImageFile(file);
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = ev => setReplyImageUrl(ev.target.result);
+                          reader.readAsDataURL(file);
+                        } else {
+                          setReplyImageUrl('');
+                        }
+                      }}
+                      disabled={replyLoading}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  {replyImageUrl && (
+                    <img src={replyImageUrl} alt="Preview" className="rounded-xl max-h-16 border-2 border-pink-200 shadow ml-2" />
+                  )}
                   <button
                     type="button"
-                    className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 font-bold shadow hover:bg-yellow-200 transition-all text-xs ${recording ? 'bg-yellow-200' : ''}`}
                     onClick={recording ? stopRecording : startRecording}
                     disabled={replyAudioUploading}
-                  >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+                  >
+                    <span role="img" aria-label="voice" className="text-base">🎤</span> {recording ? 'Stop' : 'Voice'}
+                  </button>
                   {replyAudioUrl && (
                     <audio controls src={replyAudioUrl} className="ml-2" />
                   )}
