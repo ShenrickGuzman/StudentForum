@@ -93,80 +93,11 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   };
 
   return (
-    <div className="flex flex-col bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
-      {/* Unified responsive layout for comments with image */}
-      {image_url ? (
-        <div className="flex flex-col sm:flex-row gap-4 items-start w-full">
-          {/* Left column: author info (always at top for mobile, left for desktop) */}
-          <div className="flex flex-col gap-2 min-w-[60px]">
-            <div className="flex items-center gap-2">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
-                {React.isValidElement(avatar) ? avatar : (
-                  <img
-                    src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
-                    alt="avatar"
-                    className="w-12 h-12 rounded-full object-cover"
-                    style={{objectFit:'cover'}}
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                )}
-              </div>
-              <span className="font-extrabold text-purple-800 text-base">{username}</span>
-              {Array.isArray(badges) && badges.length > 0 && (
-                <span className="flex gap-1 ml-2">
-                  {badges.map((badge, idx) => (
-                    <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                  ))}
-                </span>
-              )}
-            </div>
-            {/* Actions row (below author info for mobile, right for desktop) */}
-            <div className="flex gap-2 flex-wrap items-center sm:justify-end">
-              {canDelete && (
-                <button
-                  className="px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
-                  onClick={handleDeleteClick}
-                  title="Delete comment"
-                  style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
-                >🗑️</button>
-              )}
-              <button
-                className="px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
-                onClick={handleReportClick}
-                title="Report comment"
-                style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
-              >🚩</button>
-              {replyButton}
-              <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap">{time}</span>
-            </div>
-          </div>
-          {/* Middle column: comment text (below author info for mobile, right for desktop) */}
-          <div className="flex-1 flex flex-col gap-2">
-            <div className="text-gray-700 text-base font-medium break-words w-full">{content}</div>
-            {/* Voice message if present */}
-            {audio_url && (
-              <div className="mb-2 voice-message-mobile">
-                <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
-                <VoiceMessagePlayer src={audio_url} />
-              </div>
-            )}
-          </div>
-          {/* Right column: image (below text for mobile, right for desktop) */}
-          <div className="mb-2 flex justify-center sm:justify-start sm:mb-0">
-            <img
-              src={image_url}
-              alt="Comment"
-              className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
-              onClick={() => {
-                setModalImageUrl(image_url);
-                setShowImageModal(true);
-              }}
-            />
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="flex items-center gap-2 w-full mb-2 flex-wrap">
+    <div className="bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
+      <div className={`flex w-full gap-4 ${image_url ? 'flex-col sm:flex-row items-start' : 'flex-col'}`}>
+        {/* Author info and actions */}
+        <div className="flex flex-col gap-2 min-w-[60px]">
+          <div className="flex items-center gap-2">
             <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
               {React.isValidElement(avatar) ? avatar : (
                 <img
@@ -186,37 +117,51 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
                 ))}
               </span>
             )}
+          </div>
+          <div className="flex gap-2 flex-wrap items-center sm:justify-end">
             {canDelete && (
               <button
-                className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
+                className="px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
                 onClick={handleDeleteClick}
                 title="Delete comment"
                 style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
               >🗑️</button>
             )}
             <button
-              className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
+              className="px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
               onClick={handleReportClick}
               title="Report comment"
               style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
             >🚩</button>
-            <div className="flex-1 flex justify-end items-center gap-2">
-              {replyButton}
-              <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap">{time}</span>
-            </div>
+            {replyButton}
+            <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap">{time}</span>
           </div>
-          {/* Playback for saved voice message (single instance) */}
+        </div>
+        {/* Comment text and voice message */}
+        <div className="flex-1 flex flex-col gap-2">
+          <div className="text-gray-700 text-base font-medium break-words w-full">{content}</div>
           {audio_url && (
             <div className="mb-2 voice-message-mobile">
               <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
               <VoiceMessagePlayer src={audio_url} />
             </div>
           )}
-          <div className="text-gray-700 text-base font-medium mb-2 break-words">
-            {content}
+        </div>
+        {/* Image (if present) */}
+        {image_url && (
+          <div className="mb-2 flex justify-center sm:justify-start sm:mb-0">
+            <img
+              src={image_url}
+              alt="Comment"
+              className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
+              onClick={() => {
+                setModalImageUrl(image_url);
+                setShowImageModal(true);
+              }}
+            />
           </div>
-        </>
-      )}
+        )}
+      </div>
       {showImageModal && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
