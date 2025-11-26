@@ -93,67 +93,44 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   };
 
   return (
-    <div className="bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
-      <div className={`flex w-full gap-4 ${image_url ? 'flex-col sm:flex-row items-start' : 'flex-col'}`}>
-        {/* Author info and actions */}
-        <div className="flex flex-col gap-2 min-w-[60px]">
-          <div className="flex items-center gap-2">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
-              {React.isValidElement(avatar) ? avatar : (
-                <img
-                  src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
-                  alt="avatar"
-                  className="w-12 h-12 rounded-full object-cover"
-                  style={{objectFit:'cover'}}
-                  onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                />
-              )}
-            </div>
-            <span className="font-extrabold text-purple-800 text-base">{username}</span>
-            {Array.isArray(badges) && badges.length > 0 && (
-              <span className="flex gap-1 ml-2">
-                {badges.map((badge, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                ))}
-              </span>
-            )}
-          </div>
-          <div className="flex gap-2 flex-wrap items-center sm:justify-end">
-            {canDelete && (
-              <button
-                className="px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
-                onClick={handleDeleteClick}
-                title="Delete comment"
-                style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
-              >🗑️</button>
-            )}
-            <button
-              className="px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
-              onClick={handleReportClick}
-              title="Report comment"
-              style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
-            >🚩</button>
-            {replyButton}
-            <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap">{time}</span>
-          </div>
-        </div>
-        {/* Comment text and voice message */}
-        <div className="flex-1 flex flex-col gap-2">
-          <div className="text-gray-700 text-base font-medium break-words w-full">{content}</div>
-          {audio_url && (
-            <div className="mb-2 voice-message-mobile">
-              <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
-              <VoiceMessagePlayer src={audio_url} />
-            </div>
+    <div className="bg-white rounded-xl p-5 mb-4 border border-gray-200 shadow-sm relative comment-card-mobile">
+      {/* Header: Author info */}
+      <div className="flex items-center gap-3 pb-2 border-b border-gray-100 mb-3">
+        <div className="w-11 h-11 rounded-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 text-2xl font-bold overflow-hidden comment-avatar-mobile">
+          {React.isValidElement(avatar) ? avatar : (
+            <img
+              src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'}
+              alt="avatar"
+              className="w-11 h-11 rounded-full object-cover"
+              style={{objectFit:'cover'}}
+              onError={e => { e.target.src = '/Cute-Cat.png'; }}
+            />
           )}
         </div>
-        {/* Image (if present) */}
+        <div className="flex flex-col">
+          <span className="font-semibold text-gray-900 text-base">{username}</span>
+          <div className="flex gap-1 mt-1">
+            {Array.isArray(badges) && badges.length > 0 && badges.map((badge, idx) => (
+              <span key={idx} className="px-2 py-0.5 rounded bg-gray-100 border border-gray-300 text-gray-700 text-xs font-medium uppercase tracking-wide">{badge}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+      {/* Content: Comment text, voice, image */}
+      <div className="pb-2">
+        <div className="text-gray-800 text-base font-normal mb-2 break-words whitespace-pre-line">{content}</div>
+        {audio_url && (
+          <div className="mb-2">
+            <label className="block mb-1 font-semibold text-gray-600 text-sm">Voice Message</label>
+            <VoiceMessagePlayer src={audio_url} />
+          </div>
+        )}
         {image_url && (
-          <div className="mb-2 flex justify-center sm:justify-start sm:mb-0">
+          <div className="flex justify-center mt-2">
             <img
               src={image_url}
               alt="Comment"
-              className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
+              className="rounded-lg max-h-56 border border-gray-200 shadow cursor-pointer hover:scale-105 transition duration-150"
               onClick={() => {
                 setModalImageUrl(image_url);
                 setShowImageModal(true);
@@ -161,6 +138,25 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             />
           </div>
         )}
+      </div>
+      {/* Footer: Actions */}
+      <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 mt-3">
+        {canDelete && (
+          <button
+            className="px-2 py-1 rounded bg-gradient-to-r from-gray-300 to-red-300 text-gray-800 text-xs font-semibold shadow hover:scale-105 transition-all comment-delete-mobile"
+            onClick={handleDeleteClick}
+            title="Delete comment"
+            style={{minWidth:'36px', minHeight:'22px', padding:'2px 8px'}}
+          >🗑️</button>
+        )}
+        <button
+          className="px-2 py-1 rounded bg-gradient-to-r from-gray-200 to-yellow-200 text-gray-800 text-xs font-semibold shadow hover:scale-105 transition-all comment-report-mobile"
+          onClick={handleReportClick}
+          title="Report comment"
+          style={{minWidth:'36px', minHeight:'22px', padding:'2px 8px'}}
+        >🚩</button>
+        {replyButton}
+        <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap ml-2">{time}</span>
       </div>
       {showImageModal && (
         <div
