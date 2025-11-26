@@ -870,52 +870,55 @@ export default function PostDetailPage() {
                       <span className="font-bold text-pink-500">Comment Anonymously</span>
                     </label>
                     {/* Image upload for comment */}
-                    <div className="mt-2">
-                      <label className="block mb-1 font-bold text-pink-500 text-sm">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
-                      <div className="relative w-full">
-                        <input
-                          id="comment-image-upload"
-                          type="file"
-                          accept="image/*"
-                          onChange={e => {
-                            const file = e.target.files[0];
-                            setCommentImageFile(file);
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = ev => setCommentImageUrl(ev.target.result);
-                              reader.readAsDataURL(file);
-                            } else {
-                              setCommentImageUrl('');
-                            }
-                          }}
-                          disabled={commentLoading}
-                          className="hidden"
-                        />
-                        <label htmlFor="comment-image-upload" className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow-fun border-2 border-pink-300 cursor-pointer hover:bg-pink-300 transition-all">
-                          <span className="mr-2">📷</span> Choose File
-                        </label>
-                        <span className="ml-2 text-sm text-gray-500 font-semibold">{commentImageFile ? commentImageFile.name : 'No file chosen'}</span>
+                    <div className="mt-2 flex gap-4 items-start">
+                      {/* Image Upload */}
+                      <div className="flex flex-col items-start">
+                        <label className="mb-1 font-bold text-pink-500 text-xs">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
+                        <div className="relative">
+                          <input
+                            id="comment-image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={e => {
+                              const file = e.target.files[0];
+                              setCommentImageFile(file);
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = ev => setCommentImageUrl(ev.target.result);
+                                reader.readAsDataURL(file);
+                              } else {
+                                setCommentImageUrl('');
+                              }
+                            }}
+                            disabled={commentLoading}
+                            className="hidden"
+                          />
+                          <label htmlFor="comment-image-upload" className="inline-block px-2 py-1 rounded-lg bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 font-bold shadow border border-pink-200 cursor-pointer hover:bg-pink-200 transition-all text-xs">
+                            <span className="mr-1">📷</span> Choose File
+                          </label>
+                          <span className="ml-1 text-xs text-gray-500 font-semibold">{commentImageFile ? commentImageFile.name : 'No file'}</span>
+                        </div>
+                        {commentImageUrl && (
+                          <img src={commentImageUrl} alt="Preview" className="mt-1 rounded-lg max-h-20 border border-pink-100 shadow" />
+                        )}
                       </div>
-                      {commentImageUrl && (
-                        <img src={commentImageUrl} alt="Preview" className="mt-2 rounded-xl max-h-32 border-2 border-pink-200 shadow" />
-                      )}
-                    </div>
-                    {/* Voice Message UI for Comment - only in input form */}
-                    <div className="mt-2">
-                      <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
-                      <div className="flex gap-2 items-center">
-                        <button
-                          type="button"
-                          className={`rounded px-3 py-1 font-bold shadow border border-pink-300 bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
-                          onClick={recording ? stopRecording : startRecording}
-                          disabled={audioUploading}
-                        >{recording ? 'Stop Recording' : 'Record Voice'}</button>
-                        {audioUrl && (
-                          <audio controls src={audioUrl} className="ml-2" />
-                        )}
-                        {audioUrl && (
-                          <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
-                        )}
+                      {/* Voice Message */}
+                      <div className="flex flex-col items-start">
+                        <label className="mb-1 font-bold text-pink-500 text-xs">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
+                        <div className="flex gap-2 items-center">
+                          <button
+                            type="button"
+                            className={`rounded px-2 py-1 font-bold shadow border border-pink-200 bg-gradient-to-r from-pink-50 to-yellow-50 text-purple-700 transition-all text-xs ${recording ? 'bg-yellow-100' : ''}`}
+                            onClick={recording ? stopRecording : startRecording}
+                            disabled={audioUploading}
+                          >{recording ? 'Stop Recording' : 'Record Voice'}</button>
+                          {audioUrl && (
+                            <audio controls src={audioUrl} className="ml-1" style={{ height: '28px' }} />
+                          )}
+                          {audioUrl && (
+                            <button type="button" className="ml-1 text-red-500 font-bold text-xs" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
