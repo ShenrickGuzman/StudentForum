@@ -140,30 +140,30 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         )}
       </div>
       {/* Footer: Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-end items-start pt-2 border-t-2 border-pink-200 mt-3 w-full">
-        <div className="flex flex-col sm:flex-col items-start sm:items-start w-full sm:w-auto">
-          <span className="text-xs text-purple-400 font-cartoony mb-1 ml-1">Actions</span>
-          <div className="flex flex-row sm:flex-col gap-2 rounded-2xl bg-gradient-to-r from-pink-100 via-yellow-100 to-orange-100 px-3 py-2 shadow-fun w-fit sm:w-fit">
+      <div className="flex flex-col md:flex-row md:items-center items-start pt-2 border-t-2 border-pink-200 mt-3 w-full">
+        <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto">
+          <span className="text-xs text-purple-400 font-cartoony mb-1 ml-1 md:mb-0 md:mr-3">Actions</span>
+          <div className="flex flex-row gap-2 rounded-2xl bg-gradient-to-r from-pink-100 via-yellow-100 to-orange-100 px-3 py-2 shadow-fun w-fit md:w-fit items-center">
             {canDelete && (
               <button
-                className="rounded-full p-2 bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150"
+                className="rounded-full w-10 h-10 bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150 flex items-center justify-center"
                 onClick={handleDeleteClick}
                 title="Delete comment"
                 aria-label="Delete"
               >🗑️</button>
             )}
             <button
-              className="rounded-full p-2 bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150"
+              className="rounded-full w-10 h-10 bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 text-lg shadow-fun font-cartoony hover:scale-110 hover:-translate-y-1 transition-transform duration-150 flex items-center justify-center"
               onClick={handleReportClick}
               title="Report comment"
               aria-label="Report"
             >🚩</button>
-            <span className="hover:scale-110 hover:-translate-y-1 transition-transform duration-150">
+            <span className="hover:scale-110 hover:-translate-y-1 transition-transform duration-150 flex items-center justify-center">
               {replyButton}
             </span>
           </div>
         </div>
-        <span className="text-xs text-purple-400 font-cartoony comment-date-mobile whitespace-nowrap mt-2 ml-1 sm:ml-4">{time}</span>
+        <span className="text-xs text-purple-400 font-cartoony comment-date-mobile whitespace-nowrap mt-2 ml-1 md:ml-4">{time}</span>
       </div>
       {showImageModal && (
         <div
