@@ -93,9 +93,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   };
 
   return (
-    <div className="flex gap-3 items-start bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
-      {/* Avatar and username row for mobile with image */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
+    <div className="flex flex-col bg-[#fcf8ff] rounded-2xl p-4 mb-3 border border-purple-100 shadow-fun relative comment-card-mobile">
+      {/* Top row: avatar, username, badges, actions, reply, date */}
+      <div className="flex items-center gap-2 w-full mb-2 flex-wrap">
         <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold overflow-hidden comment-avatar-mobile">
           {React.isValidElement(avatar) ? avatar : (
             <img
@@ -107,127 +107,121 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             />
           )}
         </div>
-        <div className="flex-1 flex flex-col justify-center">
-          <div className="flex items-center gap-2 mb-1 comment-meta-mobile">
-            <span className="font-extrabold text-purple-800 text-base">{username}</span>
-            {Array.isArray(badges) && badges.length > 0 && (
-              <span className="flex gap-1 ml-2">
-                {badges.map((badge, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                ))}
-              </span>
-            )}
-            {canDelete && (
-              <button
-                className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
-                onClick={handleDeleteClick}
-                title="Delete comment"
-                style={{minWidth:'44px', minHeight:'24px', padding:'2px 8px'}}
-              >🗑️</button>
-            )}
-            <button
-              className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
-              onClick={handleReportClick}
-              title="Report comment"
-              style={{minWidth:'44px', minHeight:'24px', padding:'2px 8px'}}
-            >🚩</button>
+        <span className="font-extrabold text-purple-800 text-base">{username}</span>
+        {Array.isArray(badges) && badges.length > 0 && (
+          <span className="flex gap-1 ml-2">
+            {badges.map((badge, idx) => (
+              <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+            ))}
+          </span>
+        )}
+        {canDelete && (
+          <button
+            className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-delete-mobile"
+            onClick={handleDeleteClick}
+            title="Delete comment"
+            style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
+          >🗑️</button>
+        )}
+        <button
+          className="ml-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-yellow-400 to-pink-400 text-white text-[0.7rem] font-bold shadow hover:scale-105 transition-all comment-report-mobile"
+          onClick={handleReportClick}
+          title="Report comment"
+          style={{minWidth:'36px', minHeight:'22px', padding:'2px 6px'}}
+        >🚩</button>
+        {/* Reply button and date, right-aligned on desktop, below on mobile */}
+        <div className="flex-1 flex justify-end items-center gap-2">
+          {replyButton}
+          <span className="text-xs text-gray-500 comment-date-mobile whitespace-nowrap">{time}</span>
+        </div>
+      </div>
+      {/* Playback for saved voice message (single instance) */}
+      {audio_url && (
+        <div className="mb-2 voice-message-mobile">
+          <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
+          <VoiceMessagePlayer src={audio_url} />
+        </div>
+      )}
+      {/* Responsive: image and text side by side on desktop, stacked on mobile */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start w-full">
+        {image_url && (
+          <div className="mb-2 flex justify-center sm:justify-start sm:mb-0">
+            <img
+              src={image_url}
+              alt="Comment"
+              className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
+              onClick={() => {
+                setModalImageUrl(image_url);
+                setShowImageModal(true);
+              }}
+            />
+          </div>
+        )}
+        <div className="flex-1">
+          <div className="text-gray-700 text-base font-medium mb-2 break-words">
+            {content}
           </div>
         </div>
       </div>
-        {/* Playback for saved voice message (single instance) */}
-        {audio_url && (
-          <div className="mb-2 voice-message-mobile">
-            <label className="block mb-1 font-bold text-pink-500 text-sm">Voice Message</label>
-            <VoiceMessagePlayer src={audio_url} />
+      {showImageModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            className="relative w-full h-full flex items-center justify-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <img
+              src={modalImageUrl}
+              alt="Preview"
+              className="rounded-2xl object-contain shadow-2xl border-4 border-pink-200 bg-white"
+              style={{
+                background: 'white',
+                maxWidth: '100vw',
+                maxHeight: '90vh',
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                margin: 'auto',
+                boxSizing: 'border-box',
+              }}
+            />
+            <button
+              className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-3 shadow-lg hover:bg-pink-700 transition text-xl focus:outline-none"
+              style={{ fontSize: '2rem', minWidth: '44px', minHeight: '44px', touchAction: 'manipulation' }}
+              onClick={() => setShowImageModal(false)}
+              aria-label="Close image preview"
+            >
+              ✕
+            </button>
           </div>
-        )}
-        {/* Improved: If comment has image, show avatar/username row above image and content below image for mobile */}
-        {image_url ? (
-          <>
-            <div className="mb-2 flex justify-center">
-              <img
-                src={image_url}
-                alt="Comment"
-                className="rounded-xl max-h-48 border-2 border-pink-200 shadow cursor-pointer hover:scale-105 transition duration-150"
-                onClick={() => {
-                  setModalImageUrl(image_url);
-                  setShowImageModal(true);
-                }}
-              />
-            </div>
-            <div className="text-gray-700 text-base font-medium mb-2">
-              {content}
-            </div>
-            {showImageModal && (
-              <div
-                className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
-                onClick={() => setShowImageModal(false)}
-              >
-                <div
-                  className="relative w-full h-full flex items-center justify-center"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <img
-                    src={modalImageUrl}
-                    alt="Preview"
-                    className="rounded-2xl object-contain shadow-2xl border-4 border-pink-200 bg-white"
-                    style={{
-                      background: 'white',
-                      maxWidth: '100vw',
-                      maxHeight: '90vh',
-                      width: '100%',
-                      height: 'auto',
-                      display: 'block',
-                      margin: 'auto',
-                      boxSizing: 'border-box',
-                    }}
-                  />
-                  <button
-                    className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-3 shadow-lg hover:bg-pink-700 transition text-xl focus:outline-none"
-                    style={{ fontSize: '2rem', minWidth: '44px', minHeight: '44px', touchAction: 'manipulation' }}
-                    onClick={() => setShowImageModal(false)}
-                    aria-label="Close image preview"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="text-gray-700 text-base font-medium">
-            {content}
-          </div>
-        )}
-        {/* Reply button (if provided) */}
-        {replyButton && (
-          <div className="mt-2">{replyButton}</div>
-        )}
-        <span className="absolute right-4 bottom-2 text-gray-400 text-xs font-semibold comment-date-mobile">{time}</span>
-        <style>{`
-          @media (max-width: 600px) {
-            .voice-message-mobile {
-              margin-bottom: 0.5rem !important;
-            }
-            .comment-card-mobile {
-              padding: 0.7rem !important;
-              gap: 0.5rem !important;
-              font-size: 0.97rem !important;
-            }
-            .comment-avatar-mobile {
-              width: 2.3rem !important;
-              height: 2.3rem !important;
-            }
-            .comment-meta-mobile {
-              gap: 0.3rem !important;
-            }
-            .comment-date-mobile {
-              font-size: 0.8rem !important;
-              right: 0.7rem !important;
-              bottom: 0.3rem !important;
-            }
+        </div>
+      )}
+      <style>{`
+        @media (max-width: 600px) {
+          .voice-message-mobile {
+            margin-bottom: 0.5rem !important;
           }
-        `}</style>
+          .comment-card-mobile {
+            padding: 0.7rem !important;
+            gap: 0.5rem !important;
+            font-size: 0.97rem !important;
+          }
+          .comment-avatar-mobile {
+            width: 2.3rem !important;
+            height: 2.3rem !important;
+          }
+          .comment-meta-mobile {
+            gap: 0.3rem !important;
+          }
+          .comment-date-mobile {
+            font-size: 0.8rem !important;
+            right: 0.7rem !important;
+            bottom: 0.3rem !important;
+          }
+        }
+      `}</style>
       {/* End of style block, continue with modals below */}
       {showConfirm && (
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 z-10">
