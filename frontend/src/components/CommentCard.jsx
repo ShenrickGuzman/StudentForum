@@ -140,7 +140,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         )}
       </div>
       {/* Footer: Actions */}
-      <div className="flex items-center justify-end gap-2 pt-2 border-t-2 border-pink-200 mt-3">
+      <div className="flex items-center justify-start gap-2 pt-2 border-t-2 border-pink-200 mt-3">
         {canDelete && (
           <button
             className="px-2 py-1 rounded-xl bg-gradient-to-r from-pink-200 to-orange-200 text-purple-700 text-xs font-bold shadow-fun hover:scale-105 transition-all comment-delete-mobile font-cartoony"
