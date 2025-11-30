@@ -672,19 +672,32 @@ export default function PostDetailPage() {
           <div className="px-8 pt-4 pb-4">
             <div className="rounded-3xl p-1" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
               <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
-                {post.image_url && (
-                  <>
-                    <img
-                      alt="Post"
-                      className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
-                      src={getAssetUrl(post.image_url)}
-                      onClick={() => {
-                        setModalImageUrl(getAssetUrl(post.image_url));
-                        setShowImageModal(true);
-                      }}
-                    />
-                  </>
-                )}
+                {Array.isArray(post.image_url) && post.image_url.length > 0 ? (
+                  <div className="flex flex-wrap justify-center gap-3 my-2">
+                    {post.image_url.map((url, idx) => (
+                      <img
+                        key={idx}
+                        alt={`Post ${idx + 1}`}
+                        className="rounded-2xl max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
+                        src={getAssetUrl(url)}
+                        onClick={() => {
+                          setModalImageUrl(getAssetUrl(url));
+                          setShowImageModal(true);
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : post.image_url ? (
+                  <img
+                    alt="Post"
+                    className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
+                    src={getAssetUrl(post.image_url)}
+                    onClick={() => {
+                      setModalImageUrl(getAssetUrl(post.image_url));
+                      setShowImageModal(true);
+                    }}
+                  />
+                ) : null}
                       {/* Image Modal */}
                       {showImageModal && (
                         <div
