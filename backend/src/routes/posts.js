@@ -510,7 +510,7 @@ const createPostsRouter = () => {
   router.post('/', requireAuth, async (req, res) => {
     console.log('POST /api/posts route hit');
     console.log('Request body:', req.body);
-    const { title, content, category, imageUrl, linkUrl, anonymous, audio_url = null } = req.body || {};
+    const { title, content, category, imageUrls, linkUrl, anonymous, audio_url = null } = req.body || {};
     // Debug: print the value of anonymous received
     console.log('DEBUG anonymous value received:', anonymous, 'typeof:', typeof anonymous);
     // Accept true, 'true', 1, '1' as true, else false
@@ -547,7 +547,7 @@ const createPostsRouter = () => {
       title,
       content,
       category,
-      image_url: imageUrl || null,
+      // image_url: deprecated, use post_images
       link_url: linkUrl || null,
       audio_url: audio_url || null,
       status: autoApprove ? 'approved' : 'pending',
@@ -560,6 +560,10 @@ const createPostsRouter = () => {
         .insert([insertObj])
         .select('*')
         .single();
+      if (data && Array.isArray(imageUrls) && imageUrls.length > 0) {
+        const imagesToInsert = imageUrls.map(url => ({ post_id: data.id, image_url: url }));
+        await supabase.from('post_images').insert(imagesToInsert);
+      }
       if (error || !data) return res.status(500).json({ error: 'Failed to create post' });
 
       // Send response first
@@ -761,7 +765,7 @@ const createPostsRouter = () => {
 
   // Comment (prevent if locked)
   router.post('/:id/comments', requireAuth, async (req, res) => {
-    const { content, anonymous, image_url, parent_comment_id } = req.body || {};
+    const { content, anonymous, imageUrls, parent_comment_id } = req.body || {};
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
       const { data: postRes } = await supabase
@@ -781,9 +785,13 @@ const createPostsRouter = () => {
       }
       const { data, error } = await supabase
         .from('comments')
-        .insert([{ post_id: req.params.id, user_id: req.user.id, content, anonymous: anonBool, image_url, parent_comment_id }])
+        .insert([{ post_id: req.params.id, user_id: req.user.id, content, anonymous: anonBool, parent_comment_id }])
         .select('*')
         .single();
+      if (data && Array.isArray(imageUrls) && imageUrls.length > 0) {
+        const imagesToInsert = imageUrls.map(url => ({ comment_id: data.id, image_url: url }));
+        await supabase.from('comment_images').insert(imagesToInsert);
+      }
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
 
       // Send response first
