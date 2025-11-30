@@ -648,10 +648,26 @@ const createPostsRouter = () => {
         console.error('Failed to fetch posts:', error);
         return res.status(500).json({ error: 'Failed to fetch posts', details: error.message, supabaseError: error });
       }
-      // Add author_name, avatar, role, badges for compatibility
+      // Fetch all images for these posts
+      const postIds = Array.isArray(data) ? data.map(p => p.id) : [];
+      let imagesByPostId = {};
+      if (postIds.length > 0) {
+        const { data: imagesData, error: imagesError } = await supabase
+          .from('post_images')
+          .select('post_id, image_url')
+          .in('post_id', postIds);
+        if (!imagesError && Array.isArray(imagesData)) {
+          imagesData.forEach(img => {
+            if (!imagesByPostId[img.post_id]) imagesByPostId[img.post_id] = [];
+            imagesByPostId[img.post_id].push(img.image_url);
+          });
+        }
+      }
+      // Add author_name, avatar, role, badges, and images for compatibility
       let posts = [];
       try {
         posts = data.map(p => {
+          const images = imagesByPostId[p.id] || [];
           if (p.anonymous) {
             return {
               ...p,
@@ -659,7 +675,8 @@ const createPostsRouter = () => {
               avatar: null,
               author_role: null,
               badges: [],
-              users: { name: 'Anonymous', avatar: null, role: null, badges: [] }
+              users: { name: 'Anonymous', avatar: null, role: null, badges: [] },
+              images
             };
           } else {
             return {
@@ -667,7 +684,8 @@ const createPostsRouter = () => {
               author_name: p.users?.name || null,
               avatar: p.users?.avatar || null,
               author_role: p.users?.role || null,
-              badges: p.users?.badges || []
+              badges: p.users?.badges || [],
+              images
             };
           }
         });
