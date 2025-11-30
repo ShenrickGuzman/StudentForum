@@ -125,7 +125,22 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             <VoiceMessagePlayer src={audio_url} />
           </div>
         )}
-        {image_url && (
+        {Array.isArray(image_url) && image_url.length > 0 ? (
+          <div className="flex flex-wrap justify-center mt-2 gap-2">
+            {image_url.map((url, idx) => (
+              <img
+                key={idx}
+                src={url}
+                alt={`Comment ${idx + 1}`}
+                className="rounded-xl max-h-56 border-4 border-pink-200 shadow-fun cursor-pointer hover:scale-105 transition duration-150 bg-white"
+                onClick={() => {
+                  setModalImageUrl(url);
+                  setShowImageModal(true);
+                }}
+              />
+            ))}
+          </div>
+        ) : image_url ? (
           <div className="flex justify-center mt-2">
             <img
               src={image_url}
@@ -137,7 +152,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
               }}
             />
           </div>
-        )}
+        ) : null}
       </div>
       {/* Footer: Actions */}
       <div className="flex flex-col md:flex-row md:items-center items-start pt-2 border-t-2 border-pink-200 mt-3 w-full">
