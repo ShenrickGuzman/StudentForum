@@ -678,6 +678,12 @@ const createPostsRouter = () => {
         return res.status(403).json({ error: 'Post not available' });
       }
 
+      // Fetch all image URLs for this post
+      const { data: postImages, error: postImagesError } = await supabase
+        .from('post_images')
+        .select('image_url')
+        .eq('post_id', req.params.id);
+
       // Mask author info if anonymous, unless admin
       let maskedPost = { ...postData };
       const canReveal = req.user?.name === 'SHEN' || req.user?.name === 'Ari';
@@ -698,6 +704,8 @@ const createPostsRouter = () => {
         maskedPost.author_role = postData.users?.role || null;
         maskedPost.badges = postData.users?.badges || [];
       }
+      // Attach image_url array
+      maskedPost.image_url = Array.isArray(postImages) ? postImages.map(img => img.image_url) : [];
 
       // Get comments
       const { data: commentsRaw, error: commentsError } = await supabase
