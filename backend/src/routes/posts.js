@@ -714,11 +714,28 @@ const createPostsRouter = () => {
         .eq('post_id', req.params.id)
         .order('created_at', { ascending: true });
       const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
+      // Fetch all images for comments in one query
+      const commentIds = commentsArr.map(c => c.id);
+      let commentImagesMap = {};
+      if (commentIds.length > 0) {
+        const { data: commentImagesRaw } = await supabase
+          .from('comment_images')
+          .select('comment_id, image_url')
+          .in('comment_id', commentIds);
+        // Map comment_id to array of image_urls
+        commentImagesMap = commentImagesRaw?.reduce((acc, img) => {
+          if (!acc[img.comment_id]) acc[img.comment_id] = [];
+          acc[img.comment_id].push(img.image_url);
+          return acc;
+        }, {}) || {};
+      }
       // Mask author info for anonymous comments, unless admin
       const comments = commentsArr.map(c => {
+        const imageUrls = commentImagesMap[c.id] || [];
         if (c.anonymous && !isAdmin) {
           return {
             ...c,
+            image_url: imageUrls,
             users: {
               name: 'Anonymous',
               avatar: null,
@@ -733,6 +750,7 @@ const createPostsRouter = () => {
         } else {
           return {
             ...c,
+            image_url: imageUrls,
             author_name: c.users?.name || null,
             avatar: c.users?.avatar || null,
             author_role: c.users?.role || null,
