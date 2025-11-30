@@ -792,6 +792,7 @@ const createPostsRouter = () => {
   // Comment (prevent if locked)
   router.post('/:id/comments', requireAuth, async (req, res) => {
     const { content, anonymous, imageUrls, parent_comment_id } = req.body || {};
+    console.log('Comment creation:', { content, anonymous, imageUrls, parent_comment_id });
     if (!content) return res.status(400).json({ error: 'Missing content' });
     try {
       const { data: postRes } = await supabase
@@ -816,7 +817,12 @@ const createPostsRouter = () => {
         .single();
       if (data && Array.isArray(imageUrls) && imageUrls.length > 0) {
         const imagesToInsert = imageUrls.map(url => ({ comment_id: data.id, image_url: url }));
-        await supabase.from('comment_images').insert(imagesToInsert);
+        const { error: imgInsertError } = await supabase.from('comment_images').insert(imagesToInsert);
+        if (imgInsertError) {
+          console.error('Error inserting comment images:', imgInsertError);
+        } else {
+          console.log('Inserted comment images:', imagesToInsert);
+        }
       }
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
 
