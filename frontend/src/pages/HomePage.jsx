@@ -574,95 +574,95 @@ function HomePage() {
           if ((p.status === 'pending' || p.status === 'rejected') && (!user || user.id !== p.user_id)) {
             return null;
           }
-          // If post has image and is mobile, move author info above image preview
-          if (p.image_url) {
-            // Handle array or string for image_url
-            const imageUrls = Array.isArray(p.image_url) ? p.image_url : (typeof p.image_url === 'string' && p.image_url ? [p.image_url] : []);
-            return (
-              <Link
-                to={`/post/${p.id}`}
-                key={p.id}
-                className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col sm:flex-row gap-4 relative p-6 items-start"
-              >
-                <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
-                {/* Main content and author info (left on PC, top on mobile) */}
-                <div className="flex flex-col flex-1 justify-between">
-                  <div>
-                    <div className="text-sm font-bold mb-1">
-                      <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
-                        {categories.find(c => c.key === p.category)?.label || p.category}
-                      </span>
-                    </div>
-                        <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight break-words whitespace-pre-wrap" style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{p.title}</div>
-                    <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
+          // Support both p.image_url and p.images (array)
+          let imageUrls = [];
+          if (Array.isArray(p.images) && p.images.length > 0) {
+            imageUrls = p.images;
+          } else if (Array.isArray(p.image_url)) {
+            imageUrls = p.image_url;
+          } else if (typeof p.image_url === 'string' && p.image_url) {
+            imageUrls = [p.image_url];
+          }
+          const hasImage = imageUrls.length > 0;
+          return (
+            <Link
+              to={`/post/${p.id}`}
+              key={p.id}
+              className="bg-white/90 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-150 border-2 border-white/60 flex flex-col sm:flex-row gap-4 relative p-6 items-start"
+            >
+              <div className="absolute top-2 right-4 text-2xl">{p.pinned ? '📌' : ''}</div>
+              {/* Main content and author info (left on PC, top on mobile) */}
+              <div className="flex flex-col flex-1 justify-between">
+                <div>
+                  <div className="text-sm font-bold mb-1">
+                    <span className={`px-3 py-1 rounded-full text-xs shadow font-extrabold ${categories.find(c => c.key === p.category)?.color || 'bg-gray-400 text-white'}`}>
+                      {categories.find(c => c.key === p.category)?.label || p.category}
+                    </span>
                   </div>
-                  {/* Author info always at the bottom left, like posts without images */}
-                  <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
-                    <div className="flex items-center">
-                      {p.anonymous ? (
-                        <>
-                          <span className="mr-2 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xl text-white font-bold shadow-fun select-none">👤</span>
-                          <span className="font-bold text-gray-500 select-none">Anonymous</span>
-                        </>
-                      ) : (
-                        <>
-                          <Link to={`/profile/${p.user_id}`} className="mr-2">
-                            <img
-                              src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
-                              alt={p.author_name}
-                              className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
-                              onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                            />
-                          </Link>
-                          <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
-                            {p.author_name}
-                          </Link>
-                        </>
-                      )}
-                    </div>
-                    {(() => {
-                      let badges = Array.isArray(p.badges) ? [...p.badges] : [];
-                      if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                      return badges.length > 0 ? (
-                        <span className="flex gap-1 ml-2">
-                          {badges.map((badge, idx) => (
-                            <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                          ))}
-                        </span>
-                      ) : null;
-                    })()}
-                  </div>
-                  {/* Status label for pending/rejected posts */}
-                  {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
-                    <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${
-                      p.status === 'pending' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'
-                    }`}>
-                      {p.status === 'pending'
-                        ? 'Pending: waiting for admin approval'
-                        : 'Rejected: not approved by admin'}
-                    </div>
-                  )}
+                  <div className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow mb-2 leading-tight break-words whitespace-pre-wrap" style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{p.title}</div>
+                  <div className="text-base text-gray-400 italic mb-2">Open to view content</div>
                 </div>
-                {/* Post image previews (right on PC, top on mobile) */}
-                {imageUrls.length > 0 && (
-                  <div className="flex flex-row flex-wrap gap-2 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
-                    {imageUrls.map((url, idx) => (
-                      <img
-                        key={idx}
-                        src={getAssetUrl(url)}
-                        alt={`Post image ${idx + 1}`}
-                        className="w-full h-full object-cover rounded"
-                        style={{ maxWidth: '70px', maxHeight: '70px' }}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    ))}
+                {/* Author info always at the bottom left, like posts without images */}
+                <div className="mt-2 text-sm text-gray-400 flex items-center gap-2">
+                  <div className="flex items-center">
+                    {p.anonymous ? (
+                      <>
+                        <span className="mr-2 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xl text-white font-bold shadow-fun select-none">👤</span>
+                        <span className="font-bold text-gray-500 select-none">Anonymous</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link to={`/profile/${p.user_id}`} className="mr-2">
+                          <img
+                            src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
+                            alt={p.author_name}
+                            className="w-8 h-8 rounded-full object-cover border border-gray-300 hover:ring-2 hover:ring-purple-400 transition-all"
+                            onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                          />
+                        </Link>
+                        <Link to={`/profile/${p.user_id}`} className="font-bold text-gray-700 hover:text-purple-600 transition-all">
+                          {p.author_name}
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                  {(() => {
+                    let badges = Array.isArray(p.badges) ? [...p.badges] : [];
+                    if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                    return badges.length > 0 ? (
+                      <span className="flex gap-1 ml-2">
+                        {badges.map((badge, idx) => (
+                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
+                        ))}
+                      </span>
+                    ) : null;
+                  })()}
+                </div>
+                {/* Status label for pending/rejected posts */}
+                {(p.status === 'pending' || p.status === 'rejected') && user && user.id === p.user_id && (
+                  <div className={`mt-2 text-xs font-bold px-3 py-1 rounded-full ${
+                    p.status === 'pending' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'
+                  }`}>
+                    {p.status === 'pending'
+                      ? 'Pending: waiting for admin approval'
+                      : 'Rejected: not approved by admin'}
                   </div>
                 )}
-              </Link>
-            );
-          }
+              </div>
+              {/* Post image preview (show only first image) */}
+              {hasImage && (
+                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
+                  <img
+                    src={getAssetUrl(imageUrls[0])}
+                    alt="Post image preview"
+                    className="w-full h-full object-cover rounded"
+                    style={{ maxWidth: '150px', maxHeight: '150px' }}
+                    onError={e => { e.target.style.display = 'none'; }}
+                  />
+                </div>
+              )}
+            </Link>
+          );
           // Otherwise, use the original layout
           return (
             <Link
