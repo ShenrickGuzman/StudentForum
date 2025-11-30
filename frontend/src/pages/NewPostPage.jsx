@@ -47,7 +47,7 @@ export default function NewPostPage() {
   const [linkUrl, setLinkUrl] = useState('');
   const [anonymous, setAnonymous] = useState(false);
   const textareaRef = useRef(null);
-  const [imageFile, setImageFile] = useState(null);
+  const [imageFiles, setImageFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   // Load draft on mount
@@ -81,8 +81,8 @@ export default function NewPostPage() {
   }, [content]);
 
   function handleFileChange(e) {
-    if (e.target.files && e.target.files[0]) {
-      setImageFile(e.target.files[0]);
+    if (e.target.files) {
+      setImageFiles(Array.from(e.target.files));
     }
   }
 
@@ -90,17 +90,16 @@ export default function NewPostPage() {
     e.preventDefault();
     setUploading(true);
     try {
-      let imageUrl = '';
-      if (imageFile) {
-        console.log('Starting image upload...');
-        const formData = new FormData();
-        formData.append('file', imageFile);
-        const uploadRes = await api.post('/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        console.log('Image upload response:', uploadRes);
-        imageUrl = uploadRes.data.url;
-        console.log('Image URL:', imageUrl);
+      let imageUrls = [];
+      if (imageFiles.length > 0) {
+        for (const file of imageFiles) {
+          const formData = new FormData();
+          formData.append('file', file);
+          const uploadRes = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          imageUrls.push(uploadRes.data.url);
+        }
       }
 
       let audioFileUrl = '';
@@ -122,7 +121,7 @@ export default function NewPostPage() {
         content,
         category,
         linkUrl,
-        imageUrl,
+        imageUrls,
         audio_url: audioFileUrl,
         anonymous: anonymous === true ? true : false,
       };
@@ -239,29 +238,34 @@ export default function NewPostPage() {
           style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
         />
         <div>
-          <label className="block mb-2 font-extrabold text-pink-500 text-lg font-cartoon">Upload a Photo/File <span className="font-normal text-purple-400">(optional)</span></label>
+          <label className="block mb-2 font-extrabold text-pink-500 text-lg font-cartoon">Upload Photos <span className="font-normal text-purple-400">(optional, you can select multiple)</span></label>
           <label
             htmlFor="file-upload"
             className="inline-block cursor-pointer rounded-2xl border-4 border-yellow-200 bg-pink-100 px-6 py-3 text-lg font-bold text-purple-700 shadow-fun transition-all hover:bg-yellow-100 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 duration-200"
             style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
           >
-            Choose file
+            Choose files
           </label>
           <input
             id="file-upload"
             type="file"
-            accept="image/*,application/pdf,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            accept="image/*"
+            multiple
             className="hidden"
             onChange={handleFileChange}
             disabled={uploading}
           />
-          {imageFile && (
-            <div className="mt-3 border-4 border-pink-300 rounded-2xl p-2 max-w-xs bg-white shadow-fun animate-pop">
-              <img
-                src={URL.createObjectURL(imageFile)}
-                alt="Preview"
-                className="max-w-full max-h-48 object-contain rounded-xl"
-              />
+          {imageFiles.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-3">
+              {imageFiles.map((file, idx) => (
+                <div key={idx} className="border-4 border-pink-300 rounded-2xl p-2 max-w-xs bg-white shadow-fun animate-pop">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Preview ${idx + 1}`}
+                    className="max-w-full max-h-48 object-contain rounded-xl"
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
