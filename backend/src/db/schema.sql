@@ -80,13 +80,28 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT INTO settings (key, value) VALUES ('auto_approve_posts', 'false')
   ON CONFLICT (key) DO NOTHING;
 
--- Table to store reports for posts and comments
 CREATE TABLE IF NOT EXISTS reports (
   id BIGSERIAL PRIMARY KEY,
   reported_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   target_type TEXT NOT NULL CHECK (target_type IN ('post', 'comment')),
   target_id BIGINT NOT NULL,
   reason TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Table to store multiple images for posts
+CREATE TABLE IF NOT EXISTS post_images (
+  id BIGSERIAL PRIMARY KEY,
+  post_id BIGINT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+-- Table to store multiple images for comments
+CREATE TABLE IF NOT EXISTS comment_images (
+  id BIGSERIAL PRIMARY KEY,
+  comment_id BIGINT NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
