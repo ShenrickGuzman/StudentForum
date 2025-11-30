@@ -687,7 +687,7 @@ export default function PostDetailPage() {
                       />
                     ))}
                   </div>
-                ) : post.image_url ? (
+                ) : (typeof post.image_url === 'string' && post.image_url) ? (
                   <img
                     alt="Post"
                     className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
