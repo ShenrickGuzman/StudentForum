@@ -574,16 +574,18 @@ function HomePage() {
           if ((p.status === 'pending' || p.status === 'rejected') && (!user || user.id !== p.user_id)) {
             return null;
           }
-          // Support both p.image_url and p.images (array)
+          // Robust image preview logic
           let imageUrls = [];
           if (Array.isArray(p.images) && p.images.length > 0) {
-            imageUrls = p.images;
-          } else if (Array.isArray(p.image_url)) {
-            imageUrls = p.image_url;
+            imageUrls = p.images.filter(Boolean);
+          } else if (Array.isArray(p.image_url) && p.image_url.length > 0) {
+            imageUrls = p.image_url.filter(Boolean);
           } else if (typeof p.image_url === 'string' && p.image_url) {
             imageUrls = [p.image_url];
+          } else if (typeof p.image === 'string' && p.image) {
+            imageUrls = [p.image];
           }
-          const hasImage = imageUrls.length > 0;
+          const firstImage = imageUrls.length > 0 ? imageUrls[0] : null;
           return (
             <Link
               to={`/post/${p.id}`}
@@ -649,14 +651,13 @@ function HomePage() {
                   </div>
                 )}
               </div>
-              {/* Post image preview (show only first image) */}
-              {hasImage && (
-                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
+              {/* Post image preview (show only first valid image) */}
+              {firstImage && (
+                <div className="flex-shrink-0 w-full sm:w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none flex items-center justify-center bg-gray-50">
                   <img
-                    src={getAssetUrl(imageUrls[0])}
+                    src={getAssetUrl(firstImage)}
                     alt="Post image preview"
-                    className="w-full h-full object-cover rounded"
-                    style={{ maxWidth: '150px', maxHeight: '150px' }}
+                    className="object-cover rounded max-h-[140px] max-w-full sm:max-w-[140px]"
                     onError={e => { e.target.style.display = 'none'; }}
                   />
                 </div>
