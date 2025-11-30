@@ -576,6 +576,8 @@ function HomePage() {
           }
           // If post has image and is mobile, move author info above image preview
           if (p.image_url) {
+            // Handle array or string for image_url
+            const imageUrls = Array.isArray(p.image_url) ? p.image_url : (typeof p.image_url === 'string' && p.image_url ? [p.image_url] : []);
             return (
               <Link
                 to={`/post/${p.id}`}
@@ -641,17 +643,23 @@ function HomePage() {
                     </div>
                   )}
                 </div>
-                {/* Post image preview (right on PC, top on mobile) */}
-                <div className="flex-shrink-0 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
-                  <img
-                    src={getAssetUrl(p.image_url)}
-                    alt="Post image"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </div>
+                {/* Post image previews (right on PC, top on mobile) */}
+                {imageUrls.length > 0 && (
+                  <div className="flex flex-row flex-wrap gap-2 w-[150px] h-[150px] rounded-xl shadow-md overflow-hidden mb-2 sm:mb-0 sm:ml-4 order-first sm:order-none">
+                    {imageUrls.map((url, idx) => (
+                      <img
+                        key={idx}
+                        src={getAssetUrl(url)}
+                        alt={`Post image ${idx + 1}`}
+                        className="w-full h-full object-cover rounded"
+                        style={{ maxWidth: '70px', maxHeight: '70px' }}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
               </Link>
             );
           }
