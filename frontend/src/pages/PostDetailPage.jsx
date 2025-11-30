@@ -248,8 +248,7 @@ export default function PostDetailPage() {
         return roots;
       }
     // State for comment image upload
-    const [commentImageFile, setCommentImageFile] = useState(null);
-    const [commentImageUrl, setCommentImageUrl] = useState('');
+    const [commentImageFiles, setCommentImageFiles] = useState([]);
   // State for reporting post (moved inside component)
   // Image modal state
   const [showImageModal, setShowImageModal] = useState(false);
@@ -418,21 +417,23 @@ export default function PostDetailPage() {
     if (!newComment.trim()) return;
     setCommentLoading(true);
     try {
-      let imageUrl = '';
-      // 1. Upload image if present
-      if (commentImageFile) {
-        const formData = new FormData();
-        formData.append('file', commentImageFile);
-        const uploadRes = await api.post('/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        imageUrl = uploadRes.data?.url || uploadRes.data?.imageUrl || '';
+      let imageUrls = [];
+      // 1. Upload images if present
+      if (commentImageFiles.length > 0) {
+        for (const file of commentImageFiles) {
+          const formData = new FormData();
+          formData.append('file', file);
+          const uploadRes = await api.post('/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          imageUrls.push(uploadRes.data?.url || uploadRes.data?.imageUrl || '');
+        }
       }
-      // 2. Create comment with imageUrl
+      // 2. Create comment with imageUrls array
       const res = await api.post(`/posts/${id}/comments`, {
         content: newComment,
         anonymous: commentAnonymous,
-        image_url: imageUrl,
+        imageUrls,
       });
       const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
       // 3. If audio, upload it
@@ -449,8 +450,7 @@ export default function PostDetailPage() {
       }
       setNewComment('');
       setCommentAnonymous(false);
-      setCommentImageFile(null);
-      setCommentImageUrl('');
+      setCommentImageFiles([]);
       // Re-fetch comments after adding a new one
       const response = await api.get(`/posts/${id}/comments`);
       setComments(response.data);
@@ -874,33 +874,32 @@ export default function PostDetailPage() {
                       <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch">
                         {/* Image Upload */}
                         <div className="flex flex-col items-start flex-1">
-                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Upload Image <span className="font-normal text-purple-400">(optional)</span></label>
+                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Upload Images <span className="font-normal text-purple-400">(optional, you can select multiple)</span></label>
                           <div className="relative">
                             <input
                               id="comment-image-upload"
                               type="file"
                               accept="image/*"
+                              multiple
                               onChange={e => {
-                                const file = e.target.files[0];
-                                setCommentImageFile(file);
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onload = ev => setCommentImageUrl(ev.target.result);
-                                  reader.readAsDataURL(file);
-                                } else {
-                                  setCommentImageUrl('');
+                                if (e.target.files) {
+                                  setCommentImageFiles(Array.from(e.target.files));
                                 }
                               }}
                               disabled={commentLoading}
                               className="hidden"
                             />
                             <label htmlFor="comment-image-upload" className="inline-block px-3 py-2 rounded-lg bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 font-bold shadow border border-pink-200 cursor-pointer hover:bg-pink-200 transition-all text-xs sm:text-sm">
-                              <span className="mr-1">📷</span> Choose File
+                              <span className="mr-1">📷</span> Choose Files
                             </label>
-                            <span className="ml-1 text-xs sm:text-sm text-gray-500 font-semibold break-all block max-w-[120px] sm:max-w-none">{commentImageFile ? commentImageFile.name : 'No file'}</span>
+                            <span className="ml-1 text-xs sm:text-sm text-gray-500 font-semibold break-all block max-w-[120px] sm:max-w-none">{commentImageFiles.length > 0 ? commentImageFiles.map(f => f.name).join(', ') : 'No files'}</span>
                           </div>
-                          {commentImageUrl && (
-                            <img src={commentImageUrl} alt="Preview" className="mt-1 rounded-lg max-h-20 border border-pink-100 shadow" />
+                          {commentImageFiles.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-2">
+                              {commentImageFiles.map((file, idx) => (
+                                <img key={idx} src={URL.createObjectURL(file)} alt={`Preview ${idx + 1}`} className="rounded-lg max-h-20 border border-pink-100 shadow" />
+                              ))}
+                            </div>
                           )}
                         </div>
                         {/* Voice Message */}
