@@ -140,7 +140,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
               />
             ))}
           </div>
-        ) : image_url ? (
+        ) : (typeof image_url === 'string' && image_url) ? (
           <div className="flex justify-center mt-2">
             <img
               src={image_url}
