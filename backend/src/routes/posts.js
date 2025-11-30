@@ -445,6 +445,22 @@ const createPostsRouter = () => {
       if (commentsError) return res.status(500).json({ error: 'Failed to fetch comments' });
       const commentsArr = Array.isArray(commentsRaw) ? commentsRaw : [];
       const commentIds = commentsArr.map(c => c.id);
+
+      // Fetch all images for comments in one query
+      let commentImagesMap = {};
+      if (commentIds.length > 0) {
+        const { data: commentImagesRaw } = await supabase
+          .from('comment_images')
+          .select('comment_id, image_url')
+          .in('comment_id', commentIds);
+        // Map comment_id to array of image_urls
+        commentImagesMap = commentImagesRaw?.reduce((acc, img) => {
+          if (!acc[img.comment_id]) acc[img.comment_id] = [];
+          acc[img.comment_id].push(img.image_url);
+          return acc;
+        }, {}) || {};
+      }
+
       let commentReactions = [];
       if (Array.isArray(commentIds) && commentIds.length > 0) {
         const { data: reactionsData } = await supabase
@@ -479,6 +495,7 @@ const createPostsRouter = () => {
       const comments = Array.isArray(commentsArr)
         ? commentsArr.map(c => ({
             ...c,
+            image_url: commentImagesMap[c.id] || [],
             author_name: c.users?.name || null,
             author_role: c.users?.role || null,
             avatar: c.users?.avatar || null,
@@ -493,6 +510,7 @@ const createPostsRouter = () => {
         commentsRaw,
         commentsArr,
         commentIds,
+        commentImagesMap,
         commentReactions,
         userCommentReactions,
         commentReactionsMap,
