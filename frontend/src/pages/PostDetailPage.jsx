@@ -5,6 +5,17 @@ import { useAuth } from '../state/auth';
 import api, { getAssetUrl, reportPost } from '../lib/api';
 import CommentCard from '../components/CommentCard';
 import VoiceMessagePlayer from '../components/VoiceMessagePlayer';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const categories = [
+  { key: 'Academics', label: 'Academics', color: 'bg-primary/10 text-primary' },
+  { key: 'Arts', label: 'Arts', color: 'bg-secondary/10 text-secondary' },
+  { key: 'Sports', label: 'Sports', color: 'bg-green-100 text-green-700' },
+  { key: 'Music', label: 'Music', color: 'bg-purple-100 text-purple-700' },
+  { key: 'Technology', label: 'Technology', color: 'bg-cyan-100 text-cyan-700' },
+  { key: 'Ideas', label: 'Ideas', color: 'bg-amber-100 text-amber-700' },
+  { key: 'Random', label: 'Random', color: 'bg-indigo-100 text-indigo-700' },
+];
 
 function RecursiveComment({ comment, depth }) {
   const { user } = useAuth();
@@ -19,15 +30,13 @@ function RecursiveComment({ comment, depth }) {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [showReplies, setShowReplies] = useState(false);
 
-  // Voice recording handlers for reply
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorderRef.current = new window.MediaRecorder(stream);
     audioChunksRef.current = [];
-    mediaRecorderRef.current.ondataavailable = e => {
-      audioChunksRef.current.push(e.data);
-    };
+    mediaRecorderRef.current.ondataavailable = e => { audioChunksRef.current.push(e.data); };
     mediaRecorderRef.current.onstop = () => {
       const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       setReplyAudioBlob(blob);
@@ -36,12 +45,8 @@ function RecursiveComment({ comment, depth }) {
     mediaRecorderRef.current.start();
     setRecording(true);
   };
-  const stopRecording = () => {
-    mediaRecorderRef.current.stop();
-    setRecording(false);
-  };
+  const stopRecording = () => { mediaRecorderRef.current.stop(); setRecording(false); };
 
-  // Submit reply
   const handleReplySubmit = async (e) => {
     if (e) e.preventDefault();
     if (!replyText.trim()) return;
@@ -51,26 +56,19 @@ function RecursiveComment({ comment, depth }) {
       if (replyImageFile) {
         const formData = new FormData();
         formData.append('file', replyImageFile);
-        const uploadRes = await api.post('/upload', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        const uploadRes = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         imageUrl = uploadRes.data?.url || uploadRes.data?.imageUrl || '';
       }
-      // Create reply comment
-      const res = await api.post(`/posts/${comment.post_id || comment.postId || comment.postid || comment.postID || comment.post || window.location.pathname.split('/').pop()}/comments`, {
-        content: replyText,
-        anonymous: false,
-        image_url: imageUrl,
-        parent_comment_id: comment.id,
+      const postId = comment.post_id || comment.postId || window.location.pathname.split('/').pop();
+      const res = await api.post(`/posts/${postId}/comments`, {
+        content: replyText, anonymous: false, image_url: imageUrl, parent_comment_id: comment.id,
       });
       const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
       if (replyAudioBlob && commentId) {
         setReplyAudioUploading(true);
         const audioForm = new FormData();
         audioForm.append('file', replyAudioBlob, 'voice-message.webm');
-        await api.post(`/upload/audio/comment/${commentId}`, audioForm, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.post(`/upload/audio/comment/${commentId}`, audioForm, { headers: { 'Content-Type': 'multipart/form-data' } });
         setReplyAudioUploading(false);
         setReplyAudioBlob(null);
         setReplyAudioUrl('');
@@ -79,131 +77,69 @@ function RecursiveComment({ comment, depth }) {
       setReplyImageFile(null);
       setReplyImageUrl('');
       setShowReplyForm(false);
-      // Optionally, trigger a refresh of comments in parent
-      window.location.reload(); // Simple way to refresh for now
+      window.location.reload();
     } catch (err) {
-      alert('Failed to submit reply. Please try again.');
-    } finally {
-      setReplyLoading(false);
-    }
+      alert('Failed to submit reply.');
+    } finally { setReplyLoading(false); }
   };
 
-  // Render badges
   let badges = Array.isArray(comment.users?.badges) ? [...comment.users.badges] : [];
-  if (comment.author_role === 'admin' && !badges.includes('ADMIN')) {
-    badges = [...badges, 'ADMIN'];
-  }
+  if (comment.author_role === 'admin' && !badges.includes('ADMIN')) badges = [...badges, 'ADMIN'];
   const isCommentAnonymous = comment.anonymous;
 
-  const [showReplies, setShowReplies] = useState(false);
   return (
-    <div style={{ marginLeft: depth * 24, marginTop: 8 }}>
+    <div style={{ marginLeft: Math.min(depth * 20, 60) }} className="mt-3">
       <CommentCard
         key={comment.id}
-        avatar={isCommentAnonymous ? <span className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-2xl">👤</span> : (
-          <img
-            src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'}
-            alt="author avatar"
-            className="w-12 h-12 rounded-full object-cover border-2 border-purple-300 shadow"
-            onError={e => { e.target.src = '/Cute-Cat.png'; }}
-          />
-        )}
-        username={comment.anonymous ? (
-          <span className="font-bold text-gray-500">Anonymous</span>
+        avatar={isCommentAnonymous ? (
+          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
+            <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          </div>
         ) : (
-          <span className="font-bold text-purple-800">{comment.author_name || 'User'}</span>
+          <img src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gray-100 flex-shrink-0" onError={e => { e.target.src = '/Cute-Cat.png'; }} />
         )}
+        username={isCommentAnonymous ? 'Anonymous' : (comment.author_name || 'User')}
         badges={isCommentAnonymous ? [] : badges}
         time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
-        content={<span style={{wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>{comment.content}</span>}
+        content={<span className="text-sm text-dark whitespace-pre-wrap break-words">{comment.content}</span>}
         canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
-        onDelete={async () => {
-          await api.delete(`/posts/comments/${comment.id}`);
-          window.location.reload();
-        }}
+        onDelete={async () => { await api.delete(`/posts/comments/${comment.id}`); window.location.reload(); }}
         audio_url={comment.audio_url}
         image_url={comment.image_url}
-        replyButton={(
+        replyButton={
           <>
-            <button
-              className="px-3 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs"
-              onClick={() => setShowReplyForm(v => !v)}
-            >{showReplyForm ? 'Cancel' : 'Reply'}</button>
+            <button className="text-xs text-primary font-medium hover:underline" onClick={() => setShowReplyForm(v => !v)}>
+              {showReplyForm ? 'Cancel' : 'Reply'}
+            </button>
             {showReplyForm && (
-              <form onSubmit={handleReplySubmit} className="flex flex-col gap-2 mt-2">
-                <textarea
-                  value={replyText}
-                  onChange={e => setReplyText(e.target.value)}
-                  placeholder="Write a reply..."
-                  className="w-full p-2 rounded border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[40px] max-h-[120px]"
-                  rows={1}
-                  maxLength={500}
-                  disabled={replyLoading}
-                />
-                <div className="flex items-center gap-3 mt-2">
-                  <label htmlFor="reply-image-upload" className="flex items-center gap-1 px-2 py-1 rounded-lg bg-pink-100 text-pink-700 font-bold shadow hover:bg-pink-200 transition-all text-xs cursor-pointer">
-                    <span role="img" aria-label="image" className="text-base">🖼️</span> File
-                    <input
-                      id="reply-image-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={e => {
-                        const file = e.target.files[0];
-                        setReplyImageFile(file);
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = ev => setReplyImageUrl(ev.target.result);
-                          reader.readAsDataURL(file);
-                        } else {
-                          setReplyImageUrl('');
-                        }
-                      }}
-                      disabled={replyLoading}
-                      style={{ display: 'none' }}
-                    />
+              <form onSubmit={handleReplySubmit} className="mt-2">
+                <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." className="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" rows={2} disabled={replyLoading} />
+                <div className="flex items-center gap-2 mt-2">
+                  <label className="cursor-pointer text-xs text-muted hover:text-dark">
+                    <input type="file" accept="image/*" className="hidden" onChange={e => { const file = e.target.files[0]; setReplyImageFile(file); if (file) { const reader = new FileReader(); reader.onload = ev => setReplyImageUrl(ev.target.result); reader.readAsDataURL(file); } else setReplyImageUrl(''); }} disabled={replyLoading} />
+                    Attach image
                   </label>
-                  {replyImageUrl && (
-                    <img src={replyImageUrl} alt="Preview" className="rounded-xl max-h-16 border-2 border-pink-200 shadow ml-2" />
-                  )}
-                  <button
-                    type="button"
-                    className={`flex items-center gap-1 px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 font-bold shadow hover:bg-yellow-200 transition-all text-xs ${recording ? 'bg-yellow-200' : ''}`}
-                    onClick={recording ? stopRecording : startRecording}
-                    disabled={replyAudioUploading}
-                  >
-                    <span role="img" aria-label="voice" className="text-base">🎤</span> {recording ? 'Stop' : 'Voice'}
+                  <button type="button" className={`text-xs text-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={replyAudioUploading}>
+                    {recording ? 'Stop recording' : 'Voice'}
                   </button>
-                  {replyAudioUrl && (
-                    <audio controls src={replyAudioUrl} className="ml-2" />
-                  )}
-                  {replyAudioUrl && (
-                    <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setReplyAudioBlob(null); setReplyAudioUrl(''); }}>Remove</button>
-                  )}
                 </div>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-sm"
-                  disabled={replyLoading}
-                >Send Reply</button>
+                {replyImageUrl && <img src={replyImageUrl} alt="" className="rounded-lg max-h-20 mt-2 border border-gray-200" />}
+                {replyAudioUrl && <audio controls src={replyAudioUrl} className="mt-2 h-8" />}
+                <button type="submit" className="btn-primary text-xs mt-2 py-1.5 px-3" disabled={replyLoading}>Send Reply</button>
               </form>
             )}
           </>
-        )}
+        }
       />
-      {/* Render replies recursively, hidden by default */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-8 mt-2">
+        <div className="ml-6 mt-2">
           {!showReplies ? (
-            <button
-              className="px-2 py-1 rounded bg-gradient-to-r from-yellow-200 to-pink-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-pink-300 transition-all text-xs mb-2"
-              onClick={() => setShowReplies(true)}
-            >Show Replies ({comment.replies.length})</button>
+            <button className="text-xs text-primary font-medium hover:underline" onClick={() => setShowReplies(true)}>
+              Show {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+            </button>
           ) : (
             <>
-              <button
-                className="px-2 py-1 rounded bg-gradient-to-r from-pink-200 to-yellow-200 text-purple-700 font-bold shadow border border-pink-300 hover:bg-yellow-300 transition-all text-xs mb-2"
-                onClick={() => setShowReplies(false)}
-              >Hide Replies</button>
+              <button className="text-xs text-muted hover:text-dark font-medium mb-2" onClick={() => setShowReplies(false)}>Hide replies</button>
               {comment.replies.map(reply => (
                 <RecursiveComment key={reply.id} comment={reply} depth={depth + 1} />
               ))}
@@ -215,50 +151,21 @@ function RecursiveComment({ comment, depth }) {
   );
 }
 
-
-// ...existing code...
-
-const categories = [
-  { key: 'Academics', label: '📚 Academics', color: 'bg-gradient-to-r from-pink-400 to-pink-500 text-white' },
-  { key: 'Arts', label: '🎨 Arts', color: 'bg-gradient-to-r from-orange-300 to-orange-400 text-white' },
-  { key: 'Sports', label: '🏅 Sports', color: 'bg-gradient-to-r from-green-400 to-teal-400 text-white' },
-  { key: 'Music', label: '🎵 Music', color: 'bg-gradient-to-r from-purple-400 to-purple-500 text-white' },
-  { key: 'Technology', label: '💻 Technology', color: 'bg-gradient-to-r from-cyan-400 to-blue-400 text-white' },
-  { key: 'Ideas', label: '💡 Ideas', color: 'bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900' },
-  { key: 'Random', label: '✨ Random', color: 'bg-gradient-to-r from-purple-400 to-indigo-400 text-white' },
-];
+function buildCommentTree(flatComments) {
+  const map = {};
+  const roots = [];
+  flatComments.forEach(c => { map[c.id] = { ...c, replies: [] }; });
+  flatComments.forEach(c => {
+    if (c.parent_comment_id && map[c.parent_comment_id]) {
+      map[c.parent_comment_id].replies.push(map[c.id]);
+    } else {
+      roots.push(map[c.id]);
+    }
+  });
+  return roots;
+}
 
 export default function PostDetailPage() {
-      // Utility: Build nested comment tree from flat list
-      function buildCommentTree(flatComments) {
-        const map = {};
-        const roots = [];
-        flatComments.forEach(c => {
-          map[c.id] = { ...c, replies: [] };
-        });
-        flatComments.forEach(c => {
-          if (c.parent_comment_id) {
-            if (map[c.parent_comment_id]) {
-              map[c.parent_comment_id].replies.push(map[c.id]);
-            }
-          } else {
-            roots.push(map[c.id]);
-          }
-        });
-        return roots;
-      }
-    // State for comment image upload
-    const [commentImageFiles, setCommentImageFiles] = useState([]);
-  // State for reporting post (moved inside component)
-  // Image modal state
-  const [showImageModal, setShowImageModal] = useState(false);
-  const [modalImageUrl, setModalImageUrl] = useState('');
-  const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState('');
-  const [reportMsg, setReportMsg] = useState('');
-  const [reportLoading, setReportLoading] = useState(false);
-
-  // Essential hooks and state used throughout the page
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -277,26 +184,29 @@ export default function PostDetailPage() {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [commentImageFiles, setCommentImageFiles] = useState([]);
 
   const [reacting, setReacting] = useState(false);
   const [userReaction, setUserReaction] = useState(null);
   const [reactions, setReactions] = useState({});
 
   const [postAuthorRevealed, setPostAuthorRevealed] = useState(false);
-  const [revealedComments, setRevealedComments] = useState({});
-  const [showProfileBtnFor, setShowProfileBtnFor] = useState(null);
   const [showPostDeleteConfirm, setShowPostDeleteConfirm] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportMsg, setReportMsg] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [modalImageUrl, setModalImageUrl] = useState('');
 
-  // Restore original reaction types (including sad)
   const reactionTypes = [
-    { key: 'like', icon: '👍', color: '', label: 'Like' },
-    { key: 'heart', icon: '❤️', color: 'bg-pink-100', label: 'Heart' },
-    { key: 'haha', icon: '😂', color: '', label: 'Haha' },
-    { key: 'sad', icon: '😢', color: 'bg-blue-100', label: 'Sad' },
-    { key: 'wow', icon: '😮', color: 'bg-purple-100', label: 'Wow' },
+    { key: 'like', icon: '👍' },
+    { key: 'heart', icon: '❤️' },
+    { key: 'haha', icon: '😂' },
+    { key: 'sad', icon: '😢' },
+    { key: 'wow', icon: '😮' },
   ];
 
-  // Fetch post and comments when `id` changes
   useEffect(() => {
     let mounted = true;
     const fetchAll = async () => {
@@ -312,92 +222,36 @@ export default function PostDetailPage() {
         if (!mounted) return;
         setComments(c.data || []);
       } catch (err) {
-        console.error('Failed to fetch post or comments', err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
+        console.error('Failed to fetch post', err);
+      } finally { if (mounted) setLoading(false); }
     };
     fetchAll();
     return () => { mounted = false; };
   }, [id]);
 
-  const handleReportPost = async () => {
-    if (!reportReason.trim()) {
-      setReportMsg('Please enter a reason.');
-      return;
-    }
-    // Add your report logic here (e.g., send report to backend)
-    setReportLoading(true);
-    try {
-      await reportPost(id, reportReason);
-      setReportMsg('Report submitted successfully!');
-      setShowReportModal(false);
-    } catch (err) {
-      setReportMsg('Failed to report post.');
-    } finally {
-      setReportLoading(false);
-    }
-  };
-
   const handleReact = async (type) => {
-      if (!token || reacting) {
-        console.log('Reaction blocked:', { hasToken: !!token, reacting });
-        return;
-      }
-      setReacting(true);
-      let newType = type;
-      if (userReaction === type) newType = null;
-    
-      console.log('Starting reaction process:', { 
-        type: newType, 
-        postId: id, 
-        hasToken: !!token,
-        tokenLength: token?.length,
-        userAgent: navigator.userAgent
-      });
-    
-      try {
-        // Check if we can get post data first (to verify API connectivity)
-        console.log('Testing API connectivity...');
-        await api.get(`/posts/${id}`);
-        console.log('API connectivity OK, sending reaction...');
-      
-        const response = await api.post(`/posts/post/${id}/react`, { emoji: newType });
-        console.log('Reaction response:', response.data);
-      
-        // Refresh the post data to get updated reactions
-        console.log('Refreshing post data...');
-        const r = await api.get(`/posts/${id}`);
-        setData(r.data);
-        if (r.data.reactions) setReactions(r.data.reactions.counts);
-        if (r.data.reactions) setUserReaction(r.data.reactions.user);
-        console.log('Reaction completed successfully');
-      } catch (error) {
-        console.error('Reaction failed:', {
-          message: error.message,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          data: error.response?.data,
-          headers: error.response?.headers,
-          url: error.config?.url,
-          method: error.config?.method
-        });
-      
-        // Show user feedback on error with more specific info
-        const errorMsg = error.response?.data?.error || error.response?.statusText || error.message || 'Unknown error';
-        alert(`Failed to add reaction: ${errorMsg} (Status: ${error.response?.status || 'Unknown'})`);
-      }
-      setReacting(false);
+    if (!token || reacting) return;
+    setReacting(true);
+    let newType = type;
+    if (userReaction === type) newType = null;
+    try {
+      await api.post(`/posts/post/${id}/react`, { emoji: newType });
+      const r = await api.get(`/posts/${id}`);
+      setData(r.data);
+      if (r.data.reactions) setReactions(r.data.reactions.counts);
+      if (r.data.reactions) setUserReaction(r.data.reactions.user);
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Failed to react';
+      alert(errorMsg);
+    }
+    setReacting(false);
   };
 
-  // Audio recording handlers
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     mediaRecorderRef.current = new window.MediaRecorder(stream);
     audioChunksRef.current = [];
-    mediaRecorderRef.current.ondataavailable = e => {
-      audioChunksRef.current.push(e.data);
-    };
+    mediaRecorderRef.current.ondataavailable = e => { audioChunksRef.current.push(e.data); };
     mediaRecorderRef.current.onstop = () => {
       const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       setAudioBlob(blob);
@@ -406,11 +260,7 @@ export default function PostDetailPage() {
     mediaRecorderRef.current.start();
     setRecording(true);
   };
-
-  const stopRecording = () => {
-    mediaRecorderRef.current.stop();
-    setRecording(false);
-  };
+  const stopRecording = () => { mediaRecorderRef.current.stop(); setRecording(false); };
 
   const handleCommentSubmit = async (e) => {
     if (e) e.preventDefault();
@@ -418,32 +268,21 @@ export default function PostDetailPage() {
     setCommentLoading(true);
     try {
       let imageUrls = [];
-      // 1. Upload images if present
       if (commentImageFiles.length > 0) {
         for (const file of commentImageFiles) {
           const formData = new FormData();
           formData.append('file', file);
-          const uploadRes = await api.post('/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          const uploadRes = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
           imageUrls.push(uploadRes.data?.url || uploadRes.data?.imageUrl || '');
         }
       }
-      // 2. Create comment with imageUrls array
-      const res = await api.post(`/posts/${id}/comments`, {
-        content: newComment,
-        anonymous: commentAnonymous,
-        imageUrls,
-      });
+      const res = await api.post(`/posts/${id}/comments`, { content: newComment, anonymous: commentAnonymous, imageUrls });
       const commentId = res.data?.id || (res.data && res.data.comment && res.data.comment.id);
-      // 3. If audio, upload it
       if (audioBlob && commentId) {
         setAudioUploading(true);
         const audioForm = new FormData();
         audioForm.append('file', audioBlob, 'voice-message.webm');
-        await api.post(`/upload/audio/comment/${commentId}`, audioForm, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await api.post(`/upload/audio/comment/${commentId}`, audioForm, { headers: { 'Content-Type': 'multipart/form-data' } });
         setAudioUploading(false);
         setAudioBlob(null);
         setAudioUrl('');
@@ -451,507 +290,251 @@ export default function PostDetailPage() {
       setNewComment('');
       setCommentAnonymous(false);
       setCommentImageFiles([]);
-      // Re-fetch comments after adding a new one
       const response = await api.get(`/posts/${id}/comments`);
       setComments(response.data);
     } catch (err) {
-      alert('Failed to submit comment. Please try again.');
-    } finally {
-      setCommentLoading(false);
-    }
+      alert('Failed to submit comment.');
+    } finally { setCommentLoading(false); }
+  };
+
+  const handleReportPost = async () => {
+    if (!reportReason.trim()) { setReportMsg('Please enter a reason.'); return; }
+    setReportLoading(true);
+    try {
+      await reportPost(id, reportReason);
+      setReportMsg('Report submitted!');
+      setTimeout(() => setShowReportModal(false), 1000);
+    } catch (err) { setReportMsg('Failed to report.'); }
+    finally { setReportLoading(false); }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
-        <div className="cartoon-card text-2xl font-bold text-primary bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
-          <span className="text-4xl animate-spin">💬</span>
-          Loading Forum...
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-3 border-primary/30 border-t-primary animate-spin" />
+          <p className="text-muted font-medium">Loading post...</p>
         </div>
       </div>
     );
   }
+
   if (!data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-100 to-yellow-100">
-        <div className="cartoon-card text-2xl font-bold text-red-600 bg-white/90 p-8 shadow-fun flex flex-col items-center gap-2">
-          <span className="text-4xl">❌</span>
-          Failed to load post. Please check your connection or try again later.
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-medium text-error">Failed to load post.</p>
+          <button className="btn-secondary mt-4 text-sm" onClick={() => navigate('/')}>Back to Forum</button>
         </div>
       </div>
     );
   }
-  const post = data?.post;
-  // Always use backend anonymous flag
-  const isAnonymous = !!post?.anonymous;
-  // Helper: show status label
-  const statusLabel = post.status === 'pending' ? '⏳ Waiting for Admin Approval' : post.status === 'rejected' ? '❌ Rejected by Admin' : post.status === 'approved' ? '✅ Approved' : '';
-  const isAuthor = user && post.user_id === user.id;
 
-  const isAdmin = user && (user.role === 'admin' || user.role === 'teacher' || user.role === 'shen');
+  const post = data?.post;
+  const isAnonymous = !!post?.anonymous;
+  const isAuthor = user && post.user_id === user.id;
+  const isAdmin = user && (user.role === 'admin' || user.role === 'teacher');
+  const statusLabel = post.status === 'pending' ? 'Pending Approval' : post.status === 'rejected' ? 'Rejected' : '';
+  const canReveal = user?.name === 'SHEN' || user?.name === 'Ari';
 
   return (
-  <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
-      {/* Navigation Bar Placeholder (if any) */}
-      <div className="h-16 w-full" />
-      {/* Close Forum Button just above the post card for mobile */}
-      <div className="w-full flex justify-start px-4 mb-2" style={{ maxWidth: '700px', margin: '0 auto' }}>
-        <button
-          type="button"
-          className="px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
-          style={{ fontFamily: 'Baloo, Fredoka, Comic Neue, cursive' }}
-          onClick={() => navigate('/')}
-          aria-label="Close Forum and return to Home"
-        >
-    <span className="text-2xl">⬅️</span> <span className="inline">Close Forum</span>
-        </button>
-      </div>
-      {/* Floating pastel circles */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <span className="absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30"></span>
-        <span className="absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20"></span>
-        <span className="absolute left-1/4 bottom-10 w-32 h-32 rounded-full bg-pink-200 opacity-20"></span>
-        <span className="absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20"></span>
-        <span className="absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20"></span>
-        <span className="absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30"></span>
-      </div>
-  <div className="relative z-10 max-w-3xl mx-auto py-12 space-y-8">
-        {/* Post Card - Redesigned */}
-  <div className="bg-white/95 rounded-3xl shadow-fun border-4 border-purple-200 p-0 sm:p-0 animate-pop flex flex-col gap-0" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
-          {/* Header Row: User info left, category right */}
-          <div className="flex justify-between items-start px-8 pt-8 pb-2">
-            <div className="flex items-center gap-4">
-              {/* Author info: hide if anonymous */}
-              {isAnonymous && !postAuthorRevealed ? (
-                <div className="flex items-center gap-4 ml-2">
-                  <div className="w-20 h-20 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center text-5xl text-white font-bold shadow-fun overflow-hidden">
-                    <span className="text-5xl">👤</span>
-                  </div>
-                  <div className="flex flex-col justify-center">
-                    <span className="font-extrabold text-base sm:text-lg text-gray-500 leading-tight">Anonymous</span>
-                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                    {(user?.name === 'SHEN' || user?.name === 'Ari') && (
-                      <button
-                        className="mt-2 px-3 py-1 rounded-xl bg-yellow-200 text-purple-800 font-bold text-xs border border-yellow-400 hover:bg-yellow-300 transition-all"
-                        onClick={() => setPostAuthorRevealed(true)}
-                      >Reveal Author</button>
-                    )}
-                  </div>
-                </div>
-              ) : isAnonymous && postAuthorRevealed ? (
-                <div className="flex items-center gap-4 ml-2">
-                  <img
-                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                    alt="author avatar"
-                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-purple-300 shadow"
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                  <div className="flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight">{post.users?.name || post.author_name}</span>
-                      <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-1">
-                      {(() => {
-                        let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
-                        if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                        return badges.map((badge, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                        ));
-                      })()}
-                    </div>
-                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                    {isAdmin && (
-                      <button
-                        className="mt-2 px-3 py-1 rounded-xl bg-yellow-100 text-purple-800 font-bold text-xs border border-yellow-400 hover:bg-yellow-200 transition-all"
-                        onClick={() => setPostAuthorRevealed(false)}
-                      >Hide Author</button>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center gap-4 ml-2">
-                  <img
-                    src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'}
-                    alt="author avatar"
-                    className="w-20 h-20 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-purple-300 shadow"
-                    onError={e => { e.target.src = '/Cute-Cat.png'; }}
-                  />
-                  <div className="flex flex-col justify-center">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-extrabold text-base sm:text-lg text-gray-800 leading-tight">{post.users?.name || post.author_name}</span>
-                      <Link to={`/profile/${post.user_id}`} className="px-2 py-1 rounded-xl bg-purple-400 text-white font-bold text-xs">View Profile</Link>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-1">
-                      {(() => {
-                        let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
-                        if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
-                        return badges.map((badge, idx) => (
-                          <span key={idx} className="px-2 py-0.5 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 text-xs font-bold uppercase tracking-wider">{badge}</span>
-                        ));
-                      })()}
-                    </div>
-                    <span className="text-gray-400 text-xs font-semibold">{post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}</span>
-                  </div>
-                </div>
+    <div className="max-w-3xl mx-auto px-4 py-6">
+      <button
+        className="btn-secondary text-sm mb-4 flex items-center gap-1.5"
+        onClick={() => navigate('/')}
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+        Back to Forum
+      </button>
+
+      <AnimatePresence>
+        {showReportModal && (
+          <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div className="bg-white rounded-2xl shadow-elevated p-6 max-w-sm w-full mx-4" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+              <h3 className="text-lg font-semibold text-dark mb-3">Report Post</h3>
+              <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" placeholder="Reason for reporting" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
+              {reportMsg && <p className="text-xs text-muted mt-2">{reportMsg}</p>}
+              <div className="flex gap-3 mt-4">
+                <button className="btn-primary text-sm flex-1" onClick={handleReportPost} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
+                <button className="btn-secondary text-sm flex-1" onClick={() => setShowReportModal(false)}>Cancel</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {showImageModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60" onClick={() => setShowImageModal(false)}>
+          <div className="relative max-w-[90vw] max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <img src={modalImageUrl} alt="" className="rounded-2xl max-w-full max-h-[85vh] object-contain bg-white shadow-elevated" />
+            <button className="absolute top-2 right-2 bg-white/80 rounded-full p-2 hover:bg-white transition-colors shadow" onClick={() => setShowImageModal(false)}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Post Card */}
+      <motion.div className="card p-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            {isAnonymous && !postAuthorRevealed ? (
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              </div>
+            ) : (
+              <img src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 flex-shrink-0" onError={e => { e.target.src = '/Cute-Cat.png'; }} />
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-dark">
+                  {isAnonymous && !postAuthorRevealed ? 'Anonymous' : (post.users?.name || post.author_name)}
+                </span>
+                {(() => {
+                  let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
+                  if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
+                  return badges.map((badge, idx) => (
+                    <span key={idx} className="badge bg-primary/5 text-primary/70">{badge}</span>
+                  ));
+                })()}
+              </div>
+              <p className="text-xs text-muted mt-0.5">
+                {post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
+              </p>
+              {isAnonymous && canReveal && (
+                <button className="text-xs text-primary font-medium hover:underline mt-1" onClick={() => setPostAuthorRevealed(v => !v)}>
+                  {postAuthorRevealed ? 'Hide Author' : 'Reveal Author'}
+                </button>
               )}
             </div>
-            <span className={`px-4 py-1 rounded-full text-sm shadow font-extrabold font-cartoon tracking-wide drop-shadow-lg mt-2 ${categories.find(c => c.key === post.category)?.color || 'bg-gray-400 text-white'}`}>
-              {categories.find(c => c.key === post.category)?.label || post.category}
-            </span>
           </div>
-          {/* Title & Status */}
-          <div className="px-8 pt-2 pb-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-purple-700 mb-2 text-left drop-shadow-lg font-cartoon break-words whitespace-pre-wrap" style={{letterSpacing:1, wordBreak: 'break-word', whiteSpace: 'pre-wrap'}}>
-                {post.title}
-                {post.locked && <span className="text-error text-2xl font-bold ml-2">🔒</span>}
-              </h1>
-            </div>
-            {/* Report Post Modal */}
-            {showReportModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                <div className="cartoon-card max-w-md w-full border-4 border-yellow-400 bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
-                  <h2 className="text-2xl font-extrabold mb-2 text-pink-500 drop-shadow">Report Post</h2>
-                  <div className="mb-4 text-lg font-bold text-yellow-700">Why are you reporting this post?</div>
-                  <input
-                    className="w-full rounded-xl px-4 py-3 border-2 border-pink-300 bg-yellow-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none mb-4"
-                    placeholder="Reason for reporting"
-                    value={reportReason}
-                    onChange={e => setReportReason(e.target.value)}
-                    disabled={reportLoading}
-                  />
-                  {reportMsg && <div className="text-error bg-pink-100 rounded-xl px-4 py-2 border-2 border-pink-300 w-full text-center animate-wiggle mb-2">{reportMsg}</div>}
-                  <div className="flex gap-4 justify-center mt-2">
-                    <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-yellow-400 to-pink-400" onClick={handleReportPost} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
-                    <button className="fun-btn px-6 py-3 text-lg bg-gradient-to-r from-gray-400 to-gray-600" onClick={() => setShowReportModal(false)} disabled={reportLoading}>Cancel</button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {/* Forum status indicators */}
-            <div className="flex gap-2 items-center mb-1">
-              {post.pinned && <span className="text-accent font-bold flex items-center gap-1"><span className="text-xl">📌</span> This Forum is pinned by an admin</span>}
-              {post.locked && <span className="text-error font-bold flex items-center gap-1"><span className="text-xl">🔒</span> This Forum has been locked by an admin</span>}
-              {statusLabel && isAuthor && (
-                <span className={`ml-2 px-3 py-1 rounded-full font-bold text-xs shadow ${post.status === 'pending' ? 'bg-yellow-200 text-yellow-900' : post.status === 'rejected' ? 'bg-red-200 text-red-700' : 'bg-green-200 text-green-700'}`}>{statusLabel}</span>
-              )}
-            </div>
-            {/* Cancel Post button for author if pending */}
-            {isAuthor && (
-              <>
-                <button
-                  className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gray-400 to-gray-600 text-white font-bold shadow-fun border-2 border-red-200 hover:scale-105 transition-all"
-                  onClick={() => setShowPostDeleteConfirm(true)}
-                >Delete Post</button>
-                {showPostDeleteConfirm && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-                    <div className="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center">
-                      <div className="font-bold text-lg mb-3 text-purple-700">Are you sure you want to delete this forum?</div>
-                      <div className="flex gap-4">
-                        <button
-                          className="px-4 py-2 rounded bg-gradient-to-r from-pink-400 to-orange-300 text-white font-bold shadow hover:scale-105 transition-all"
-                          onClick={async () => {
-                            setShowPostDeleteConfirm(false);
-                            await api.delete(`/posts/${post.id}`);
-                            navigate('/');
-                          }}
-                        >Yes</button>
-                        <button
-                          className="px-4 py-2 rounded bg-gray-200 text-gray-700 font-bold shadow hover:scale-105 transition-all"
-                          onClick={() => setShowPostDeleteConfirm(false)}
-                        >No</button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
+          <span className={`badge ${categories.find(c => c.key === post.category)?.color || 'bg-gray-100 text-gray-600'}`}>
+            {post.category}
+          </span>
+        </div>
+
+        <h1 className="text-2xl font-bold text-dark mb-2 break-words">
+          {post.title}
+          {post.locked && <span className="ml-2 text-muted">🔒</span>}
+        </h1>
+
+        {statusLabel && isAuthor && (
+          <div className={`badge mb-3 ${post.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
+            {statusLabel}
           </div>
-          {/* Content with gradient border */}
-          <div className="px-8 pt-4 pb-4">
-            <div className="rounded-3xl p-1" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)'}}>
-              <div className="bg-white rounded-2xl p-6 min-h-[180px] flex flex-col items-center justify-center">
-                {Array.isArray(post.image_url) && post.image_url.length > 0 ? (
-                  <div className="flex flex-wrap justify-center gap-3 my-2">
-                    {post.image_url.map((url, idx) => (
-                      <img
-                        key={idx}
-                        alt={`Post ${idx + 1}`}
-                        className="rounded-2xl max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
-                        src={getAssetUrl(url)}
-                        onClick={() => {
-                          setModalImageUrl(getAssetUrl(url));
-                          setShowImageModal(true);
-                        }}
-                      />
-                    ))}
-                  </div>
-                ) : (typeof post.image_url === 'string' && post.image_url) ? (
-                  <img
-                    alt="Post"
-                    className="rounded-2xl my-2 max-h-64 object-contain mx-auto border-2 border-purple-100 cursor-pointer hover:scale-105 transition duration-150"
-                    src={getAssetUrl(post.image_url)}
-                    onClick={() => {
-                      setModalImageUrl(getAssetUrl(post.image_url));
-                      setShowImageModal(true);
-                    }}
-                  />
-                ) : null}
-                      {/* Image Modal */}
-                      {showImageModal && (
-                        <div
-                          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-80 animate-pop"
-                          onClick={() => setShowImageModal(false)}
-                        >
-                          <div
-                            className="relative w-full h-full flex items-center justify-center"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <img
-                              src={modalImageUrl}
-                              alt="Preview"
-                              className="rounded-2xl object-contain shadow-2xl border-4 border-pink-200 bg-white"
-                              style={{
-                                background: 'white',
-                                maxWidth: '100vw',
-                                maxHeight: '90vh',
-                                width: '100%',
-                                height: 'auto',
-                                display: 'block',
-                                margin: 'auto',
-                                boxSizing: 'border-box',
-                              }}
-                            />
-                            <button
-                              className="absolute top-2 right-2 bg-pink-500 text-white rounded-full p-3 shadow-lg hover:bg-pink-700 transition text-xl focus:outline-none"
-                              style={{ fontSize: '2rem', minWidth: '44px', minHeight: '44px', touchAction: 'manipulation' }}
-                              onClick={() => setShowImageModal(false)}
-                              aria-label="Close image preview"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                <p className="whitespace-pre-wrap break-words text-lg md:text-xl font-semibold text-gray-700 text-left w-full mb-2 drop-shadow-lg" style={{fontWeight: 600}}>{post.content}</p>
-                {/* Voice message audio player for post */}
-                {post.audio_url && (
-                  <div className="mt-3 w-full flex justify-center">
-                    <VoiceMessagePlayer src={post.audio_url} />
-                  </div>
-                )}
-                {post.link_url && <a className="text-pink-500 underline font-bold" href={post.link_url} target="_blank" rel="noreferrer">🔗 Visit link</a>}
-              </div>
-            </div>
-          </div>
-          {/* Reaction Row - improved */}
-          <div className="flex flex-row items-center justify-start gap-2 sm:gap-3 px-4 sm:px-8 pb-6 pt-2 overflow-x-auto">
-            {reactionTypes.map(rt => (
-              <button
-                key={rt.key}
-                type="button"
-                disabled={!token || reacting}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  console.log('Button clicked:', rt.key, 'disabled:', !token || reacting);
-                  if (!reacting && token) {
-                    handleReact(rt.key);
-                  }
-                }}
-                className={`flex flex-col items-center px-3 sm:px-4 py-3 sm:py-4 rounded-2xl font-extrabold text-lg shadow-fun border-4 transition-all duration-150 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 active:scale-95 touch-manipulation min-w-[60px] sm:min-w-[70px] cursor-pointer ${userReaction === rt.key ? 'border-yellow-300 scale-105 bg-gradient-to-br from-pink-200 to-yellow-100' : 'border-yellow-200 bg-white'} ${rt.color} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                aria-pressed={userReaction === rt.key}
-                aria-label={rt.label}
-                style={{ WebkitTapHighlightColor: 'transparent', userSelect: 'none' }}
-              >
-                <span className="text-xl sm:text-2xl mb-0.5 drop-shadow-lg pointer-events-none select-none">{rt.icon}</span>
-                <span className="text-xs font-bold text-purple-700 pointer-events-none select-none">{reactions[rt.key] || 0}</span>
-              </button>
+        )}
+
+        {post.pinned && <p className="text-xs text-muted mb-3">📌 Pinned by admin</p>}
+        {post.locked && <p className="text-xs text-muted mb-3">🔒 Locked by admin</p>}
+
+        <div className="prose prose-sm max-w-none text-dark mb-4">
+          <p className="whitespace-pre-wrap break-words">{post.content}</p>
+        </div>
+
+        {Array.isArray(post.image_url) && post.image_url.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {post.image_url.map((url, idx) => (
+              <img key={idx} src={getAssetUrl(url)} alt="" className="rounded-xl max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(url)); setShowImageModal(true); }} />
             ))}
           </div>
-          {/* Report Button moved below reactions, bottom right corner */}
-          <div className="w-full flex justify-end px-8 pb-4">
+        )}
+        {typeof post.image_url === 'string' && post.image_url && (
+          <img src={getAssetUrl(post.image_url)} alt="" className="rounded-xl max-h-64 object-contain mb-4 cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(post.image_url)); setShowImageModal(true); }} />
+        )}
+
+        {post.audio_url && <div className="mb-4"><VoiceMessagePlayer src={post.audio_url} /></div>}
+        {post.link_url && <a className="text-primary font-medium text-sm hover:underline inline-flex items-center gap-1 mb-4" href={post.link_url} target="_blank" rel="noreferrer">Visit link ↗</a>}
+
+        {/* Reactions */}
+        <div className="flex items-center gap-2 py-3 border-t border-gray-100">
+          {reactionTypes.map(rt => (
             <button
-              className="fun-btn px-4 py-2 text-base bg-gradient-to-r from-yellow-400 to-pink-400 hover:from-yellow-500 hover:to-pink-500"
-              onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}
-              title="Report post"
-            >Report 🚩</button>
-          </div>
+              key={rt.key}
+              type="button"
+              disabled={!token || reacting}
+              onClick={() => handleReact(rt.key)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${userReaction === rt.key ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-50 text-muted border border-gray-100 hover:bg-gray-100'} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span>{rt.icon}</span>
+              <span>{reactions[rt.key] || 0}</span>
+            </button>
+          ))}
+          <button className="ml-auto text-xs text-muted hover:text-dark font-medium flex items-center gap-1" onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
+            Report
+          </button>
         </div>
-        {/* Comment Section - New Format */}
-        <div className="bg-white/95 rounded-[2.5rem] shadow-fun border-4 border-purple-200 p-4 sm:p-8 animate-pop" style={{backdropFilter:'blur(6px)', boxShadow:'0 8px 32px 0 rgba(186, 104, 200, 0.18), 0 1.5px 0 0 #fcb7ee'}}>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-purple-700 mb-4 text-center drop-shadow-lg flex items-center gap-2">
-            <span className="text-3xl">💬</span> Comments
-          </h3>
-          <style>{`
-            @media (max-width: 640px) {
-              .comment-card-mobile {
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 0.75rem !important;
-                padding: 1rem !important;
-                position: relative !important;
-              }
-              .comment-avatar-mobile {
-                width: 3rem !important;
-                height: 3rem !important;
-                border-radius: 50% !important;
-                object-fit: cover !important;
-                margin-bottom: 0 !important;
-                box-shadow: 0 2px 8px rgba(186,104,200,0.12);
-              }
-              .comment-meta-mobile {
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 0.5rem !important;
-              }
-              .comment-delete-mobile {
-                margin-top: 0 !important;
-                align-self: flex-end !important;
-              }
-              .comment-date-mobile {
-                position: absolute !important;
-                right: 1rem !important;
-                bottom: 0.5rem !important;
-                font-size: 0.85rem !important;
-                color: #888 !important;
-                text-align: right !important;
-              }
-            }
-          `}</style>
-          {/* Only show comments if post is approved or author is viewing */}
-          {(post.status === 'approved' || isAuthor) ? (
-            <>
-              <div className="mb-4">
-                {comments.length === 0 && (
-                  <div className="text-center text-purple-300 font-bold">No comments yet. Be the first to comment!</div>
-                )}
-                {/* Render nested comments recursively */}
-                {buildCommentTree(comments).map((comment) => (
-                  <RecursiveComment
-                    key={comment.id}
-                    comment={comment}
-                    depth={0}
-                  />
-                ))}
 
+        {isAuthor && (
+          <button className="text-xs text-error font-medium hover:underline mt-2" onClick={() => setShowPostDeleteConfirm(true)}>Delete post</button>
+        )}
+      </motion.div>
 
-              </div>
-              {post.locked ? (
-                <div className="flex flex-col items-center justify-center mt-6">
-                  <div className="text-error font-extrabold text-lg flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-6 py-4 mb-2">
-                    <span className="text-2xl">🔒</span> This Forum has been locked by an admin
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleCommentSubmit} className="flex items-end gap-3 mt-6">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gradient-to-br from-pink-200 to-yellow-200 text-2xl font-bold">
-                    😊
-                  </div>
-                  <div className="flex-1">
-                    <textarea
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Write a comment... 💭"
-                      className="w-full max-w-[600px] p-3 rounded-xl border border-purple-200 focus:ring-2 focus:ring-pink-200 focus:outline-none bg-white/80 text-base shadow-sm resize-none min-h-[48px] max-h-[200px] sm:min-h-[48px] min-h-[70px] sm:text-base text-lg comment-textarea-mobile"
-                      style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-                      rows={1}
-                      maxLength={500}
-                      disabled={commentLoading}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          handleCommentSubmit();
-                        }
-                      }}
-                    />
-                    <style>{`
-                      @media (max-width: 600px) {
-                        .comment-textarea-mobile {
-                          min-height: 90px !important;
-                          font-size: 1.08rem !important;
-                        }
-                      }
-                    `}</style>
-                    <label className="flex items-center gap-2 mt-2">
-                      <input
-                        type="checkbox"
-                        checked={commentAnonymous}
-                        onChange={e => setCommentAnonymous(e.target.checked)}
-                        className="w-5 h-5 accent-pink-500"
-                      />
-                      <span className="font-bold text-pink-500">Comment Anonymously</span>
-                    </label>
-                    {/* Image upload for comment */}
-                    <div className="mt-2 flex gap-4 items-start">
-                      <div className="w-full flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch">
-                        {/* Image Upload */}
-                        <div className="flex flex-col items-start flex-1">
-                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Upload Images <span className="font-normal text-purple-400">(optional, you can select multiple)</span></label>
-                          <div className="relative">
-                            <input
-                              id="comment-image-upload"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              onChange={e => {
-                                if (e.target.files) {
-                                  setCommentImageFiles(Array.from(e.target.files));
-                                }
-                              }}
-                              disabled={commentLoading}
-                              className="hidden"
-                            />
-                            <label htmlFor="comment-image-upload" className="inline-block px-3 py-2 rounded-lg bg-gradient-to-r from-pink-100 to-yellow-100 text-purple-700 font-bold shadow border border-pink-200 cursor-pointer hover:bg-pink-200 transition-all text-xs sm:text-sm">
-                              <span className="mr-1">📷</span> Choose Files
-                            </label>
-                            <span className="ml-1 text-xs sm:text-sm text-gray-500 font-semibold break-all block max-w-[120px] sm:max-w-none">{commentImageFiles.length > 0 ? commentImageFiles.map(f => f.name).join(', ') : 'No files'}</span>
-                          </div>
-                          {commentImageFiles.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-2">
-                              {commentImageFiles.map((file, idx) => (
-                                <img key={idx} src={URL.createObjectURL(file)} alt={`Preview ${idx + 1}`} className="rounded-lg max-h-20 border border-pink-100 shadow" />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                        {/* Voice Message */}
-                        <div className="flex flex-col items-start flex-1">
-                          <label className="mb-1 font-bold text-pink-500 text-xs sm:text-sm">Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
-                          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 items-start sm:items-center">
-                            <button
-                              type="button"
-                              className={`rounded px-3 py-2 font-bold shadow border border-pink-200 bg-gradient-to-r from-pink-50 to-yellow-50 text-purple-700 transition-all text-xs sm:text-sm ${recording ? 'bg-yellow-100' : ''}`}
-                              onClick={recording ? stopRecording : startRecording}
-                              disabled={audioUploading}
-                            >{recording ? 'Stop Recording' : 'Record Voice'}</button>
-                            {audioUrl && (
-                              <audio controls src={audioUrl} className="ml-0 sm:ml-1" style={{ height: '32px', width: '120px' }} />
-                            )}
-                            {audioUrl && (
-                              <button type="button" className="ml-0 sm:ml-1 text-red-500 font-bold text-xs sm:text-sm" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 rounded-2xl bg-gradient-to-r from-pink-400 to-orange-300 text-white font-extrabold shadow-fun hover:scale-105 transition-all flex items-center gap-2 text-base"
-                    style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-                  >
-                    <span className="text-lg">✈️</span> Send
+      {showPostDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <motion.div className="bg-white rounded-2xl shadow-elevated p-6 max-w-sm w-full mx-4 text-center" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+            <p className="text-dark font-medium mb-4">Are you sure you want to delete this post?</p>
+            <div className="flex gap-3 justify-center">
+              <button className="btn-error text-sm" onClick={async () => { setShowPostDeleteConfirm(false); await api.delete(`/posts/${post.id}`); navigate('/'); }}>Delete</button>
+              <button className="btn-secondary text-sm" onClick={() => setShowPostDeleteConfirm(false)}>Cancel</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Comments Section */}
+      <motion.div className="card p-6 mt-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+        <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+          Comments ({comments.length})
+        </h3>
+
+        {(post.status === 'approved' || isAuthor) ? (
+          <>
+            <div className="mb-6">
+              {comments.length === 0 && <p className="text-sm text-muted text-center py-4">No comments yet. Be the first!</p>}
+              {buildCommentTree(comments).map(comment => (
+                <RecursiveComment key={comment.id} comment={comment} depth={0} />
+              ))}
+            </div>
+
+            {post.locked ? (
+              <div className="bg-gray-50 rounded-xl p-4 text-center text-sm text-muted">🔒 This post is locked. Comments are disabled.</div>
+            ) : (
+              <form onSubmit={handleCommentSubmit}>
+                <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Write a comment..." className="w-full p-3 rounded-xl border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" rows={2} disabled={commentLoading} />
+                <div className="flex items-center gap-3 mt-2 flex-wrap">
+                  <label className="flex items-center gap-1.5 text-xs text-muted cursor-pointer hover:text-dark">
+                    <input type="checkbox" checked={commentAnonymous} onChange={e => setCommentAnonymous(e.target.checked)} className="rounded" />
+                    Comment anonymously
+                  </label>
+                  <label className="text-xs text-muted cursor-pointer hover:text-dark">
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={e => { if (e.target.files) setCommentImageFiles(Array.from(e.target.files)); }} disabled={commentLoading} />
+                    Attach images
+                  </label>
+                  <button type="button" className={`text-xs text-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={audioUploading}>
+                    {recording ? 'Stop recording' : 'Record voice'}
                   </button>
-                </form>
-              )}
-            {/* End comments and comment form section */}
+                  {audioUrl && <audio controls src={audioUrl} className="h-8" />}
+                  {audioUrl && <button type="button" className="text-xs text-error" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>}
+                  <button type="submit" className="btn-primary text-sm ml-auto py-1.5 px-4" disabled={commentLoading}>
+                    {commentLoading ? 'Sending...' : 'Send'}
+                  </button>
+                </div>
+                {commentImageFiles.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {commentImageFiles.map((file, idx) => (
+                      <img key={idx} src={URL.createObjectURL(file)} alt="" className="rounded-lg max-h-16 border border-gray-200" />
+                    ))}
+                  </div>
+                )}
+              </form>
+            )}
           </>
-          ) : (
-            <div className="text-center text-purple-400 font-bold py-8">This post is not public yet. Comments will be available after admin approval.</div>
-          )}
-        </div>
-      </div>
+        ) : (
+          <p className="text-sm text-muted text-center py-4">Comments will be available after admin approval.</p>
+        )}
+      </motion.div>
     </div>
   );
 }
