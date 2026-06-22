@@ -872,7 +872,7 @@ const createPostsRouter = () => {
         try {
           const { notifyUser } = await import('../lib/notify.js');
           const { sendEmail } = await import('../lib/email.js');
-          const frUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
+          const frUrl = process.env.FRONTEND_URL || 'https://studentforum-uk42.onrender.com';
 
           // Notify post author of new comment
           if (postRes && postRes.user_id && postRes.user_id !== req.user.id) {

@@ -206,7 +206,7 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
         .insert([{ user_id: user.id, token, expires_at: expiresAt.toISOString(), used: false }]);
       if (insertError) return res.status(500).json({ error: 'Failed to create reset token' });
 
-      const baseUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
+      const baseUrl = process.env.FRONTEND_URL || 'https://studentforum-uk42.onrender.com';
       const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
       const { sendEmail } = await import('../lib/email.js');
@@ -685,7 +685,7 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
       if (updateError) return res.status(500).json({ error: 'Failed to update request status' });
       const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-      const frUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
+      const frUrl = process.env.FRONTEND_URL || 'https://studentforum-uk42.onrender.com';
       try {
         const { sendEmail } = await import('../lib/email.js');
         await sendEmail({
