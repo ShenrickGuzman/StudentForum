@@ -1,29 +1,27 @@
 import nodemailer from 'nodemailer';
-import dns from 'dns/promises';
+import dns from 'dns';
+try { dns.setDefaultResultOrder('ipv4first'); } catch {} // Node 17+
 
 let transporter = null;
 
-async function getTransporter() {
+function getTransporter() {
   if (transporter) return transporter;
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.warn('SMTP not configured — emails will be logged but not sent');
     return null;
   }
-  // Resolve hostname to IPv4 (Render doesn't support outbound IPv6)
-  let resolvedHost = SMTP_HOST;
-  try {
-    const addresses = await dns.resolve4(SMTP_HOST);
-    if (addresses && addresses.length > 0) resolvedHost = addresses[0];
-  } catch {}
+  const port = parseInt(SMTP_PORT || '587', 10);
   transporter = nodemailer.createTransport({
-    host: resolvedHost,
-    port: parseInt(SMTP_PORT || '587', 10),
-    secure: SMTP_PORT === '465',
+    host: SMTP_HOST,
+    port,
+    secure: port === 465,
+    requireTLS: port !== 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000
+    tls: { rejectUnauthorized: false },
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000
   });
   return transporter;
 }
