@@ -449,7 +449,7 @@ function HomePage() {
                       let badges = Array.isArray(p.badges) ? [...p.badges] : [];
                       if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
                       return badges.slice(0, 2).map((badge, idx) => (
-                        <span key={idx} className="badge bg-primary/5 text-primary/70">{badge}</span>
+                        <span key={idx} className={`px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border border-white/40 ${badge === 'ADMIN' ? 'bg-red-500 text-white' : badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-primary/5 text-primary/70'}`}>{badge}</span>
                       ));
                     })()}
                   </div>

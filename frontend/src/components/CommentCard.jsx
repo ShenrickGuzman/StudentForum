@@ -86,7 +86,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
           <span className="font-bold text-sm text-dark dark:text-dark-text cursor-pointer hover:underline" onClick={() => userId && navigate(`/profile/${userId}`)}>{username}</span>
           <div className="flex gap-1 mt-0.5">
             {Array.isArray(badges) && badges.length > 0 && badges.map((badge, idx) => (
-              <span key={idx} className="px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold uppercase tracking-wide">{badge}</span>
+              <span key={idx} className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${badge === 'ADMIN' ? 'bg-red-500 text-white border-red-500' : badge === 'DEVELOPER' ? 'bg-blue-500 text-white border-blue-500' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>{badge}</span>
             ))}
           </div>
         </div>
