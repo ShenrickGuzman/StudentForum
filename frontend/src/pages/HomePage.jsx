@@ -234,7 +234,7 @@ function HomePage() {
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl mx-auto mb-4">👋</div>
-              <h3 className="text-xl font-bold text-dark mb-2">Welcome to the Student Forum!</h3>
+              <h3 className="text-xl font-bold text-dark mb-2">Welcome to St. Hyacinth's Forum!</h3>
               <p className="text-muted text-sm mb-6">Ask questions, share ideas, and connect with classmates.</p>
               <label className="flex items-center justify-center gap-2 mb-4 text-sm text-muted">
                 <input type="checkbox" checked={dontShowAgain} onChange={e => setDontShowAgain(e.target.checked)} className="rounded" />
