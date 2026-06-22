@@ -1,56 +1,51 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
+import { motion } from 'framer-motion';
 
 const DRAFT_KEY = 'mf_newpost_draft';
+
+const categories = [
+  { key: 'Academics', label: 'Academics', icon: '📚' },
+  { key: 'Arts', label: 'Arts', icon: '🎨' },
+  { key: 'Music', label: 'Music', icon: '🎵' },
+  { key: 'Sports', label: 'Sports', icon: '🏀' },
+  { key: 'Technology', label: 'Technology', icon: '💻' },
+  { key: 'Ideas', label: 'Ideas', icon: '💡' },
+  { key: 'Random', label: 'Random', icon: '✨' },
+];
+
 export default function NewPostPage() {
-  // Audio recording state
+  const navigate = useNavigate();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [category, setCategory] = useState('Academics');
+  const [linkUrl, setLinkUrl] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
+  const [imageFiles, setImageFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [recording, setRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioUrl, setAudioUrl] = useState('');
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-    // Audio recording handlers
-    const startRecording = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new window.MediaRecorder(stream);
-      audioChunksRef.current = [];
-      mediaRecorderRef.current.ondataavailable = e => {
-        audioChunksRef.current.push(e.data);
-      };
-      mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        setAudioBlob(blob);
-        setAudioUrl(URL.createObjectURL(blob));
-      };
-      mediaRecorderRef.current.start();
-      setRecording(true);
-    };
-
-    const stopRecording = () => {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    };
-  const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState('Academics');
-  const categories = [
-    { key: 'Academics', icon: '📚', colors: 'from-pink-400 to-pink-500' },
-    { key: 'Arts', icon: '🎨', colors: 'from-rose-400 to-orange-300' },
-    { key: 'Music', icon: '🎵', colors: 'from-indigo-400 to-fuchsia-400' },
-    { key: 'Sports', icon: '🏀', colors: 'from-emerald-400 to-teal-400' },
-    { key: 'Technology', icon: '💻', colors: 'from-cyan-400 to-blue-500' },
-    { key: 'Ideas', icon: '💡', colors: 'from-amber-300 to-yellow-400' },
-    { key: 'Random', icon: '✨', colors: 'from-purple-400 to-violet-500' },
-  ];
-  const [linkUrl, setLinkUrl] = useState('');
-  const [anonymous, setAnonymous] = useState(false);
   const textareaRef = useRef(null);
-  const [imageFiles, setImageFiles] = useState([]);
-  const [uploading, setUploading] = useState(false);
 
-  // Load draft on mount
+  const startRecording = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorderRef.current = new window.MediaRecorder(stream);
+    audioChunksRef.current = [];
+    mediaRecorderRef.current.ondataavailable = e => { audioChunksRef.current.push(e.data); };
+    mediaRecorderRef.current.onstop = () => {
+      const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      setAudioBlob(blob);
+      setAudioUrl(URL.createObjectURL(blob));
+    };
+    mediaRecorderRef.current.start();
+    setRecording(true);
+  };
+  const stopRecording = () => { mediaRecorderRef.current.stop(); setRecording(false); };
+
   useEffect(() => {
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft) {
@@ -62,16 +57,13 @@ export default function NewPostPage() {
         if (data.linkUrl) setLinkUrl(data.linkUrl);
       } catch {}
     }
-    // eslint-disable-next-line
   }, []);
 
-  // Auto-save draft as user types
   useEffect(() => {
     const draft = { title, content, category, linkUrl };
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }, [title, content, category, linkUrl]);
 
-  // Auto-resize textarea for mobile ergonomics
   useEffect(() => {
     if (textareaRef.current) {
       const el = textareaRef.current;
@@ -79,12 +71,6 @@ export default function NewPostPage() {
       el.style.height = Math.min(el.scrollHeight, 420) + 'px';
     }
   }, [content]);
-
-  function handleFileChange(e) {
-    if (e.target.files) {
-      setImageFiles(Array.from(e.target.files));
-    }
-  }
 
   async function submit(e) {
     e.preventDefault();
@@ -95,215 +81,123 @@ export default function NewPostPage() {
         for (const file of imageFiles) {
           const formData = new FormData();
           formData.append('file', file);
-          const uploadRes = await api.post('/upload', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
+          const uploadRes = await api.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
           imageUrls.push(uploadRes.data.url);
         }
       }
-
       let audioFileUrl = '';
-      console.log('audioBlob:', audioBlob);
       if (audioBlob) {
-        console.log('Starting audio upload...');
         const audioForm = new FormData();
         audioForm.append('file', audioBlob, 'voice-message.webm');
-        const audioRes = await api.post('/upload/audio', audioForm, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        console.log('Audio upload response:', audioRes);
+        const audioRes = await api.post('/upload/audio', audioForm, { headers: { 'Content-Type': 'multipart/form-data' } });
         audioFileUrl = audioRes.data.url;
-        console.log('Audio URL:', audioFileUrl);
       }
-
-      const payload = {
-        title,
-        content,
-        category,
-        linkUrl,
-        imageUrls,
-        audio_url: audioFileUrl,
-        anonymous: anonymous === true ? true : false,
-      };
-      console.log('POST PAYLOAD:', payload);
-      console.log('Posting to /api/posts...');
-      const postRes = await api.post('/posts', payload);
-      console.log('Post response:', postRes);
-      // Clear draft on successful submit
+      await api.post('/posts', { title, content, category, linkUrl, imageUrls, audio_url: audioFileUrl, anonymous });
       localStorage.removeItem(DRAFT_KEY);
       navigate('/');
     } catch (err) {
-      console.error('Error during post submit:', err);
       alert('Failed to post. Please try again!');
-    } finally {
-      setUploading(false);
-    }
+    } finally { setUploading(false); }
   }
 
   return (
-  <div className="min-h-screen w-full font-cartoon relative overflow-x-hidden" style={{background: 'linear-gradient(120deg, #ffe0c3 0%, #fcb7ee 100%)', fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}>
-      {/* Floating pastel circles and extra playful shapes */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <span className="hidden sm:block absolute left-8 top-8 w-20 h-20 rounded-full bg-yellow-200 opacity-30 motion-safe:animate-bounce-slow"></span>
-        <span className="hidden sm:block absolute right-10 top-24 w-12 h-12 rounded-full bg-green-200 opacity-20 motion-safe:animate-spin-slow"></span>
-        <span className="absolute left-1/4 bottom-10 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-pink-200 opacity-20 motion-safe:animate-bounce-short"></span>
-        <span className="hidden md:block absolute right-1/3 top-1/2 w-16 h-16 rounded-full bg-blue-200 opacity-20 motion-safe:animate-bounce-slow"></span>
-        <span className="hidden sm:block absolute left-10 bottom-24 w-12 h-12 rounded-full bg-purple-200 opacity-20 motion-safe:animate-spin-slow"></span>
-        <span className="hidden sm:block absolute right-8 bottom-8 w-24 h-24 rounded-full bg-yellow-100 opacity-30 motion-safe:animate-bounce-short"></span>
-        {/* Extra playful stars */}
-        <span className="hidden sm:inline absolute left-1/2 top-1/4 text-yellow-400 text-4xl opacity-40 select-none">★</span>
-        <span className="hidden sm:inline absolute right-1/4 bottom-1/3 text-pink-400 text-3xl opacity-30 select-none">★</span>
-      </div>
-      <form
-        onSubmit={submit}
-  className="relative z-10 max-w-2xl mx-auto mt-6 sm:mt-16 p-5 sm:p-10 flex flex-col gap-6 sm:gap-7 bg-white/95 rounded-[2rem] sm:rounded-[2.5rem] shadow-fun border-4 border-pink-200 animate-pop"
-        style={{ backdropFilter: 'blur(6px)', boxShadow: '0 8px 32px 0 rgba(255, 182, 193, 0.25), 0 1.5px 0 0 #fcb7ee' }}
-      >
-        <button
-          type="button"
-          className="absolute left-4 top-4 px-5 py-2 rounded-full bg-gradient-to-r from-yellow-200 via-pink-200 to-pink-300 text-purple-800 font-extrabold shadow-fun border-4 border-pink-200 hover:scale-110 hover:bg-yellow-100 transition-all flex items-center gap-2 drop-shadow-lg hover:drop-shadow-2xl"
-          onClick={() => navigate('/')}
-          style={{zIndex: 20, fontFamily: 'Baloo, Fredoka, Comic Neue, cursive'}}
-          aria-label="Back to Home"
-        >
-          <span className="text-2xl">⬅️</span> <span className="hidden sm:inline">Back</span>
-        </button>
-        <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2 justify-center">
-          <span className="text-4xl sm:text-5xl animate-wiggle">✏️</span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-pink-500 drop-shadow-lg text-center font-cartoon" style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive', letterSpacing: 1}}>Create a Post</h1>
-        </div>
-        {/* Audio Recorder UI */}
-        <div className="mb-4">
-          <label className="block mb-2 font-extrabold text-pink-500 text-lg font-cartoon">Record a Voice Message <span className="font-normal text-purple-400">(optional)</span></label>
-          <div className="flex gap-2 items-center">
-            <button
-              type="button"
-              className={`rounded-xl px-4 py-2 font-bold shadow-fun border-2 border-pink-300 bg-gradient-to-r from-pink-200 to-yellow-100 text-purple-700 transition-all ${recording ? 'bg-yellow-200' : ''}`}
-              onClick={recording ? stopRecording : startRecording}
-              disabled={uploading}
-            >{recording ? 'Stop Recording' : 'Record Voice Message'}</button>
-            {audioUrl && (
-              <audio controls src={audioUrl} className="ml-2" />
-            )}
-            {audioUrl && (
-              <button type="button" className="ml-2 text-red-500 font-bold" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>
-            )}
-          </div>
-        </div>
-        <input
-          className="rounded-2xl sm:rounded-3xl px-5 sm:px-7 py-4 sm:py-5 border-4 border-yellow-200 w-full text-xl sm:text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 placeholder:text-purple-300 shadow-fun hover:scale-[1.02] sm:hover:scale-105 focus:scale-[1.02] sm:focus:scale-105 duration-200"
-          placeholder="Title (make it fun!)"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-          style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}} 
-        />
-        <div className="flex flex-col gap-3">
-          <label className="flex items-center gap-2 mt-2">
-            <input
-              type="checkbox"
-              checked={anonymous}
-              onChange={e => setAnonymous(e.target.checked)}
-              className="w-5 h-5 accent-pink-500"
-            />
-            <span className="font-bold text-pink-500">Post Anonymously</span>
-          </label>
-          <label className="text-xs sm:text-sm font-bold text-purple-500 tracking-wide uppercase pl-1 sm:pl-4" style={{fontFamily: 'Baloo, Fredoka, Comic Neue, cursive'}}>Category</label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            {categories.map(c => {
-              const active = c.key === category;
-              return (
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      <button className="btn-secondary text-sm mb-4 flex items-center gap-1.5" onClick={() => navigate('/')}>
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+        Back
+      </button>
+
+      <motion.div className="card p-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-2xl font-bold text-dark mb-6 text-center">Create a Post</h1>
+
+        <form onSubmit={submit} className="flex flex-col gap-5">
+          <div>
+            <label className="block text-sm font-medium text-dark mb-1.5">Category</label>
+            <div className="flex flex-wrap gap-2">
+              {categories.map(c => (
                 <button
                   type="button"
                   key={c.key}
                   onClick={() => setCategory(c.key)}
-                  className={`relative group rounded-xl sm:rounded-2xl px-3 sm:px-4 py-3 sm:py-4 font-extrabold text-sm sm:text-lg flex items-center justify-center gap-1.5 sm:gap-2 border-4 transition-all shadow-fun focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-[1.03] sm:hover:scale-105 duration-200 whitespace-nowrap ${active ? 'border-yellow-300 scale-[1.03] sm:scale-105' : 'border-yellow-200'} bg-gradient-to-br ${c.colors} text-white`}
-                  aria-pressed={active}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${c.key === category ? 'bg-primary text-white shadow-button' : 'bg-gray-50 text-muted hover:bg-gray-100 border border-gray-200'}`}
                 >
-                  <span className="text-base sm:text-xl group-hover:rotate-6 transition-transform">{c.icon}</span>
-                  <span>{c.key}</span>
-                  {active && <span className="absolute -top-2 -right-2 bg-white text-pink-500 rounded-full text-[10px] sm:text-xs px-1.5 py-0.5 sm:px-2 sm:py-1 shadow">✓</span>}
+                  {c.icon} {c.label}
                 </button>
-              );
-            })}
-          </div>
-        </div>
-        <textarea
-          ref={textareaRef}
-          className="rounded-2xl sm:rounded-3xl px-5 sm:px-7 py-4 sm:py-5 border-4 border-yellow-200 w-full min-h-[120px] text-xl sm:text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 placeholder:text-purple-300 shadow-fun hover:scale-[1.02] sm:hover:scale-105 focus:scale-[1.02] sm:focus:scale-105 duration-200 resize-none"
-          placeholder="What's on your mind? (Share your story!)"
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          required
-          style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-        />
-        <div>
-          <label className="block mb-2 font-extrabold text-pink-500 text-lg font-cartoon">Upload Photos <span className="font-normal text-purple-400">(optional, you can select multiple)</span></label>
-          <label
-            htmlFor="file-upload"
-            className="inline-block cursor-pointer rounded-2xl border-4 border-yellow-200 bg-pink-100 px-6 py-3 text-lg font-bold text-purple-700 shadow-fun transition-all hover:bg-yellow-100 focus:outline-none focus:ring-4 focus:ring-pink-200 hover:scale-105 duration-200"
-            style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-          >
-            Choose files
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept="image/*"
-            multiple
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploading}
-          />
-          {imageFiles.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-3">
-              {imageFiles.map((file, idx) => (
-                <div key={idx} className="border-4 border-pink-300 rounded-2xl p-2 max-w-xs bg-white shadow-fun animate-pop">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={`Preview ${idx + 1}`}
-                    className="max-w-full max-h-48 object-contain rounded-xl"
-                  />
-                </div>
               ))}
             </div>
-          )}
-        </div>
-        <input
-          className="rounded-2xl sm:rounded-3xl px-5 sm:px-7 py-4 sm:py-5 border-4 border-yellow-200 w-full text-xl sm:text-2xl font-extrabold focus:ring-4 focus:ring-pink-200 outline-none transition-all bg-pink-50 placeholder:text-purple-300 shadow-fun hover:scale-[1.02] sm:hover:scale-105 focus:scale-[1.02] sm:focus:scale-105 duration-200"
-          placeholder="Link URL (optional)"
-          value={linkUrl}
-          onChange={e => setLinkUrl(e.target.value)}
-          style={{fontFamily: 'Comic Neue, Baloo, Fredoka, cursive'}}
-        />
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-1 sm:mt-2">
-          <button
-            type="button"
-            onClick={() => {
-              const draft = { title, content, category, linkUrl };
-              localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-              const el = document.getElementById('draftSavedBadge');
-              if (el) {
-                el.classList.remove('opacity-0');
-                el.classList.add('opacity-100');
-                setTimeout(() => {
-                  el.classList.add('opacity-0');
-                }, 1800);
-              }
-            }}
-            className="w-full text-base sm:text-xl py-3 sm:py-4 rounded-2xl sm:rounded-3xl font-extrabold shadow-fun bg-gradient-to-r from-indigo-400 via-purple-400 to-fuchsia-400 hover:from-indigo-500 hover:via-purple-500 hover:to-fuchsia-500 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 border-4 border-yellow-200 hover:scale-[1.03] sm:hover:scale-105 duration-200"
-          >💾 Save Draft</button>
-          <button
-            className="w-full text-base sm:text-xl py-3 sm:py-4 rounded-2xl sm:rounded-3xl font-extrabold shadow-fun bg-gradient-to-r from-pink-400 via-yellow-300 to-orange-300 hover:from-pink-500 hover:via-yellow-400 hover:to-orange-400 text-white flex items-center justify-center gap-2 transition-all disabled:opacity-60 border-4 border-yellow-200 motion-safe:animate-bounce-short hover:scale-[1.03] sm:hover:scale-105 duration-200"
-            type="submit"
-            disabled={uploading}
-          >
-            {uploading ? <span className="animate-spin">🖼️</span> : <span className="animate-wiggle">🎉</span>} {uploading ? 'Uploading...' : 'Publish'}
-          </button>
-        </div>
-        <div className="text-center mt-3 sm:mt-4 text-purple-400 font-bold text-sm sm:text-lg font-cartoon animate-pop">Your draft is saved automatically! 📝</div>
-        <div id="draftSavedBadge" aria-live="polite" className="transition-opacity opacity-0 text-center text-emerald-600 font-bold text-sm sm:text-base">Draft saved!</div>
-      </form>
+          </div>
+
+          <input
+            className="w-full rounded-xl px-4 py-3 border border-gray-200 text-lg font-semibold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all bg-white"
+            placeholder="Post title"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            required
+          />
+
+          <textarea
+            ref={textareaRef}
+            className="w-full rounded-xl px-4 py-3 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all bg-white resize-none min-h-[160px]"
+            placeholder="What's on your mind?"
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            required
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-dark mb-1.5">Photos (optional)</label>
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-sm text-muted cursor-pointer hover:bg-gray-50 transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              Choose files
+              <input id="file-upload" type="file" accept="image/*" multiple className="hidden" onChange={e => { if (e.target.files) setImageFiles(Array.from(e.target.files)); }} disabled={uploading} />
+            </label>
+            {imageFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {imageFiles.map((file, idx) => (
+                  <img key={idx} src={URL.createObjectURL(file)} alt="" className="rounded-xl max-h-24 border border-gray-200" />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-dark mb-1.5">Voice Message (optional)</label>
+            <div className="flex items-center gap-3">
+              <button type="button" className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${recording ? 'bg-error/10 text-error border-error/20' : 'bg-gray-50 text-muted border-gray-200 hover:bg-gray-100'}`} onClick={recording ? stopRecording : startRecording} disabled={uploading}>
+                {recording ? 'Stop Recording' : 'Record Voice'}
+              </button>
+              {audioUrl && <audio controls src={audioUrl} className="h-8" />}
+              {audioUrl && <button type="button" className="text-xs text-error" onClick={() => { setAudioBlob(null); setAudioUrl(''); }}>Remove</button>}
+            </div>
+          </div>
+
+          <input
+            className="w-full rounded-xl px-4 py-3 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all bg-white"
+            placeholder="Link URL (optional)"
+            value={linkUrl}
+            onChange={e => setLinkUrl(e.target.value)}
+          />
+
+          <label className="flex items-center gap-2 text-sm text-dark">
+            <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} className="rounded" />
+            Post anonymously
+          </label>
+
+          <div className="flex gap-3">
+            <button type="button" className="btn-secondary flex-1 text-sm" onClick={() => { const draft = { title, content, category, linkUrl }; localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); alert('Draft saved!'); }}>
+              Save Draft
+            </button>
+            <button type="submit" className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" disabled={uploading}>
+              {uploading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                  Publishing...
+                </span>
+              ) : 'Publish'}
+            </button>
+          </div>
+        </form>
+      </motion.div>
     </div>
   );
 }
