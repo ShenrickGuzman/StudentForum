@@ -1017,6 +1017,66 @@ const createPostsRouter = () => {
     }
   });
 
+  // Edit a comment (author only)
+  router.put('/comments/:id', requireAuth, async (req, res) => {
+    const { content } = req.body || {};
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Missing content' });
+    try {
+      const { data: commentData, error: commentError } = await supabase
+        .from('comments')
+        .select('user_id')
+        .eq('id', req.params.id)
+        .single();
+      if (commentError || !commentData) return res.status(404).json({ error: 'Comment not found' });
+      if (commentData.user_id !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const { error: updateError } = await supabase
+        .from('comments')
+        .update({ content: content.trim(), updated_at: new Date().toISOString() })
+        .eq('id', req.params.id);
+      if (updateError) return res.status(500).json({ error: 'Failed to update comment' });
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to update comment' });
+    }
+  });
+
+  // Edit a post (author or admin)
+  router.put('/:id', requireAuth, async (req, res) => {
+    const { title, content, category, link_url } = req.body || {};
+    try {
+      const { data: postData, error: postError } = await supabase
+        .from('posts')
+        .select('user_id, locked')
+        .eq('id', req.params.id)
+        .single();
+      if (postError || !postData) return res.status(404).json({ error: 'Post not found' });
+      if (postData.user_id !== req.user.id && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+      const updateFields = {};
+      if (title !== undefined) updateFields.title = title.trim();
+      if (content !== undefined) updateFields.content = content.trim();
+      if (category !== undefined) updateFields.category = category;
+      if (link_url !== undefined) updateFields.link_url = link_url || null;
+      if (Object.keys(updateFields).length === 0) return res.status(400).json({ error: 'No fields to update' });
+      if (!postData.locked || req.user.role === 'admin') {
+        updateFields.updated_at = new Date().toISOString();
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update(updateFields)
+          .eq('id', req.params.id);
+        if (updateError) return res.status(500).json({ error: 'Failed to update post' });
+        res.json({ ok: true });
+      } else {
+        res.status(403).json({ error: 'Post is locked' });
+      }
+    } catch (e) {
+      res.status(500).json({ error: 'Failed to update post' });
+    }
+  });
+
   // Delete (admin, SHEN, or author) - cascade delete related data
   router.delete('/:id', requireAuth, async (req, res) => {
     try {

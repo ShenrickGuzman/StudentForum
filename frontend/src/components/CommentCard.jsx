@@ -3,7 +3,7 @@ import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
 
-export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url, image_url, replyButton }) {
+export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url, image_url, replyButton, canEdit, onEdit }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -17,6 +17,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   const [audioUploading, setAudioUploading] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -83,7 +86,26 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         </div>
       </div>
       <div className="pb-2">
-        <div className="text-sm text-dark leading-relaxed mb-2 break-words whitespace-pre-line">{content}</div>
+        {editing ? (
+          <div className="flex flex-col gap-2 mb-2">
+            <textarea className="w-full rounded-xl px-3 py-2 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" value={editText} onChange={e => setEditText(e.target.value)} rows={3} disabled={editSaving} />
+            <div className="flex gap-2">
+              <button className="btn-primary text-xs py-1.5 px-3" disabled={editSaving} onClick={async () => {
+                if (!editText.trim()) return;
+                setEditSaving(true);
+                try {
+                  await api.put(`/posts/comments/${commentId}`, { content: editText });
+                  setEditing(false);
+                  if (onEdit) onEdit(editText);
+                } catch (err) { alert('Failed to update comment.'); }
+                finally { setEditSaving(false); }
+              }}>{editSaving ? 'Saving...' : 'Save'}</button>
+              <button className="btn-secondary text-xs py-1.5 px-3" onClick={() => setEditing(false)}>Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-sm text-dark leading-relaxed mb-2 break-words whitespace-pre-line">{content}</div>
+        )}
         {audio_url && (
           <div className="mb-2">
             <label className="block mb-1 font-semibold text-xs text-muted">Voice Message</label>
@@ -105,6 +127,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
       <div className="flex flex-col md:flex-row md:items-center items-start pt-2 mt-2 w-full">
         <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto">
           <div className="flex flex-row gap-1.5 rounded-xl bg-gray-50 px-2 py-1.5 w-fit md:w-fit items-center">
+            {canEdit && (
+              <button className="rounded-full w-8 h-8 bg-white border border-gray-200 text-muted text-sm hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center" onClick={() => { setEditText(typeof content === 'string' ? content : ''); setEditing(true); }} title="Edit comment" aria-label="Edit">✏️</button>
+            )}
             {canDelete && (
               <button className="rounded-full w-8 h-8 bg-white border border-gray-200 text-muted text-sm hover:bg-error/5 hover:text-error hover:border-error/30 transition-all flex items-center justify-center" onClick={handleDeleteClick} title="Delete comment" aria-label="Delete">🗑️</button>
             )}

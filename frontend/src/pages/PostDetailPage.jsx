@@ -101,7 +101,9 @@ function RecursiveComment({ comment, depth }) {
         username={isCommentAnonymous ? 'Anonymous' : (comment.author_name || 'User')}
         badges={isCommentAnonymous ? [] : badges}
         time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
-        content={<span className="text-sm text-dark whitespace-pre-wrap break-words">{comment.content}</span>}
+        content={comment.content}
+        canEdit={user && (comment.user_id === user.id || user.role === 'admin')}
+        onEdit={() => window.location.reload()}
         canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
         onDelete={async () => { await api.delete(`/posts/comments/${comment.id}`); window.location.reload(); }}
         audio_url={comment.audio_url}
@@ -198,6 +200,13 @@ export default function PostDetailPage() {
   const [reportLoading, setReportLoading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
+
+  const [editingPost, setEditingPost] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editLinkUrl, setEditLinkUrl] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
 
   const reactionTypes = [
     { key: 'like', icon: '👍' },
@@ -413,37 +422,64 @@ export default function PostDetailPage() {
           </span>
         </div>
 
-        <h1 className="text-2xl font-bold text-dark mb-2 break-words">
-          {post.title}
-          {post.locked && <span className="ml-2 text-muted">🔒</span>}
-        </h1>
-
-        {statusLabel && isAuthor && (
-          <div className={`badge mb-3 ${post.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
-            {statusLabel}
+        {editingPost ? (
+          <div className="flex flex-col gap-4 mb-4">
+            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-xl font-bold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" />
+            <select className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none bg-white" value={editCategory} onChange={e => setEditCategory(e.target.value)}>
+              {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+            </select>
+            <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[120px]" value={editContent} onChange={e => setEditContent(e.target.value)} placeholder="Content" rows={5} />
+            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editLinkUrl} onChange={e => setEditLinkUrl(e.target.value)} placeholder="Link URL (optional)" />
+            <div className="flex gap-3">
+              <button className="btn-primary text-sm" disabled={editSaving} onClick={async () => {
+                if (!editTitle.trim() || !editContent.trim()) return;
+                setEditSaving(true);
+                try {
+                  await api.put(`/posts/${post.id}`, { title: editTitle, content: editContent, category: editCategory, link_url: editLinkUrl });
+                  const r = await api.get(`/posts/${id}`);
+                  setData(r.data);
+                  setEditingPost(false);
+                } catch (err) { alert('Failed to update post.'); }
+                finally { setEditSaving(false); }
+              }}>{editSaving ? 'Saving...' : 'Save'}</button>
+              <button className="btn-secondary text-sm" onClick={() => setEditingPost(false)}>Cancel</button>
+            </div>
           </div>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-dark mb-2 break-words">
+              {post.title}
+              {post.locked && <span className="ml-2 text-muted">🔒</span>}
+            </h1>
+
+            {statusLabel && isAuthor && (
+              <div className={`badge mb-3 ${post.status === 'pending' ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'}`}>
+                {statusLabel}
+              </div>
+            )}
+
+            {post.pinned && <p className="text-xs text-muted mb-3">📌 Pinned by admin</p>}
+            {post.locked && <p className="text-xs text-muted mb-3">🔒 Locked by admin</p>}
+
+            <div className="prose prose-sm max-w-none text-dark mb-4">
+              <p className="whitespace-pre-wrap break-words">{post.content}</p>
+            </div>
+
+            {Array.isArray(post.image_url) && post.image_url.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {post.image_url.map((url, idx) => (
+                  <img key={idx} src={getAssetUrl(url)} alt="" className="rounded-xl max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(url)); setShowImageModal(true); }} />
+                ))}
+              </div>
+            )}
+            {typeof post.image_url === 'string' && post.image_url && (
+              <img src={getAssetUrl(post.image_url)} alt="" className="rounded-xl max-h-64 object-contain mb-4 cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(post.image_url)); setShowImageModal(true); }} />
+            )}
+
+            {post.audio_url && <div className="mb-4"><VoiceMessagePlayer src={post.audio_url} /></div>}
+            {post.link_url && <a className="text-primary font-medium text-sm hover:underline inline-flex items-center gap-1 mb-4" href={post.link_url} target="_blank" rel="noreferrer">Visit link ↗</a>}
+          </>
         )}
-
-        {post.pinned && <p className="text-xs text-muted mb-3">📌 Pinned by admin</p>}
-        {post.locked && <p className="text-xs text-muted mb-3">🔒 Locked by admin</p>}
-
-        <div className="prose prose-sm max-w-none text-dark mb-4">
-          <p className="whitespace-pre-wrap break-words">{post.content}</p>
-        </div>
-
-        {Array.isArray(post.image_url) && post.image_url.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {post.image_url.map((url, idx) => (
-              <img key={idx} src={getAssetUrl(url)} alt="" className="rounded-xl max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(url)); setShowImageModal(true); }} />
-            ))}
-          </div>
-        )}
-        {typeof post.image_url === 'string' && post.image_url && (
-          <img src={getAssetUrl(post.image_url)} alt="" className="rounded-xl max-h-64 object-contain mb-4 cursor-pointer hover:opacity-90 transition-opacity border border-gray-100" onClick={() => { setModalImageUrl(getAssetUrl(post.image_url)); setShowImageModal(true); }} />
-        )}
-
-        {post.audio_url && <div className="mb-4"><VoiceMessagePlayer src={post.audio_url} /></div>}
-        {post.link_url && <a className="text-primary font-medium text-sm hover:underline inline-flex items-center gap-1 mb-4" href={post.link_url} target="_blank" rel="noreferrer">Visit link ↗</a>}
 
         {/* Reactions */}
         <div className="flex items-center gap-2 py-3 border-t border-gray-100">
@@ -465,8 +501,11 @@ export default function PostDetailPage() {
           </button>
         </div>
 
-        {isAuthor && (
-          <button className="text-xs text-error font-medium hover:underline mt-2" onClick={() => setShowPostDeleteConfirm(true)}>Delete post</button>
+        {isAuthor && !editingPost && (
+          <div className="flex gap-3 mt-2">
+            <button className="text-xs text-primary font-medium hover:underline" onClick={() => { setEditTitle(post.title); setEditContent(post.content); setEditCategory(post.category); setEditLinkUrl(post.link_url || ''); setEditingPost(true); }}>Edit post</button>
+            <button className="text-xs text-error font-medium hover:underline" onClick={() => setShowPostDeleteConfirm(true)}>Delete post</button>
+          </div>
         )}
       </motion.div>
 
