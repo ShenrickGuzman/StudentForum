@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api, { getAssetUrl, reportPost, getReports, removeReportedPost, removeReportedComment, deleteReportLog } from '../lib/api';
 import { useAuth } from '../state/auth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +13,7 @@ const TABS = [
 ];
 
 export default function AdminPage() {
+  const navigate = useNavigate();
   const { token, user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('pending');
 
@@ -255,7 +257,7 @@ export default function AdminPage() {
     if (!report) return;
     let postId = report.post_id;
     if (!postId) { try { const res = await api.get(`/comments/${commentId}`); postId = res.data.comment?.post_id; } catch {} }
-    if (postId) await openPostDetail(postId);
+    if (postId) navigate(`/post/${postId}`);
   };
 
   useEffect(() => {
@@ -361,7 +363,7 @@ export default function AdminPage() {
                       <span className="text-xs text-muted dark:text-dark-muted">Type: {r.target_type}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      {r.target_type === 'post' && <><button className="text-xs px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => openPostDetail(r.target_id)}>View</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setReportLogDeleteModal({ open: true, id: r.target_id })}>Remove Post</button></>}
+                      {r.target_type === 'post' && <><button className="text-xs px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => navigate(`/post/${r.target_id}`)}>View</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setReportLogDeleteModal({ open: true, id: r.target_id })}>Remove Post</button></>}
                       {r.target_type === 'comment' && <><button className="text-xs px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => handleViewReportedComment(r.target_id)}>View Comment</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment</button></>}
                       <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleDeleteReportLog(r.id)}>Delete Log</button>
                     </div>
@@ -507,7 +509,7 @@ export default function AdminPage() {
                       <span className="font-semibold text-primary">{p.title}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                      <button className="text-xs px-2 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => openPostDetail(p.id)}>Open</button>
+                      <button className="text-xs px-2 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => navigate(`/post/${p.id}`)}>Open</button>
                       {p.locked ? <button className="text-xs px-2 py-1 rounded-lg bg-success/10 text-success font-semibold hover:bg-success/20 transition" onClick={() => handleUnlock(p.id)}>Unlock</button> : <button className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 font-semibold hover:bg-amber-100 transition border border-amber-200" onClick={() => handleLock(p.id)}>Lock</button>}
                       {p.pinned ? <button className="text-xs px-2 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleUnpin(p.id)}>Unpin</button> : <button className="text-xs px-2 py-1 rounded-lg bg-accent/10 text-accent font-semibold hover:bg-accent/20 transition" onClick={() => handlePin(p.id)}>Pin</button>}
                       <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setDeletePostModal({ open: true, id: p.id })}>Delete</button>
@@ -588,7 +590,10 @@ export default function AdminPage() {
                   </div>
                   <h2 className="text-xl font-bold text-dark dark:text-dark-text text-center mb-2">{detailData.title}</h2>
                   <p className="text-xs text-muted dark:text-dark-muted text-center mb-4">By <span className="font-semibold">{detailData.author_name}</span>{detailData.created_at && <> • {new Date(detailData.created_at).toLocaleString()}</>}</p>
-                  {detailData.image_url && <img alt="" className="rounded-xl max-h-48 object-contain mx-auto mb-3" src={getAssetUrl(detailData.image_url)} />}
+                  {(() => {
+                    const imgs = Array.isArray(detailData.image_url) ? detailData.image_url : (detailData.image_url ? [detailData.image_url] : []);
+                    return imgs.length > 0 && imgs.map((url, i) => <img key={i} alt="" className="rounded-xl max-h-48 object-contain mx-auto mb-3" src={getAssetUrl(url)} />);
+                  })()}
                   <p className="text-sm text-dark dark:text-dark-text whitespace-pre-wrap text-center mb-3">{detailData.content}</p>
                   {detailData.link_url && <a className="text-primary underline text-sm font-medium" href={detailData.link_url} target="_blank" rel="noreferrer">Visit link</a>}
                   {/* Comments */}
