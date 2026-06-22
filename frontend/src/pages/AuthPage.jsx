@@ -124,7 +124,7 @@ export default function AuthPage() {
           >
             S
           </motion.div>
-          <h1 className="text-3xl font-bold text-dark">Students Forum</h1>
+          <h1 className="text-3xl font-bold text-dark">St. Hyacinth's Forum</h1>
           <p className="text-muted mt-1">
             {mode === 'login' ? 'Welcome back! Sign in to continue.' : 'Create your account to get started.'}
           </p>
@@ -234,7 +234,7 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-muted mt-6">Built with care for students</p>
+        <p className="text-center text-xs text-muted mt-6">Built with care for the Hyacinth community</p>
       </motion.div>
 
       {showForgot && (

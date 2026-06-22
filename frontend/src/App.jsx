@@ -37,7 +37,7 @@ function NavBar() {
       <div className="max-w-6xl mx-auto flex items-center gap-4 py-3 px-4">
         <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity">
           <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm">S</span>
-          Students Forum
+          St. Hyacinth's Forum
         </Link>
         <nav className="ml-auto flex items-center gap-2">
           <Link to="/new" className="btn-primary text-sm hidden sm:inline-flex items-center gap-1.5">

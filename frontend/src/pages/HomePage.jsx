@@ -304,7 +304,7 @@ function HomePage() {
       {/* Hero Section */}
       <div className="text-center mb-8">
         <h1 className="text-3xl md:text-4xl font-bold text-dark mb-2">
-          Welcome to Students Forum
+          Welcome to St. Hyacinth's Forum
         </h1>
         <p className="text-muted max-w-xl mx-auto">
           A place to share ideas, ask questions, and connect with your classmates.
