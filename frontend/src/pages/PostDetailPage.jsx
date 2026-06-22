@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import { format, utcToZonedTime } from 'date-fns-tz';
 import { useAuth } from '../state/auth';
 import api, { getAssetUrl, reportPost } from '../lib/api';
+import { useToast } from '../lib/Toast';
 import CommentCard from '../components/CommentCard';
 import VoiceMessagePlayer from '../components/VoiceMessagePlayer';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -79,7 +80,7 @@ function RecursiveComment({ comment, depth }) {
       setShowReplyForm(false);
       window.location.reload();
     } catch (err) {
-      alert('Failed to submit reply.');
+      toast.show('Failed to submit reply.', 'error');
     } finally { setReplyLoading(false); }
   };
 
@@ -170,6 +171,7 @@ function buildCommentTree(flatComments) {
 }
 
 export default function PostDetailPage() {
+  const toast = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, token } = useAuth();
@@ -252,8 +254,7 @@ export default function PostDetailPage() {
       if (r.data.reactions) setReactions(r.data.reactions.counts);
       if (r.data.reactions) setUserReaction(r.data.reactions.user);
     } catch (error) {
-      const errorMsg = error.response?.data?.error || 'Failed to react';
-      alert(errorMsg);
+      toast.show(error.response?.data?.error || 'Failed to react', 'error');
     }
     setReacting(false);
   };
@@ -304,7 +305,7 @@ export default function PostDetailPage() {
       const response = await api.get(`/posts/${id}/comments`);
       setComments(response.data);
     } catch (err) {
-      alert('Failed to submit comment.');
+      toast.show('Failed to submit comment.', 'error');
     } finally { setCommentLoading(false); }
   };
 
@@ -441,7 +442,7 @@ export default function PostDetailPage() {
                   const r = await api.get(`/posts/${id}`);
                   setData(r.data);
                   setEditingPost(false);
-                } catch (err) { alert('Failed to update post.'); }
+                } catch (err) { toast.show('Failed to update post.', 'error'); }
                 finally { setEditSaving(false); }
               }}>{editSaving ? 'Saving...' : 'Save'}</button>
               <button className="btn-secondary text-sm" onClick={() => setEditingPost(false)}>Cancel</button>

@@ -45,7 +45,7 @@ export default function AdminPage() {
 
   const loadPendingPosts = async () => {
     setPendingPostsLoading(true); setPendingPostsError('');
-    try { const r = await api.get('/posts', { params: { status: 'pending', admin: 1 } }); setPendingPosts(r.data); }
+    try { const r = await api.get('/posts', { params: { status: 'pending', admin: 1 } }); setPendingPosts(r.data.posts || []); }
     catch (e) { setPendingPostsError(e?.response?.data?.error || 'Failed to load'); }
     finally { setPendingPostsLoading(false); }
   };
@@ -203,7 +203,7 @@ export default function AdminPage() {
 
   const loadPosts = async () => {
     setPostsLoading(true); setPostsError('');
-    try { const r = await api.get('/posts'); setPosts(r.data); }
+    try { const r = await api.get('/posts'); setPosts(r.data.posts || []); }
     catch (e) { setPostActionMsg(e?.response?.data?.error || 'Failed'); }
     finally { setPostsLoading(false); }
   };

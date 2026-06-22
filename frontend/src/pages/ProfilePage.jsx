@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../state/auth';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../lib/api';
+import { useToast } from '../lib/Toast';
 
 const defaultProfile = {
   avatar: '/Cute-Cat.png',
@@ -13,6 +14,7 @@ const defaultProfile = {
 };
 
 export default function ProfilePage() {
+  const toast = useToast();
   const { id: routeProfileId } = useParams();
   const navigate = useNavigate();
   const [likeCount, setLikeCount] = useState(0);
@@ -98,7 +100,7 @@ export default function ProfilePage() {
       setPostsLoading(true);
       try {
         const res = await api.get('/posts', { params: { user_id: userId } });
-        setUserPosts(Array.isArray(res.data) ? res.data : []);
+        setUserPosts(Array.isArray(res.data) ? res.data : (res.data?.posts || []));
       } catch {}
       setPostsLoading(false);
     }
@@ -123,7 +125,7 @@ export default function ProfilePage() {
     if (data && data.profile_picture) {
       setAvatarPreview(data.profile_picture);
       setProfile(p => ({ ...p, avatar: data.profile_picture }));
-    } else { alert((data && data.error) || 'Failed to upload.'); }
+    } else { toast.show((data && data.error) || 'Failed to upload.', 'error'); }
   };
 
   const handleRemoveAvatar = () => {
@@ -151,7 +153,7 @@ export default function ProfilePage() {
       setSuccessMsg('Profile updated!');
       setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
-    } else { alert((data && data.error) || 'Failed to save.'); }
+    } else { toast.show((data && data.error) || 'Failed to save.', 'error'); }
   };
 
   if (loading) {

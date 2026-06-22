@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
+import { useToast } from '../lib/Toast';
 import { motion } from 'framer-motion';
 
 const DRAFT_KEY = 'mf_newpost_draft';
@@ -16,6 +17,7 @@ const categories = [
 ];
 
 export default function NewPostPage() {
+  const toast = useToast();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -96,7 +98,7 @@ export default function NewPostPage() {
       localStorage.removeItem(DRAFT_KEY);
       navigate('/');
     } catch (err) {
-      alert('Failed to post. Please try again!');
+      toast.show('Failed to post. Please try again!', 'error');
     } finally { setUploading(false); }
   }
 
@@ -184,7 +186,7 @@ export default function NewPostPage() {
           </label>
 
           <div className="flex gap-3">
-            <button type="button" className="btn-secondary flex-1 text-sm" onClick={() => { const draft = { title, content, category, linkUrl }; localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); alert('Draft saved!'); }}>
+            <button type="button" className="btn-secondary flex-1 text-sm" onClick={() => { const draft = { title, content, category, linkUrl }; localStorage.setItem(DRAFT_KEY, JSON.stringify(draft)); toast.show('Draft saved!', 'success'); }}>
               Save Draft
             </button>
             <button type="submit" className="btn-primary flex-1 text-sm flex items-center justify-center gap-2" disabled={uploading}>

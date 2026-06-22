@@ -614,10 +614,12 @@ const createPostsRouter = () => {
 
   // List posts with search/filter, pinned first (auth required)
   router.get('/', requireAuth, async (req, res) => {
-    const { q, category, status, admin, user_id } = req.query;
+    const { q, category, status, admin, user_id, limit = '20', offset = '0' } = req.query;
+    const pageLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const pageOffset = Math.max(parseInt(offset, 10) || 0, 0);
     let query = supabase
       .from('posts')
-      .select('*, users!posts_user_id_fkey(name, avatar, role, badges)')
+      .select('*, users!posts_user_id_fkey(name, avatar, role, badges)', { count: 'exact' })
       .order('pinned', { ascending: false })
       .order('created_at', { ascending: false });
 
@@ -646,7 +648,8 @@ const createPostsRouter = () => {
       query = query.eq('user_id', parseInt(user_id, 10));
     }
     try {
-      const { data, error } = await query;
+      query = query.range(pageOffset, pageOffset + pageLimit - 1);
+      const { data, error, count } = await query;
       if (error) {
         console.error('Failed to fetch posts:', error);
         return res.status(500).json({ error: 'Failed to fetch posts', details: error.message, supabaseError: error });
@@ -696,7 +699,7 @@ const createPostsRouter = () => {
         console.error('Error mapping posts data:', mapErr, 'Raw data:', data);
         return res.status(500).json({ error: 'Failed to map posts data', details: mapErr.message, rawData: data });
       }
-      res.json(posts);
+      res.json({ posts, totalCount: count });
     } catch (e) {
       console.error('Exception in posts list endpoint:', e);
       res.status(500).json({ error: 'Failed to fetch posts', details: e.message, exception: e });

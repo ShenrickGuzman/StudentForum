@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
+import { useToast } from '../lib/Toast';
 
 export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url, image_url, replyButton, canEdit, onEdit, userId }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -49,7 +51,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
       const audioForm = new FormData();
       audioForm.append('file', audioBlob, 'voice-message.webm');
       await api.post(`/upload/audio/comment/${commentId}`, { url: audioUrl });
-    } catch (err) { alert('Failed to upload voice message.'); }
+    } catch (err) { toast.show('Failed to upload voice message.', 'error'); }
     finally { setAudioUploading(false); }
   };
 
@@ -101,7 +103,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
                   await api.put(`/posts/comments/${commentId}`, { content: editText });
                   setEditing(false);
                   if (onEdit) onEdit(editText);
-                } catch (err) { alert('Failed to update comment.'); }
+                } catch (err) { toast.show('Failed to update comment.', 'error'); }
                 finally { setEditSaving(false); }
               }}>{editSaving ? 'Saving...' : 'Save'}</button>
               <button className="btn-secondary text-xs py-1.5 px-3" onClick={() => setEditing(false)}>Cancel</button>

@@ -15,6 +15,7 @@ import RequireAuth from './components/RequireAuth';
 import RequireAdminAuth from './components/RequireAdminAuth';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import NotificationBell from './components/NotificationBell';
+import { ToastProvider } from './lib/Toast';
 
 function NavBar({ darkMode, toggleDarkMode }) {
   const { user, logout } = useAuth();
@@ -126,7 +127,9 @@ function AppShell() {
 export default function App() {
   return (
     <AuthContextProvider>
-      <AppShell />
+      <ToastProvider>
+        <AppShell />
+      </ToastProvider>
     </AuthContextProvider>
   );
 }

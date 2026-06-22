@@ -100,6 +100,8 @@ function HomePage() {
   };
 
   const [posts, setPosts] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [q, setQ] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [cat, setCat] = useState('');
@@ -109,36 +111,51 @@ function HomePage() {
   const [showRules, setShowRules] = useState(false);
   const [error, setError] = useState('');
 
-  const loadPosts = async () => {
+  const loadPosts = async (append = false) => {
     const params = {};
     if (q) params.q = q;
     if (cat) params.category = cat;
+    params.limit = 20;
+    if (append) params.offset = posts.length;
     try {
       const response = await api.get('/posts', { params });
-      setPosts(Array.isArray(response.data) ? response.data : []);
-      setError('');
-    } catch (error) {
-      try {
-        const res = await fetch('/api/posts');
-        const data = await res.json();
-        setPosts(Array.isArray(data) ? data : []);
-        setError('');
-      } catch (e) {
-        setError('Failed to load posts');
+      const result = response.data;
+      if (result && Array.isArray(result.posts)) {
+        if (append) {
+          setPosts(prev => [...prev, ...result.posts]);
+        } else {
+          setPosts(result.posts);
+        }
+        setTotalCount(result.totalCount || 0);
+      } else if (Array.isArray(result)) {
+        setPosts(result);
+        setTotalCount(result.length);
+      } else {
         setPosts([]);
+        setTotalCount(0);
       }
+      setError('');
+    } catch (e) {
+      setError('Failed to load posts');
+      setPosts([]);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await loadPosts();
+    await loadPosts(false);
     setRefreshing(false);
+  };
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true);
+    await loadPosts(true);
+    setLoadingMore(false);
   };
 
   useEffect(() => {
     setLoading(true);
-    loadPosts().finally(() => setLoading(false));
+    loadPosts(false).finally(() => setLoading(false));
   }, [q, cat]);
 
   if (loading) {
@@ -445,7 +462,7 @@ function HomePage() {
                 </div>
               </div>
 
-              <h3 className="font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-2">
+              <h3 className={`font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-2 ${!firstImage ? 'text-xl' : 'text-base'}`}>
                 {p.title}
               </h3>
 
@@ -475,6 +492,17 @@ function HomePage() {
           );
         })}
       </div>
+      {posts.length < totalCount && (
+        <div className="text-center mt-8">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="btn-secondary px-8 py-3 text-sm"
+          >
+            {loadingMore ? 'Loading...' : `Load More (${posts.length}/${totalCount})`}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
