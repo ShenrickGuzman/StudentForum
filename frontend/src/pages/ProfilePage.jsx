@@ -8,7 +8,7 @@ const defaultProfile = {
   about: '',
   interests: [],
   stats: { posts: 0, likes: 0, comments: 0 },
-  badges: [] // e.g. ['ADMIN', 'DEVELOPER']
+  badges: []
 };
 
 export default function ProfilePage() {
@@ -22,20 +22,18 @@ export default function ProfilePage() {
   const [aboutMe, setAboutMe] = useState('');
   const [hobbies, setHobbies] = useState('');
   const [profileError, setProfileError] = useState('');
-  // Like button handler
+
   const handleLikeProfile = async () => {
     if (!token || likedToday || !profile || !profile.name || !profile.id) return;
     try {
       await fetch(`https://studentforum-backend.onrender.com/api/auth/profile/${profile.id}/like`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+        method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
       });
       setLikedToday(true);
       setLikeCount(likeCount + 1);
     } catch {}
   };
 
-  // Fetch profile and like info (own or other user)
   useEffect(() => {
     async function fetchLikes(profileId) {
       if (!token || !profileId) return;
@@ -49,10 +47,8 @@ export default function ProfilePage() {
       } catch {}
     }
     async function fetchProfileAndStats() {
-      setLoading(true);
-      setProfileError('');
-      let profileUrl;
-      let isOwnProfile = false;
+      setLoading(true); setProfileError('');
+      let profileUrl; let isOwnProfile = false;
       if (routeProfileId) {
         profileUrl = `https://studentforum-backend.onrender.com/api/auth/profile/${routeProfileId}`;
         isOwnProfile = user && String(user.id) === String(routeProfileId);
@@ -66,18 +62,15 @@ export default function ProfilePage() {
         const data = await res.json();
         if (!data || !data.profile) {
           setProfileError(data && data.error ? data.error : 'Profile not found');
-          setLoading(false);
-          return;
+          setLoading(false); return;
         }
         let stats = { posts: 0, likes: 0, comments: 0 };
-  // Fetch post count for the viewed profile
-  const postRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/count?user_id=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
-  const postData = await postRes.json();
-  stats.posts = postData.count || 0;
-  // Fetch comment count for the viewed profile
-  const commentRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/comments/count?user_id=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
-  const commentData = await commentRes.json();
-  stats.comments = commentData.count || 0;
+        const postRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/count?user_id=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
+        const postData = await postRes.json();
+        stats.posts = postData.count || 0;
+        const commentRes = await fetch(`https://studentforum-backend.onrender.com/api/posts/comments/count?user_id=${data.profile.id}`, token ? { headers: { 'Authorization': `Bearer ${token}` } } : {});
+        const commentData = await commentRes.json();
+        stats.comments = commentData.count || 0;
         setProfile({
           avatar: data.profile.avatar || defaultProfile.avatar,
           name: data.profile.name || defaultProfile.name,
@@ -102,49 +95,33 @@ export default function ProfilePage() {
   const [avatarPreview, setAvatarPreview] = useState(profile.profile_picture);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Profile picture upload
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
-      setAvatarError('Only JPEG and PNG images are allowed.');
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      setAvatarError('Image size must be less than 2MB.');
-      return;
-    }
+    if (!['image/jpeg', 'image/png'].includes(file.type)) { setAvatarError('Only JPEG and PNG allowed.'); return; }
+    if (file.size > 2 * 1024 * 1024) { setAvatarError('Image must be less than 2MB.'); return; }
     setAvatarError('');
     const formData = new FormData();
     formData.append('picture', file);
     const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile/picture', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` },
-      body: formData
+      method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData
     });
     const data = await res.json();
     if (data && data.profile_picture) {
       setAvatarPreview(data.profile_picture);
       setProfile(p => ({ ...p, avatar: data.profile_picture }));
-    } else {
-      alert((data && data.error) || 'Failed to upload profile picture.');
-    }
+    } else { alert((data && data.error) || 'Failed to upload.'); }
   };
 
   const handleRemoveAvatar = () => {
-  setAvatarPreview(defaultProfile.avatar);
-  setProfile(p => ({ ...p, avatar: defaultProfile.avatar }));
+    setAvatarPreview(defaultProfile.avatar);
+    setProfile(p => ({ ...p, avatar: defaultProfile.avatar }));
   };
 
-  // Save About Me and Hobbies & Interests
   const handleSave = async () => {
     const res = await fetch('https://studentforum-backend.onrender.com/api/auth/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({
-        about_me: aboutMe,
-        hobbies_interests: hobbies
-      })
+      method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ about_me: aboutMe, hobbies_interests: hobbies })
     });
     const data = await res.json();
     if (data && data.ok && data.profile) {
@@ -158,235 +135,109 @@ export default function ProfilePage() {
       });
       setAboutMe(data.profile.about || '');
       setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
-      setSuccessMsg('Profile updated successfully!');
+      setSuccessMsg('Profile updated!');
       setTimeout(() => setSuccessMsg(''), 2500);
       setEditing(false);
-    } else {
-      alert((data && data.error) || 'Failed to save profile.');
-    }
+    } else { alert((data && data.error) || 'Failed to save.'); }
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200">
-        <div className="text-3xl font-extrabold text-purple-600 bg-white/90 px-10 py-6 shadow-fun rounded-3xl">
-          <span className="text-4xl mb-2 animate-spin">💬</span>
-          Loading Profile...
-        </div>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto mb-3" /><p className="text-sm text-muted">Loading profile...</p></div></div>;
   }
   if (profileError) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200">
-        <div className="text-3xl font-extrabold text-red-600 bg-white/90 px-10 py-6 shadow-fun rounded-3xl">
-          <span className="text-4xl mb-2">❌</span>
-          {profileError}
-        </div>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><p className="text-sm text-error">{profileError}</p></div></div>;
   }
-  // Only allow editing if viewing own profile
   const isOwnProfile = user && profile && String(user.id) === String(profile.id);
   return (
-    <>
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-purple-200 px-2 sm:px-4">
-        <div className="w-full max-w-4xl min-h-[600px] rounded-[2.5rem] shadow-2xl bg-white/80 backdrop-blur-lg p-0 overflow-hidden relative border-4 border-pink-200 flex flex-col items-center transition-all duration-300 sm:mt-8 mt-2 profile-mobile-card">
-          {successMsg && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-green-400 text-white font-bold px-6 py-2 rounded-full shadow-lg z-50 animate-fadeIn">
-              {successMsg}
-            </div>
-          )}
-          {/* Header Gradient */}
-          <div className="bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 px-4 sm:px-8 md:px-16 py-8 sm:py-12 flex flex-col items-center relative rounded-b-[2.5rem] shadow-lg w-full profile-mobile-header">
-          <div className="relative mb-4 profile-mobile-avatar">
-            <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full border-8 border-white shadow-2xl transition-transform duration-300 hover:scale-110 bg-white object-cover profile-mobile-avatar-img" />
-            {editing && isOwnProfile && (
-              <div className="profile-mobile-avatar-btns mt-2 flex justify-center gap-3">
-                <label className="bg-purple-500 hover:bg-purple-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white">
-                  <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleAvatarChange} />
-                  <span role="img" aria-label="upload" className="text-xl">📤</span>
-                </label>
-                <button
-                  type="button"
-                  className="bg-red-500 hover:bg-red-600 text-white rounded-full p-2 sm:p-3 cursor-pointer shadow-lg border-2 border-white"
-                  onClick={handleRemoveAvatar}
-                  title="Remove avatar"
-                >
-                  <span role="img" aria-label="remove" className="text-xl">❌</span>
-                </button>
-              </div>
-            )}
-            {avatarError && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-[-2.5rem] bg-red-400 text-white px-2 sm:px-4 py-2 rounded shadow-lg text-xs sm:text-sm animate-fadeIn">
-                {avatarError}
-              </div>
-            )}
+    <div className="min-h-screen bg-background px-4 py-8">
+      {successMsg && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-success text-white text-sm font-bold px-5 py-2 rounded-full shadow-lg z-50 animate-fadeIn">{successMsg}</div>
+      )}
+      <div className="max-w-4xl mx-auto">
+        {/* Hero Header */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-primary via-primary/80 to-secondary/80 px-6 sm:px-10 py-10 sm:py-14 flex flex-col items-center text-center mb-6 overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-white" />
+            <div className="absolute -bottom-10 -right-10 w-60 h-60 rounded-full bg-white" />
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow mb-1 tracking-wide animate-fadeInUp profile-mobile-name">{profile.name}</h2>
-          {/* User Badges */}
-          {Array.isArray(profile.badges) && profile.badges.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2 justify-center profile-mobile-badges">
-              {profile.badges.map((badge, idx) => (
-                <div
-                  key={idx}
-                  className={`inline-block px-4 py-1 rounded-full font-bold text-xs sm:text-sm shadow-lg border-2 border-white uppercase tracking-widest ${badge === 'ADMIN' ? 'bg-red-500 text-white' : badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'}`}
-                  style={{ letterSpacing: '0.15em' }}
-                >
-                  {badge}
+          <div className="relative">
+            <div className="relative inline-block mb-3">
+              <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white/80 shadow-xl object-cover bg-white" />
+              {editing && isOwnProfile && (
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-2 mt-1">
+                  <label className="bg-white/90 hover:bg-white text-primary rounded-full w-8 h-8 flex items-center justify-center cursor-pointer shadow text-sm transition">
+                    <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handleAvatarChange} />
+                    📤
+                  </label>
+                  <button className="bg-white/90 hover:bg-white text-error rounded-full w-8 h-8 flex items-center justify-center shadow text-sm transition" onClick={handleRemoveAvatar} title="Remove avatar">❌</button>
                 </div>
-              ))}
-            </div>
-          )}
-          {/* Stats + Like Button */}
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4 mb-2 w-full justify-center items-center profile-mobile-stats">
-            <div className="bg-blue-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
-              <div className="text-lg sm:text-2xl">{profile.stats.posts}</div>
-              <div className="text-xs sm:text-base">Posts</div>
-            </div>
-            <div className="bg-pink-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
-              <div className="text-lg sm:text-2xl">{likeCount}</div>
-              <div className="text-xs sm:text-base">Likes</div>
-              {/* Like Button (not for own profile) */}
-              {user && profile && String(user.id) !== String(profile.id) && (
-                <button
-                  className={`mt-2 px-4 py-2 rounded-full font-bold shadow transition-all text-base ${likedToday ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-pink-400 to-yellow-400 text-white hover:scale-105'}`}
-                  onClick={handleLikeProfile}
-                  disabled={likedToday}
-                  title={likedToday ? 'You already liked this profile today' : 'Like this profile'}
-                >
-                  {likedToday ? 'Liked Today' : '👍 Like'}
-                </button>
               )}
             </div>
-            <div className="bg-yellow-300/90 rounded-2xl px-6 sm:px-10 py-3 sm:py-4 text-center text-white font-bold shadow-lg flex flex-col items-center min-w-[90px] sm:min-w-[120px]">
-              <div className="text-lg sm:text-2xl">{profile.stats.comments}</div>
-              <div className="text-xs sm:text-base">Comments</div>
-            </div>
-          </div>
-          {/* Edit Button: Only show for own profile */}
-          {isOwnProfile && (
-            <>
-              <button
-                className="mt-6 sm:mt-8 bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-xl transition-all text-lg sm:text-xl animate-fadeIn profile-mobile-edit-btn"
-                onClick={() => setEditing(true)}
-              >
-                ✏️ Edit Profile
-              </button>
-            </>
-          )}
-        </div>
-        {/* About Me & Interests */}
-        <div className="flex flex-col md:flex-row gap-6 md:gap-10 p-4 sm:p-8 md:p-12 w-full">
-          <div className="flex-1 min-w-0">
-            <h3 className="flex items-center text-2xl sm:text-3xl font-bold text-purple-700 mb-3 sm:mb-4 animate-fadeInUp">
-              <span className="mr-2">👤</span> About Me
-            </h3>
-            {editing && isOwnProfile ? (
-              <textarea
-                className="w-full p-4 sm:p-6 rounded-2xl border-2 border-purple-200 focus:border-purple-400 focus:outline-none text-base sm:text-xl bg-white/80 shadow-inner transition-all min-h-[80px] sm:min-h-[120px]"
-                value={aboutMe}
-                onChange={e => setAboutMe(e.target.value)}
-                rows={4}
-              />
-            ) : (
-              <div className="bg-purple-50 p-4 sm:p-6 rounded-2xl text-gray-700 text-base sm:text-xl shadow-inner animate-fadeIn min-h-[80px] sm:min-h-[120px]">
-                {profile.about}
+            {avatarError && <p className="text-xs text-error bg-white/90 rounded-full px-3 py-1 mt-2">{avatarError}</p>}
+            <h2 className="text-2xl sm:text-3xl font-bold text-white">{profile.name}</h2>
+            {Array.isArray(profile.badges) && profile.badges.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                {profile.badges.map((badge, idx) => (
+                  <span key={idx} className={`px-3 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border border-white/40 ${badge === 'ADMIN' ? 'bg-red-500 text-white' : badge === 'DEVELOPER' ? 'bg-blue-500 text-white' : 'bg-white/80 text-dark'}`}>{badge}</span>
+                ))}
               </div>
             )}
+            {/* Stats */}
+            <div className="flex gap-4 sm:gap-8 mt-5 justify-center">
+              <div className="bg-white/15 rounded-xl px-5 sm:px-8 py-3 text-center text-white">
+                <div className="text-lg sm:text-xl font-bold">{profile.stats.posts}</div>
+                <div className="text-xs sm:text-sm opacity-80">Posts</div>
+              </div>
+              <div className="bg-white/15 rounded-xl px-5 sm:px-8 py-3 text-center text-white">
+                <div className="text-lg sm:text-xl font-bold">{likeCount}</div>
+                <div className="text-xs sm:text-sm opacity-80">Likes</div>
+                {user && profile && String(user.id) !== String(profile.id) && (
+                  <button className={`mt-2 px-3 py-1 rounded-full text-xs font-bold shadow transition ${likedToday ? 'bg-white/30 text-white/60 cursor-not-allowed' : 'bg-white/90 text-primary hover:bg-white'}`} onClick={handleLikeProfile} disabled={likedToday}>
+                    {likedToday ? 'Liked' : '👍 Like'}
+                  </button>
+                )}
+              </div>
+              <div className="bg-white/15 rounded-xl px-5 sm:px-8 py-3 text-center text-white">
+                <div className="text-lg sm:text-xl font-bold">{profile.stats.comments}</div>
+                <div className="text-xs sm:text-sm opacity-80">Comments</div>
+              </div>
+            </div>
+            {isOwnProfile && !editing && (
+              <button className="mt-5 bg-white/90 hover:bg-white text-primary font-semibold py-2 px-6 rounded-full shadow transition text-sm" onClick={() => setEditing(true)}>✏️ Edit Profile</button>
+            )}
           </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="flex items-center text-2xl sm:text-3xl font-bold text-green-700 mb-3 sm:mb-4 animate-fadeInUp">
-              <span className="mr-2">💚</span> Interests & Hobbies
-            </h3>
+        </div>
+        {/* About Me & Interests */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card p-6">
+            <h3 className="text-base font-bold text-dark mb-3 flex items-center gap-2"><span>👤</span> About Me</h3>
             {editing && isOwnProfile ? (
-              <input
-                className="w-full p-4 sm:p-6 rounded-2xl border-2 border-green-200 focus:border-green-400 focus:outline-none text-base sm:text-xl mb-3 bg-white/80 shadow-inner transition-all"
-                value={hobbies}
-                onChange={e => setHobbies(e.target.value)}
-                placeholder="Comma separated interests"
-              />
+              <textarea className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none min-h-[100px]" value={aboutMe} onChange={e => setAboutMe(e.target.value)} rows={4} />
             ) : (
-              <div className="flex flex-wrap gap-2 sm:gap-4 animate-fadeIn">
+              <div className="text-sm text-muted leading-relaxed min-h-[60px]">{profile.about}</div>
+            )}
+          </div>
+          <div className="card p-6">
+            <h3 className="text-base font-bold text-dark mb-3 flex items-center gap-2"><span>💚</span> Interests & Hobbies</h3>
+            {editing && isOwnProfile ? (
+              <input className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={hobbies} onChange={e => setHobbies(e.target.value)} placeholder="Comma separated interests" />
+            ) : (
+              <div className="flex flex-wrap gap-2 min-h-[40px]">
                 {(Array.isArray(profile.interests) ? profile.interests : []).map((interest, idx) => (
-                  <span key={idx} className="bg-green-100 text-green-700 px-4 sm:px-7 py-2 sm:py-3 rounded-full font-semibold shadow text-base sm:text-lg">
-                    {interest}
-                  </span>
+                  <span key={idx} className="bg-secondary/10 text-secondary px-3 py-1.5 rounded-full text-sm font-medium">{interest}</span>
                 ))}
               </div>
             )}
           </div>
         </div>
-        {/* Save/Cancel Buttons: Only show for own profile */}
+        {/* Save/Cancel */}
         {editing && isOwnProfile && (
-          <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-6 mt-4 sm:mt-6 mb-4 sm:mb-8 w-full px-4 sm:px-12 animate-fadeInUp">
-            <button
-              className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-lg text-lg sm:text-xl"
-              onClick={() => setEditing(false)}
-            >
-              Cancel
-            </button>
-            <button
-              className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-white font-bold py-2 sm:py-3 px-6 sm:px-10 rounded-full shadow-lg text-lg sm:text-xl transition-all"
-              onClick={handleSave}
-            >
-              Save
-            </button>
+          <div className="flex justify-end gap-3 mt-6">
+            <button className="btn-secondary text-sm" onClick={() => setEditing(false)}>Cancel</button>
+            <button className="btn-primary text-sm" onClick={handleSave}>Save</button>
           </div>
         )}
-        </div>
       </div>
-      {/* Mobile styles for profile page */}
-      <style>{`
-        @media (max-width: 600px) {
-          .profile-mobile-card {
-            border-radius: 1.2rem !important;
-            min-height: 340px !important;
-            max-width: 98vw !important;
-            padding: 0.5rem !important;
-          }
-          .profile-mobile-header {
-            padding: 1.2rem 0.5rem !important;
-            border-radius: 1.2rem !important;
-          }
-          .profile-mobile-avatar-img {
-            width: 7rem !important;
-            height: 7rem !important;
-            border-width: 7px !important;
-          }
-          .profile-mobile-avatar-btns {
-            display: flex !important;
-            flex-direction: row !important;
-            justify-content: center !important;
-            gap: 1rem !important;
-            margin-top: 0.5rem !important;
-            position: static !important;
-          }
-          .profile-mobile-name {
-            font-size: 3rem !important;
-            margin-bottom: 0.4rem !important;
-          }
-          .profile-mobile-badges > div {
-            font-size: 0.8rem !important;
-            padding: 0.3rem 0.7rem !important;
-          }
-          .profile-mobile-stats {
-            flex-direction: row !important;
-            gap: 0.7rem !important;
-            margin-bottom: 0.5rem !important;
-          }
-          .profile-mobile-stats > div {
-            min-width: 60px !important;
-            padding: 0.5rem 0.7rem !important;
-            font-size: 0.9rem !important;
-          }
-          .profile-mobile-edit-btn {
-            font-size: 1rem !important;
-            padding: 0.5rem 1rem !important;
-            margin-top: 0.8rem !important;
-          }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }

@@ -1,38 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { connectNotifications } from '../lib/notifications';
-import { getNotifications } from '../lib/api';
-import { clearNotifications } from '../lib/api';
-import { markNotificationsRead } from '../lib/api';
+import { getNotifications, clearNotifications, markNotificationsRead } from '../lib/api';
 import { useAuth } from '../state/auth';
 
 export default function NotificationBell() {
-    const handleClearNotifications = async () => {
-      if (user?.id) {
-        try {
-          await clearNotifications();
-          setNotifications([]);
-          setUnread(0);
-        } catch {}
-      }
-    };
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [unread, setUnread] = useState(0);
 
+  const handleClearNotifications = async () => {
+    if (user?.id) {
+      try {
+        await clearNotifications();
+        setNotifications([]);
+        setUnread(0);
+      } catch {}
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
-      // Fetch persistent notifications on mount/login
       getNotifications()
         .then(res => {
           if (res?.data?.notifications) {
             setNotifications(res.data.notifications);
-            // Count unread notifications
             setUnread(res.data.notifications.filter(n => !n.read).length);
           }
         })
         .catch(() => {});
-      // Setup real-time notifications
       connectNotifications(user.id, notif => {
         setNotifications(prev => [notif, ...prev]);
         setUnread(u => u + 1);
@@ -43,66 +39,39 @@ export default function NotificationBell() {
   const handleBellClick = async () => {
     setDropdownOpen(d => !d);
     setUnread(0);
-    // Mark notifications as read in backend
     if (user?.id) {
       try {
         await markNotificationsRead();
-        // Optionally update local notifications state
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       } catch {}
     }
   };
 
   return (
-    <div style={{ position: 'relative', display: 'inline-block' }}>
-      <button
-        onClick={handleBellClick}
-        style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative' }}
-        aria-label="Notifications"
-      >
-        <span style={{ fontSize: 28 }}>🔔</span>
+    <div className="relative inline-block">
+      <button onClick={handleBellClick} className="relative bg-none border-none cursor-pointer" aria-label="Notifications">
+        <span className="text-[28px] leading-none">🔔</span>
         {unread > 0 && (
-          <span style={{ position: 'absolute', top: 0, right: 0, background: '#ff4081', color: '#fff', borderRadius: '50%', padding: '2px 7px', fontSize: 12, fontWeight: 'bold' }}>{unread}</span>
+          <span className="absolute -top-1 -right-1 bg-secondary text-white text-[11px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 leading-none">{unread}</span>
         )}
       </button>
       {dropdownOpen && (
-        <div
-          className="notification-dropdown-mobile"
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: '110%',
-            minWidth: 260,
-            background: '#fff',
-            border: '1px solid #eee',
-            borderRadius: 12,
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-            zIndex: 100,
-            left: undefined,
-            transform: undefined,
-          }}
-        >
-          <div style={{ padding: '10px 16px', fontWeight: 'bold', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Notifications</span>
-            <button
-              onClick={handleClearNotifications}
-              style={{ background: 'none', border: 'none', color: '#ff4081', fontWeight: 'bold', cursor: 'pointer', fontSize: 13 }}
-              title="Clear all notifications"
-            >
-              Clear
-            </button>
+        <div className="notification-dropdown-mobile absolute right-0 top-[110%] min-w-[260px] bg-white border border-gray-100 rounded-xl shadow-lg z-[100]">
+          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-sm border-b border-gray-100">
+            <span className="text-dark">Notifications</span>
+            <button onClick={handleClearNotifications} className="bg-none border-none text-secondary font-bold cursor-pointer text-xs" title="Clear all notifications">Clear</button>
           </div>
           {notifications.length === 0 ? (
-            <div style={{ padding: '16px', color: '#888' }}>No notifications yet.</div>
+            <div className="px-4 py-4 text-sm text-muted">No notifications yet.</div>
           ) : (
             notifications.slice(0, 8).map((n, i) => (
               <a
                 key={i}
                 href={n.link || '#'}
-                style={{ display: 'block', padding: '10px 16px', color: '#333', textDecoration: 'none', borderBottom: '1px solid #f5f5f5', fontSize: 15 }}
+                className="block px-4 py-2.5 text-sm text-dark no-underline border-b border-gray-50 hover:bg-gray-50 transition-colors"
                 onClick={() => setDropdownOpen(false)}
               >
-                <span style={{ marginRight: 8 }}>{n.type === 'comment' ? '💬' : n.type === 'reaction' ? '😃' : n.type === 'new_post' ? '📝' : '🔔'}</span>
+                <span className="mr-1.5">{n.type === 'comment' ? '💬' : n.type === 'reaction' ? '😃' : n.type === 'new_post' ? '📝' : '🔔'}</span>
                 {n.message}
               </a>
             ))

@@ -28,7 +28,6 @@ export default function VoiceMessagePlayer({ src, duration = null }) {
     setCurrentTime(0);
   };
 
-  // Format time as mm:ss
   const formatTime = (t) => {
     const m = Math.floor(t / 60);
     const s = Math.floor(t % 60);
@@ -36,86 +35,25 @@ export default function VoiceMessagePlayer({ src, duration = null }) {
   };
 
   return (
-    <div
-      style={{
-        background: 'linear-gradient(90deg, #ffe0ec 0%, #e0f7fa 100%)',
-        borderRadius: 16,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-        padding: '10px 12px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        margin: '6px 0',
-        minWidth: 0,
-        maxWidth: '100%',
-        width: '100%',
-      }}
-    >
-      <span style={{ fontSize: 20, marginRight: 6, color: '#ff4081' }} title="Voice Message">🎤</span>
+    <div className="voice-message-player flex items-center gap-2.5 w-full my-1.5 px-3 py-2.5 rounded-2xl bg-secondary/10">
+      <span className="text-lg shrink-0" title="Voice Message">🎤</span>
       <button
         onClick={handlePlayPause}
-        style={{
-          background: isPlaying ? '#ff4081' : '#fff',
-          color: isPlaying ? '#fff' : '#ff4081',
-          border: '2px solid #ff4081',
-          borderRadius: '50%',
-          width: 34,
-          height: 34,
-          fontSize: 18,
-          cursor: 'pointer',
-          outline: 'none',
-          transition: 'background 0.2s, color 0.2s',
-          flexShrink: 0,
-        }}
+        className={`shrink-0 w-8 h-8 rounded-full border-2 border-secondary flex items-center justify-center text-base transition-colors ${isPlaying ? 'bg-secondary text-white' : 'bg-white text-secondary'}`}
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? '⏸' : '▶️'}
       </button>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          height: 5,
-          background: '#ffe0ec',
-          borderRadius: 2.5,
-          position: 'relative',
-          marginBottom: 2,
-          width: '100%',
-        }}>
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            height: 5,
-            width: `${audioDuration ? (currentTime / audioDuration) * 100 : 0}%`,
-            background: '#ff4081',
-            borderRadius: 2.5,
-            transition: 'width 0.2s',
-            minWidth: 0,
-          }} />
+      <div className="flex-1 min-w-0">
+        <div className="h-1 bg-secondary/20 rounded-full relative mb-0.5 w-full">
+          <div className="absolute left-0 top-0 h-1 bg-secondary rounded-full transition-[width] duration-200" style={{ width: `${audioDuration ? (currentTime / audioDuration) * 100 : 0}%` }} />
         </div>
-        <div style={{ fontSize: 12, color: '#888', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+        <div className="flex justify-between text-xs text-muted w-full">
           <span>{formatTime(currentTime)}</span>
           <span>{audioDuration ? formatTime(audioDuration) : '--:--'}</span>
         </div>
       </div>
-      <audio
-        ref={audioRef}
-        src={src}
-        preload="metadata"
-        onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
-        onEnded={handleEnded}
-        style={{ display: 'none' }}
-      />
-      <style>{`
-        @media (max-width: 600px) {
-          .voice-message-player {
-            padding: 7px 6px !important;
-            gap: 6px !important;
-          }
-        }
-      `}</style>
+      <audio ref={audioRef} src={src} preload="metadata" onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} onTimeUpdate={handleTimeUpdate} onLoadedMetadata={handleLoadedMetadata} onEnded={handleEnded} />
     </div>
   );
 }

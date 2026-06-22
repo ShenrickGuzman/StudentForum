@@ -1,28 +1,24 @@
 import { RULES } from '../components/RulesPopup';
-
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export default function RulesPage() {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 font-cartoon">
-      <div className="cartoon-card max-w-2xl w-full border-4 border-pink-300 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 animate-pop rounded-3xl shadow-2xl p-8 text-center">
-        <h2 className="text-5xl font-extrabold mb-4 text-pink-500 drop-shadow" style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}>Forum Rules</h2>
-        <ul className="text-2xl text-left mb-6 flex flex-col gap-4 font-bold text-purple-700">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-background">
+      <motion.div className="card p-8 max-w-2xl w-full text-center" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+        <h2 className="text-2xl font-bold text-dark mb-6">Forum Rules</h2>
+        <ul className="text-left flex flex-col gap-3 mb-6">
           {RULES.map((rule, i) => (
-            <li key={i} className="flex items-start gap-3"><span className="text-3xl">🎈</span> {rule}</li>
+            <li key={i} className="flex items-start gap-3 text-sm text-muted leading-relaxed">
+              <span className="mt-0.5 shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
+              {rule}
+            </li>
           ))}
         </ul>
-        <div className="flex justify-center mb-6">
-          <span className="inline-block px-6 py-3 rounded-full bg-pink-200 text-pink-700 font-bold text-lg shadow-fun">Please follow these rules to keep the forum fun and safe for everyone!</span>
-        </div>
-        <div className="flex justify-center gap-4">
-          <button
-            className="fun-btn px-8 py-3 text-lg rounded-full bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 shadow-lg"
-            onClick={() => navigate('/')}
-          >I Agree 👍</button>
-        </div>
-      </div>
+        <p className="text-xs text-muted mb-6">Please follow these rules to keep the forum enjoyable for everyone.</p>
+        <button className="btn-primary text-sm" onClick={() => navigate('/')}>I Agree</button>
+      </motion.div>
     </div>
   );
 }

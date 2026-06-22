@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const RULES = [
   'Be respectful and kind to all members.',
@@ -12,33 +13,32 @@ const RULES = [
 export default function RulesPopup({ open, onAgree, onClose, onDontShowAgain }) {
   const [dontShow, setDontShow] = useState(false);
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="cartoon-card max-w-lg w-full relative border-4 border-pink-300 bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 animate-pop rounded-3xl shadow-2xl p-8 text-center font-cartoon">
-        <h2 className="text-4xl font-extrabold mb-2 text-pink-500 drop-shadow" style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}>Forum Rules</h2>
-        <ul className="text-lg text-left mb-4 flex flex-col gap-2 font-bold text-purple-700">
-          {RULES.map((rule, i) => (
-            <li key={i} className="flex items-start gap-2"><span className="text-2xl">🎈</span> {rule}</li>
-          ))}
-        </ul>
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <input id="dontshow" type="checkbox" checked={dontShow} onChange={e => setDontShow(e.target.checked)} className="w-5 h-5 accent-pink-400 rounded-full" />
-          <label htmlFor="dontshow" className="text-base font-bold text-pink-600 cursor-pointer">Don't show again</label>
-        </div>
-        <div className="flex gap-4 justify-center">
-          <button
-            className="fun-btn px-8 py-3 text-lg rounded-full bg-gradient-to-r from-green-400 to-blue-400 hover:from-green-500 hover:to-blue-500 shadow-lg"
-            onClick={() => { onAgree(); if (dontShow) onDontShowAgain(); }}
-          >I Agree 👍</button>
-          <button
-            className="fun-btn px-8 py-3 text-lg rounded-full bg-gradient-to-r from-pink-400 to-orange-400 hover:from-pink-500 hover:to-orange-500 shadow-lg"
-            onClick={onClose}
-          >Cancel</button>
-        </div>
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div className="card p-8 max-w-lg w-full text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
+            <h2 className="text-xl font-bold text-dark mb-4">Forum Rules</h2>
+            <ul className="text-left flex flex-col gap-2 mb-4">
+              {RULES.map((rule, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-muted">
+                  <span className="mt-0.5 shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">{i + 1}</span>
+                  {rule}
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <input id="dontshow" type="checkbox" checked={dontShow} onChange={e => setDontShow(e.target.checked)} className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
+              <label htmlFor="dontshow" className="text-sm text-muted cursor-pointer">Don't show again</label>
+            </div>
+            <div className="flex gap-3 justify-center">
+              <button className="btn-primary text-sm" onClick={() => { onAgree(); if (dontShow) onDontShowAgain(); }}>I Agree</button>
+              <button className="btn-secondary text-sm" onClick={onClose}>Cancel</button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
