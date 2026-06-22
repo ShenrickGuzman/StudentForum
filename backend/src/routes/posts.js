@@ -1033,7 +1033,7 @@ const createPostsRouter = () => {
       }
       const { error: updateError } = await supabase
         .from('comments')
-        .update({ content: content.trim(), updated_at: new Date().toISOString() })
+        .update({ content: content.trim() })
         .eq('id', req.params.id);
       if (updateError) return res.status(500).json({ error: 'Failed to update comment' });
       res.json({ ok: true });
@@ -1062,7 +1062,6 @@ const createPostsRouter = () => {
       if (link_url !== undefined) updateFields.link_url = link_url || null;
       if (Object.keys(updateFields).length === 0) return res.status(400).json({ error: 'No fields to update' });
       if (!postData.locked || req.user.role === 'admin') {
-        updateFields.updated_at = new Date().toISOString();
         const { error: updateError } = await supabase
           .from('posts')
           .update(updateFields)
