@@ -209,14 +209,16 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
       const baseUrl = process.env.FRONTEND_URL || 'https://studentforum-uk42.onrender.com';
       const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
-      const { sendEmail } = await import('../lib/email.js');
-      await sendEmail({
-        to: user.email,
-        subject: 'Reset your St. Hyacinth\'s Forum password',
-        html: `<p>You requested a password reset.</p><p>Click below to reset your password (expires in 23 minutes):</p><p><a href="${resetLink}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`
-      });
-
       res.json({ ok: true, message: 'If an account with that email exists, a reset link has been sent.' });
+
+      // Fire-and-forget email (don't block the response)
+      import('../lib/email.js').then(({ sendEmail }) => {
+        sendEmail({
+          to: user.email,
+          subject: 'Reset your St. Hyacinth\'s Forum password',
+          html: `<p>You requested a password reset.</p><p>Click below to reset your password (expires in 23 minutes):</p><p><a href="${resetLink}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`
+        });
+      });
     } catch (e) {
       return res.status(500).json({ error: 'Failed to process request', details: e && e.message ? e.message : e });
     }
@@ -685,17 +687,17 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
       if (updateError) return res.status(500).json({ error: 'Failed to update request status' });
       const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+      res.json({ approved: true, token, user: userData });
+
+      // Fire-and-forget email
       const frUrl = process.env.FRONTEND_URL || 'https://studentforum-uk42.onrender.com';
-      try {
-        const { sendEmail } = await import('../lib/email.js');
-        await sendEmail({
+      import('../lib/email.js').then(({ sendEmail }) => {
+        sendEmail({
           to: userData.email,
           subject: 'Your St. Hyacinth\'s Forum account is approved!',
           html: `<p>Hi ${userData.name},</p><p>Your signup request has been approved! You can now log in and join the community.</p><p><a href="${frUrl}/auth" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">Log In</a></p>`
         });
-      } catch {}
-
-      res.json({ approved: true, token, user: userData });
+      });
     } catch (e) {
       res.status(500).json({ error: 'Failed to approve request' });
     }

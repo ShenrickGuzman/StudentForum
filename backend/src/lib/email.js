@@ -13,7 +13,10 @@ function getTransporter() {
     host: SMTP_HOST,
     port: parseInt(SMTP_PORT || '587', 10),
     secure: SMTP_PORT === '465',
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
   });
   return transporter;
 }
