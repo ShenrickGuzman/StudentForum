@@ -1,45 +1,88 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Comic+Neue:wght@700&family=Fredoka:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: 'Comic Neue', 'Quicksand', 'Baloo', cursive, sans-serif;
-  background: theme('colors.background');
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background: #F8F9FE;
   min-height: 100vh;
-  color: theme('colors.dark');
+  color: #2D3436;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fun background shapes */
-.bg-fun {
-  background: linear-gradient(135deg, #FFB347 0%, #6EC6FF 100%);
-  min-height: 100vh;
-  position: relative;
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
 }
 
-/* Cartoonish card */
-.cartoon-card {
-  border-radius: 1.5rem;
-  box-shadow: 0 4px 16px 0 rgba(255,179,71,0.15);
+/* Smooth focus ring */
+*:focus-visible {
+  outline: 2px solid #6C63FF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Card base */
+.card {
   background: #fff;
-  padding: 2rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 24px rgba(108, 99, 255, 0.06);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover {
+  box-shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
 }
 
-/* Fun button */
-.fun-btn {
-  background: linear-gradient(90deg, #FFB347 60%, #FF6F91 100%);
+/* Button base */
+.btn-primary {
+  background: linear-gradient(135deg, #6C63FF, #A78BFA);
   color: #fff;
-  border-radius: 1.5rem;
-  font-weight: bold;
-  box-shadow: 0 2px 8px 0 rgba(110,198,255,0.15);
-  transition: transform 0.1s, box-shadow 0.1s;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.5rem;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(108, 99, 255, 0.2);
 }
-.fun-btn:hover {
-  transform: scale(1.05) rotate(-2deg);
-  box-shadow: 0 6px 24px 0 rgba(255,111,145,0.15);
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(108, 99, 255, 0.3);
+}
+.btn-primary:active {
+  transform: translateY(0);
 }
 
+.btn-secondary {
+  background: #F3F4F6;
+  color: #374151;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1.5rem;
+  transition: all 0.2s;
+}
+.btn-secondary:hover {
+  background: #E5E7EB;
+}
 
-/* Removed invalid Tailwind @apply classes. Use only custom CSS or valid Tailwind classes. */
-
-
+/* Badge base */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
