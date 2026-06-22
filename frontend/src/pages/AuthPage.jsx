@@ -77,7 +77,6 @@ export default function AuthPage() {
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     setForgotMessage('');
-    setResetLink('');
     setForgotLoading(true);
     if (!forgotEmail) {
       setForgotMessage('Email is required');
