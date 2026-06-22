@@ -462,7 +462,7 @@ function HomePage() {
                 </div>
               </div>
 
-              <h3 className={`font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-3 flex-1 flex items-center ${!firstImage ? 'text-2xl' : 'text-base'}`}>
+              <h3 className={`font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-3 flex-1 flex ${!firstImage ? 'items-center justify-center text-center text-4xl' : 'items-center text-base'}`}>
                 {p.title}
               </h3>
 
