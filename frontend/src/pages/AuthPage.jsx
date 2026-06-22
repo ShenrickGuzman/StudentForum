@@ -1,23 +1,18 @@
-
-
 import { useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import RulesPopup from '../components/RulesPopup';
 import { useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useAuth } from '../state/auth';
-import AnimatedCartoonBackground from '../components/AnimatedCartoonBackground';
-import AnimatedCartoonButton from '../components/AnimatedCartoonButton';
 import { motion } from 'framer-motion';
-
 
 const RULES_KEY = 'mf_rules_agreed';
 
 export default function AuthPage() {
-  const [mode, setMode] = useState('login'); // 'login' or 'signup'
+  const [mode, setMode] = useState('login');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [email, setEmail] = useState(''); // gmail only for signup
+  const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,16 +20,15 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [showRules, setShowRules] = useState(false);
   const [pendingNav, setPendingNav] = useState(false);
-
-  // Forgot password modal state
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotMessage, setForgotMessage] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetLink, setResetLink] = useState('');
 
   const validateEmail = (value) => {
     if (!value) return 'Email is required';
-    // Allow only gmail.com addresses
     const re = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
     if (!re.test(value)) return 'Must be a valid @gmail.com address';
     return '';
@@ -55,9 +49,7 @@ export default function AuthPage() {
         if (r.data.status === 'pending') {
           navigate(`/wait-approval?name=${encodeURIComponent(name)}`, { state: { name } });
         } else if (r.data.token) {
-          // fallback if backend returns immediate token (not expected now)
           login(r.data.token, r.data.user);
-          // Show rules popup if not agreed
           if (!localStorage.getItem(RULES_KEY)) {
             setShowRules(true);
             setPendingNav(true);
@@ -68,7 +60,6 @@ export default function AuthPage() {
       } else {
         const r = await api.post('/auth/login', { name, password });
         login(r.data.token, r.data.user);
-        // Show rules popup if not agreed
         if (!localStorage.getItem(RULES_KEY)) {
           setShowRules(true);
           setPendingNav(true);
@@ -84,12 +75,6 @@ export default function AuthPage() {
     }
   };
 
-  // Show/hide password
-  const [showPassword, setShowPassword] = useState(false);
-
-  // Handle forgot password submit
-  // Custom password reset logic (show link)
-  const [resetLink, setResetLink] = useState('');
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     setForgotMessage('');
@@ -104,7 +89,7 @@ export default function AuthPage() {
       const r = await api.post('/auth/request-password-reset', { email: forgotEmail });
       if (r.data && r.data.resetLink) {
         setResetLink(r.data.resetLink);
-  setForgotMessage('Copy and paste this link in your browser to reset your password. This link will only be available for 23 minutes:');
+        setForgotMessage('Copy this link to reset your password (valid 23 minutes):');
       } else {
         setForgotMessage('No reset link returned.');
       }
@@ -114,179 +99,159 @@ export default function AuthPage() {
       setForgotLoading(false);
     }
   };
-  // Removed palette toggle; fixed vibrant style for signup
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center font-cartoon relative overflow-hidden" style={{background: 'linear-gradient(135deg, #7fbcff 0%, #b388ff 50%, #ff7eb3 100%)'}}>
-      <AnimatedCartoonBackground />
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
       <RulesPopup
         open={showRules}
         onAgree={() => { setShowRules(false); if (pendingNav) { setPendingNav(false); navigate('/'); } }}
         onClose={() => { setShowRules(false); }}
         onDontShowAgain={() => { localStorage.setItem(RULES_KEY, '1'); }}
       />
-      {/* Floating pastel circles and stars */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <span className="absolute left-8 top-8 w-16 h-16 rounded-full bg-blue-200 opacity-40"></span>
-        <span className="absolute right-10 top-24 w-10 h-10 rounded-full bg-pink-200 opacity-30"></span>
-        <span className="absolute left-1/4 bottom-10 w-24 h-24 rounded-full bg-purple-200 opacity-30"></span>
-        <span className="absolute right-1/3 top-1/2 w-12 h-12 rounded-full bg-yellow-200 opacity-30"></span>
-        <span className="absolute left-10 bottom-24 w-10 h-10 rounded-full bg-green-200 opacity-30"></span>
-        <span className="absolute right-8 bottom-8 w-20 h-20 rounded-full bg-blue-100 opacity-40"></span>
-        <span className="absolute left-1/2 top-1/4 text-3xl opacity-20 animate-spin-slow">⭐</span>
-        <span className="absolute right-1/4 bottom-1/3 text-4xl opacity-20 animate-pulse">✨</span>
-        <span className="absolute left-1/3 top-1/3 text-2xl opacity-20 animate-bounce">📚</span>
-      </div>
-      {/* Heading and subheading */}
+
       <motion.div
-        className="mt-8 mb-4 z-10 text-center"
-        initial={{ opacity: 0, y: -40 }}
+        className="w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 120, delay: 0.2 }}
+        transition={{ duration: 0.4 }}
       >
-        <motion.h1
-          className="text-5xl font-extrabold text-white drop-shadow mb-2 tracking-wide"
-          style={{fontFamily: 'Fredoka, Comic Neue, Baloo, cursive'}}
-          initial={{ scale: 0.8, rotate: -5 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.4 }}
-        >
-          Students Forum
-        </motion.h1>
-        <motion.div
-          className="text-lg font-bold text-white/90 flex flex-col items-center gap-1"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <span className="inline-flex items-center gap-2 animate-bounce-slow">🎓 Welcome to Students Forum! <span className="text-xl">🚀</span></span>
-          <span className="inline-flex gap-2 text-xl animate-pulse">📚 <span className="text-pink-200">✨</span> 🎯</span>
-        </motion.div>
-      </motion.div>
-      {/* Auth card */}
-      <motion.form
-        onSubmit={submit}
-        className="relative z-10 w-full max-w-md flex flex-col gap-6 items-center bg-white/90 rounded-3xl shadow-2xl border-2 border-yellow-200 p-8"
-        style={{ backdropFilter: 'blur(4px)' }}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 120, delay: 0.5 }}
-      >
-        {/* Tabs */}
-        <div className="flex w-full mb-2 rounded-full bg-gray-100 p-1 shadow-inner">
-          <AnimatedCartoonButton
-            type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='login' ? '!bg-gradient-to-r !from-pink-500 !to-rose-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 !bg-none !border-none'}`}
-            style={{ borderRadius: '9999px', border: 'none', background: mode==='login' ? undefined : '#e5e7eb' }}
-            onClick={() => setMode('login')}
-          >🔑 Sign In</AnimatedCartoonButton>
-          <AnimatedCartoonButton
-            type="button"
-            className={`flex-1 py-2 rounded-full font-bold text-lg transition-all ${mode==='signup' ? '!bg-gradient-to-r !from-indigo-400 !via-fuchsia-400 !to-pink-400 !text-white !shadow-lg !scale-[1.02]' : '!bg-gray-200 !text-gray-500 !shadow-none !scale-100 !bg-none !border-none'}`}
-            style={{ borderRadius: '9999px', border: 'none', background: mode==='signup' ? undefined : '#e5e7eb' }}
-            onClick={() => setMode('signup')}
-          >✴️ Sign Up</AnimatedCartoonButton>
+        <div className="text-center mb-8">
+          <motion.div
+            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4"
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+          >
+            S
+          </motion.div>
+          <h1 className="text-3xl font-bold text-dark">Students Forum</h1>
+          <p className="text-muted mt-1">
+            {mode === 'login' ? 'Welcome back! Sign in to continue.' : 'Create your account to get started.'}
+          </p>
         </div>
-        {/* Username */}
-        <div className="w-full">
-          <label className="block text-sm font-bold text-gray-500 mb-1 flex items-center gap-1"><span className="text-base">👤</span> Username</label>
-          <input
-            className="w-full rounded-xl px-4 py-3 border-2 border-gray-200 bg-pink-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none transition-all"
-            placeholder="Enter your username"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            autoFocus
-          />
-        </div>
-        {/* Password */}
-        <div className="w-full relative">
-          <label className="block text-sm font-bold text-gray-500 mb-1 flex items-center gap-1"><span className="text-base">🔒</span> Password</label>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            className="w-full rounded-xl px-4 py-3 border-2 border-gray-200 bg-pink-50 text-lg focus:ring-2 focus:ring-pink-300 outline-none transition-all pr-10"
-            placeholder="Your password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-          />
-          <button
-            type="button"
-            tabIndex={-1}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xl text-pink-400 hover:text-pink-600 focus:outline-none"
-            onClick={() => setShowPassword(v => !v)}
-            aria-label="Show/hide password"
-          >{showPassword ? '🙈' : '👁️'}</button>
-          {/* Forgot password link (login only) */}
-          {mode === 'login' && (
+
+        <div className="card p-6">
+          <div className="flex mb-6 bg-gray-50 rounded-xl p-1">
             <button
-              type="button"
-              className="text-xs text-blue-500 hover:underline mt-2 absolute right-0 top-full"
-              style={{ marginTop: '2px' }}
-              onClick={() => { setShowForgot(true); setForgotMessage(''); setForgotEmail(''); }}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'login' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
+              onClick={() => setMode('login')}
             >
-              Forgot password?
+              Sign In
             </button>
-          )}
-        </div>
-        {/* Gmail Email (signup only) */}
-        {mode === 'signup' && (
-          <div className="w-full">
-            <label className="block text-sm font-bold text-gray-500 mb-1 flex items-center gap-1"><span className="text-base">📧</span> Gmail</label>
-            <input
-              type="email"
-              className={`w-full rounded-xl px-4 py-3 border-2 bg-pink-50 text-lg focus:ring-2 outline-none transition-all ${emailError ? 'border-pink-400 focus:ring-pink-400' : 'border-gray-200 focus:ring-pink-300'}`}
-              placeholder="you@gmail.com"
-              value={email}
-              onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
-              onBlur={() => setEmailError(validateEmail(email))}
-            />
-            {emailError && <div className="mt-1 text-sm text-pink-600 font-semibold">{emailError}</div>}
-          </div>
-        )}
-        {/* Error */}
-        {error && (
-          <div className="text-error bg-pink-100 rounded-xl px-4 py-2 border-2 border-pink-300 w-full text-center animate-wiggle">
-            {error}
-          </div>
-        )}
-        {/* Submit */}
-        <AnimatedCartoonButton
-          className={`w-full text-lg py-3 mt-2 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-70 ${mode==='signup' ? '!bg-gradient-to-r !from-indigo-500 !via-fuchsia-500 !to-pink-500 hover:!from-indigo-600 hover:!via-fuchsia-600 hover:!to-pink-600' : '!bg-gradient-to-r !from-pink-400 !to-orange-300 hover:!from-pink-500 hover:!to-orange-400'}`}
-          disabled={loading}
-          type="submit"
-        >
-          {loading
-            ? (<span className="animate-pulse">{mode === 'signup' ? 'Signing up, please wait a moment...' : 'Logging in, please wait a moment...'}</span>)
-            : (mode === 'signup' ? <><span className="animate-bounce">✨</span>Sign Up</> : <><span className="animate-bounce">🚀</span>Sign in<span className="animate-bounce">💬</span></>)}
-        </AnimatedCartoonButton>
-        {/* Welcome message */}
-        <div className="w-full bg-white/80 rounded-xl p-4 text-center shadow border-2 border-yellow-100 mt-2">
-          {mode === 'login' ? (
-            <>
-              <span className="text-lg">👋 <b>Welcome back, student!</b> <span className="text-yellow-400">⭐</span></span>
-              <div className="text-pink-500 mt-1">Don't have an account yet? Sign up now<span className="text-lg">🤗</span></div>
-            </>
-          ) : (
-            <>
-              <span className="text-lg">🎉 <b>Ready to join the fun?</b> <span className="text-pink-400">✨</span></span>
-              <div className="text-pink-500 mt-1">Create your account and start posting! <span className="text-lg">🎈</span></div>
-            </>
-          )}
-        </div>
-  </motion.form>
-      {/* Forgot Password Modal */}
-      {showForgot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-xs relative">
             <button
-              className="absolute top-2 right-3 text-xl text-gray-400 hover:text-pink-400"
-              onClick={() => setShowForgot(false)}
-              aria-label="Close"
-            >✖️</button>
-            <h2 className="text-lg font-bold mb-3 text-pink-500">Forgot Password</h2>
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
+              onClick={() => setMode('signup')}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form onSubmit={submit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Username</label>
+              <input
+                className="w-full rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+                placeholder="Enter your username"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  className="w-full rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all pr-10"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-dark text-sm"
+                  onClick={() => setShowPassword(v => !v)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              {mode === 'login' && (
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:underline mt-1"
+                  onClick={() => { setShowForgot(true); setForgotMessage(''); setForgotEmail(''); }}
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
+
+            {mode === 'signup' && (
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Gmail</label>
+                <input
+                  type="email"
+                  className={`w-full rounded-xl px-4 py-2.5 border bg-white text-sm focus:ring-2 outline-none transition-all ${emailError ? 'border-error focus:ring-error/10' : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
+                  placeholder="you@gmail.com"
+                  value={email}
+                  onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
+                  onBlur={() => setEmailError(validateEmail(email))}
+                />
+                {emailError && <p className="mt-1 text-xs text-error">{emailError}</p>}
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-error/5 text-error text-sm rounded-xl px-4 py-2.5 border border-error/10 text-center">
+                {error}
+              </div>
+            )}
+
+            <button
+              className="btn-primary w-full text-center flex items-center justify-center gap-2 disabled:opacity-60 mt-1"
+              disabled={loading}
+              type="submit"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                  {mode === 'signup' ? 'Creating account...' : 'Signing in...'}
+                </span>
+              ) : (
+                mode === 'signup' ? 'Create Account' : 'Sign In'
+              )}
+            </button>
+          </form>
+
+          <p className="text-center text-xs text-muted mt-6">
+            {mode === 'login' ? (
+              <>Don't have an account? <button className="text-primary font-semibold hover:underline" onClick={() => setMode('signup')}>Sign up</button></>
+            ) : (
+              <>Already have an account? <button className="text-primary font-semibold hover:underline" onClick={() => setMode('login')}>Sign in</button></>
+            )}
+          </p>
+        </div>
+
+        <p className="text-center text-xs text-muted mt-6">Built with care for students</p>
+      </motion.div>
+
+      {showForgot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+          <motion.div
+            className="bg-white rounded-2xl shadow-elevated p-6 w-full max-w-sm mx-4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-dark">Reset Password</h2>
+              <button className="text-muted hover:text-dark text-lg" onClick={() => setShowForgot(false)}>&times;</button>
+            </div>
             <form onSubmit={handleForgotPassword} className="flex flex-col gap-3">
               <input
                 type="email"
-                className="rounded-xl px-4 py-2 border-2 border-gray-200 bg-pink-50 text-base focus:ring-2 focus:ring-pink-300 outline-none"
+                className="rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
                 placeholder="Enter your email"
                 value={forgotEmail}
                 onChange={e => setForgotEmail(e.target.value)}
@@ -294,39 +259,21 @@ export default function AuthPage() {
               />
               <button
                 type="submit"
-                className="bg-gradient-to-r from-pink-400 to-blue-400 text-white font-bold py-2 rounded-xl mt-2 disabled:opacity-60"
+                className="btn-primary w-full text-sm disabled:opacity-60"
                 disabled={forgotLoading}
               >
-                {forgotLoading ? 'Sending...' : 'Send Reset Email'}
+                {forgotLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
-              {forgotMessage && (
-                <div className="text-sm text-center mt-2 text-pink-600">{forgotMessage}</div>
-              )}
+              {forgotMessage && <p className="text-xs text-muted text-center">{forgotMessage}</p>}
               {resetLink && (
-                <>
-                  <div className="text-xs text-center mt-2 break-all bg-pink-50 p-2 rounded border border-pink-200 select-all">
-                    {resetLink}
-                  </div>
-                  <div className="text-xs text-center mt-1 text-pink-500 font-semibold">
-                    The link will only be available for 23 minutes
-                  </div>
-                </>
+                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                  <p className="text-xs break-all select-all font-mono">{resetLink}</p>
+                </div>
               )}
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
-      {/* Simple custom footer below card */}
-      <motion.div
-        className="mt-6 w-full max-w-md px-2"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.2 }}
-      >
-        <div className="text-center text-base text-blue-500 font-bold animate-wiggle">Made with 💖 by shen</div>
-      </motion.div>
     </div>
   );
 }
-
-
