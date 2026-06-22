@@ -614,7 +614,7 @@ const createPostsRouter = () => {
 
   // List posts with search/filter, pinned first (auth required)
   router.get('/', requireAuth, async (req, res) => {
-    const { q, category, status, admin } = req.query;
+    const { q, category, status, admin, user_id } = req.query;
     let query = supabase
       .from('posts')
       .select('*, users!posts_user_id_fkey(name, avatar, role, badges)')
@@ -641,6 +641,9 @@ const createPostsRouter = () => {
     }
     if (category) {
       query = query.eq('category', category);
+    }
+    if (user_id) {
+      query = query.eq('user_id', parseInt(user_id, 10));
     }
     try {
       const { data, error } = await query;

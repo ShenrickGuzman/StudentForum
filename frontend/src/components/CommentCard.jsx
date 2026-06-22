@@ -1,9 +1,11 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import VoiceMessagePlayer from './VoiceMessagePlayer';
 import api from '../lib/api';
 import { reportComment } from '../lib/api';
 
-export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url, image_url, replyButton, canEdit, onEdit }) {
+export default function CommentCard({ avatar, username, badges = [], time, content, canDelete, onDelete, commentId, audio_url, image_url, replyButton, canEdit, onEdit, userId }) {
+  const navigate = useNavigate();
   const [showConfirm, setShowConfirm] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [reportReason, setReportReason] = useState('');
@@ -72,12 +74,14 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
     <div className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm relative comment-card-mobile">
       <div className="flex items-center gap-3 pb-2 mb-3">
         <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 text-base font-bold overflow-hidden">
-          {React.isValidElement(avatar) ? avatar : (
-            <img src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'} alt="avatar" className="w-10 h-10 rounded-full object-cover" onError={e => { e.target.src = '/Cute-Cat.png'; }} />
+          {React.isValidElement(avatar) ? (
+            <div className="cursor-pointer" onClick={() => userId && navigate(`/profile/${userId}`)}>{avatar}</div>
+          ) : (
+            <img src={typeof avatar === 'string' && avatar.trim() ? avatar : '/Cute-Cat.png'} alt="avatar" className="w-10 h-10 rounded-full object-cover cursor-pointer" onError={e => { e.target.src = '/Cute-Cat.png'; }} onClick={() => userId && navigate(`/profile/${userId}`)} />
           )}
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-sm text-dark">{username}</span>
+          <span className="font-bold text-sm text-dark cursor-pointer hover:underline" onClick={() => userId && navigate(`/profile/${userId}`)}>{username}</span>
           <div className="flex gap-1 mt-0.5">
             {Array.isArray(badges) && badges.length > 0 && badges.map((badge, idx) => (
               <span key={idx} className="px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold uppercase tracking-wide">{badge}</span>

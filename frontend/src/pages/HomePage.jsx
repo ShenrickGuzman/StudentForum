@@ -418,13 +418,14 @@ function HomePage() {
                   <img
                     src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
                     alt={p.author_name}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0 cursor-pointer"
                     onError={e => { e.target.src = '/Cute-Cat.png'; }}
+                    onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/profile/${p.user_id}`); }}
                   />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-dark truncate">
+                    <span className="text-sm font-medium text-dark truncate cursor-pointer hover:underline" onClick={e => { if (!p.anonymous) { e.preventDefault(); e.stopPropagation(); navigate(`/profile/${p.user_id}`); } }}>
                       {p.anonymous ? 'Anonymous' : p.author_name}
                     </span>
                     {(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../state/auth';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import api from '../lib/api';
 
 const defaultProfile = {
   avatar: '/Cute-Cat.png',
@@ -13,6 +14,7 @@ const defaultProfile = {
 
 export default function ProfilePage() {
   const { id: routeProfileId } = useParams();
+  const navigate = useNavigate();
   const [likeCount, setLikeCount] = useState(0);
   const [likedToday, setLikedToday] = useState(false);
   const { user, token } = useAuth();
@@ -22,6 +24,8 @@ export default function ProfilePage() {
   const [aboutMe, setAboutMe] = useState('');
   const [hobbies, setHobbies] = useState('');
   const [profileError, setProfileError] = useState('');
+  const [userPosts, setUserPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
 
   const handleLikeProfile = async () => {
     if (!token || likedToday || !profile || !profile.name || !profile.id) return;
@@ -83,11 +87,20 @@ export default function ProfilePage() {
         setAboutMe(data.profile.about || '');
         setHobbies(Array.isArray(data.profile.interests) ? data.profile.interests.join(', ') : (data.profile.interests || ''));
         if (token) fetchLikes(data.profile.id);
+        fetchUserPosts(data.profile.id);
         setLoading(false);
       } catch (err) {
         setProfileError('Failed to load profile');
         setLoading(false);
       }
+    }
+    async function fetchUserPosts(userId) {
+      setPostsLoading(true);
+      try {
+        const res = await api.get('/posts', { params: { user_id: userId } });
+        setUserPosts(Array.isArray(res.data) ? res.data : []);
+      } catch {}
+      setPostsLoading(false);
     }
     fetchProfileAndStats();
   }, [token, routeProfileId, user]);
@@ -237,6 +250,35 @@ export default function ProfilePage() {
             <button className="btn-primary text-sm" onClick={handleSave}>Save</button>
           </div>
         )}
+
+        {/* Posts */}
+        <div className="mt-8">
+          <h3 className="text-lg font-bold text-dark mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+            Posts ({userPosts.length})
+          </h3>
+          {postsLoading ? (
+            <div className="flex items-center justify-center py-8"><div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" /></div>
+          ) : userPosts.length === 0 ? (
+            <p className="text-sm text-muted text-center py-8">No posts yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {userPosts.map(post => (
+                <div key={post.id} className="card p-4 hover:shadow-md transition cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-medium text-primary uppercase">{post.category}</span>
+                    {post.pinned && <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Pinned</span>}
+                    {post.status !== 'approved' && (
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${post.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600'}`}>{post.status}</span>
+                    )}
+                  </div>
+                  <h4 className="font-semibold text-dark text-sm leading-snug mb-1 line-clamp-2">{post.title}</h4>
+                  <p className="text-xs text-muted">{new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
