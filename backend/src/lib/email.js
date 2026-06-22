@@ -1,27 +1,29 @@
 import nodemailer from 'nodemailer';
-import dns from 'dns';
-
-// Force IPv4 — Render doesn't support outbound IPv6
-const lookup = (hostname, cb) => dns.lookup(hostname, { family: 4, all: false }, cb);
+import dns from 'dns/promises';
 
 let transporter = null;
 
-function getTransporter() {
+async function getTransporter() {
   if (transporter) return transporter;
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.warn('SMTP not configured — emails will be logged but not sent');
     return null;
   }
+  // Resolve hostname to IPv4 (Render doesn't support outbound IPv6)
+  let resolvedHost = SMTP_HOST;
+  try {
+    const addresses = await dns.resolve4(SMTP_HOST);
+    if (addresses && addresses.length > 0) resolvedHost = addresses[0];
+  } catch {}
   transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
+    host: resolvedHost,
     port: parseInt(SMTP_PORT || '587', 10),
     secure: SMTP_PORT === '465',
     auth: { user: SMTP_USER, pass: SMTP_PASS },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
-    socketTimeout: 15000,
-    lookup
+    socketTimeout: 15000
   });
   return transporter;
 }
@@ -29,7 +31,7 @@ function getTransporter() {
 export async function sendEmail({ to, subject, html }) {
   const from = process.env.FROM_EMAIL || process.env.SMTP_USER || 'noreply@studentforum.com';
   const fromName = process.env.FROM_NAME || "St. Hyacinth's Forum";
-  const t = getTransporter();
+  const t = await getTransporter();
   if (!t) {
     console.log(`[EMAIL LOG] To: ${to} | Subject: ${subject}`);
     return;
