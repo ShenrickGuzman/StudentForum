@@ -1,4 +1,8 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+// Force IPv4 — Render doesn't support outbound IPv6
+const lookup = (hostname, options, cb) => dns.lookup(hostname, { ...options, family: 4 }, cb);
 
 let transporter = null;
 
@@ -16,7 +20,8 @@ function getTransporter() {
     auth: { user: SMTP_USER, pass: SMTP_PASS },
     connectionTimeout: 10000,
     greetingTimeout: 10000,
-    socketTimeout: 15000
+    socketTimeout: 15000,
+    lookup
   });
   return transporter;
 }
