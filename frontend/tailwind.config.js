@@ -7,66 +7,53 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#FFB347', // playful orange
-        secondary: '#6EC6FF', // sky blue
-        accent: '#FF6F91', // pink
-        background: '#FFF8E7', // soft cream
+        primary: '#6C63FF',
+        secondary: '#FF6584',
+        accent: '#FFB347',
+        background: '#F8F9FE',
         surface: '#FFFFFF',
-        success: '#7ED957',
-        warning: '#FFD966',
-        error: '#FF6F61',
-        info: '#6EC6FF',
-        dark: '#3A3A3A',
+        success: '#2ED47A',
+        warning: '#FFB347',
+        error: '#FF6B6B',
+        info: '#4A90D9',
+        dark: '#2D3436',
+        muted: '#6B7280',
       },
       borderRadius: {
-        cartoon: '1.5rem',
-        xl: '1.25rem',
+        xl: '1rem',
+        '2xl': '1.25rem',
+        '3xl': '1.5rem',
       },
       fontFamily: {
-        cartoon: ["'Comic Neue'", "'Quicksand'", "'Baloo'", "cursive", "sans-serif"],
+        sans: ["'Inter'", "'Segoe UI'", "system-ui", "sans-serif"],
+        display: ["'Poppins'", "'Inter'", "sans-serif"],
+      },
+      boxShadow: {
+        soft: '0 2px 16px rgba(108, 99, 255, 0.08)',
+        card: '0 4px 24px rgba(108, 99, 255, 0.06)',
+        elevated: '0 8px 32px rgba(108, 99, 255, 0.1)',
+        button: '0 2px 8px rgba(108, 99, 255, 0.2)',
       },
       animation: {
-        wiggle: 'wiggle 0.3s ease-in-out',
-        bouncex: 'bouncex 0.6s ease-in-out',
-        'bounce-slow': 'bounceslow 3s infinite',
-        'bounce-short': 'bounceshort 1.4s infinite',
-        'spin-slow': 'spinslow 5s linear infinite',
-        pop: 'pop 0.4s ease'
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
       },
       keyframes: {
-        wiggle: {
-          '0%, 100%': { transform: 'rotate(-1deg) scale(1.02)' },
-          '50%': { transform: 'rotate(1deg) scale(1.06)' }
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
         },
-        bouncex: {
-          '0%, 100%': { transform: 'translateX(0)' },
-          '50%': { transform: 'translateX(4px)' }
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        bounceslow: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-12px)' }
+        scaleIn: {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
         },
-        bounceshort: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-6px)' }
-        },
-        spinslow: {
-          '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' }
-        },
-        pop: {
-          '0%': { transform: 'scale(0.9)', opacity: '0' },
-          '60%': { transform: 'scale(1.04)', opacity: '1' },
-          '100%': { transform: 'scale(1)' }
-        }
-  },
-      boxShadow: {
-        cartoon: '0 4px 16px 0 rgba(255,179,71,0.15)',
-        fun: '0 2px 8px 0 rgba(110,198,255,0.15)',
       },
     }
   },
   plugins: []
 }
-
-
