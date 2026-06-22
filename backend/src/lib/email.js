@@ -14,7 +14,7 @@ function getTransporter() {
     console.warn('SMTP not configured — emails will be logged but not sent');
     return null;
   }
-  const port = parseInt(SMTP_PORT || '587', 10);
+  const port = parseInt(SMTP_PORT || '465', 10);
   transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port,
