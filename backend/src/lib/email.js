@@ -1,28 +1,39 @@
 import nodemailer from 'nodemailer';
-import dns from 'dns';
-try { dns.setDefaultResultOrder('ipv4first'); } catch {}
+import dns from 'dns/promises';
 
 let transporter = null;
+let cachedHost = null;
 
-// Nodemailer calls lookup(hostname, callback) where callback is (err, address, family)
-const lookupV4 = (hostname, cb) => dns.lookup(hostname, { family: 4, all: false }, cb);
+async function resolveHost(hostname) {
+  if (cachedHost) return cachedHost;
+  try {
+    // Try IPv4 first (Render doesn't support outbound IPv6)
+    const v4 = await dns.resolve4(hostname);
+    if (v4 && v4.length > 0) {
+      cachedHost = v4[0];
+      return cachedHost;
+    }
+  } catch {}
+  cachedHost = hostname;
+  return cachedHost;
+}
 
-function getTransporter() {
+async function getTransporter() {
   if (transporter) return transporter;
   const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
   if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
     console.warn('SMTP not configured — emails will be logged but not sent');
     return null;
   }
+  const ip = await resolveHost(SMTP_HOST);
   const port = parseInt(SMTP_PORT || '465', 10);
   transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
+    host: ip,
     port,
     secure: port === 465,
     requireTLS: port !== 465,
     auth: { user: SMTP_USER, pass: SMTP_PASS },
     tls: { rejectUnauthorized: false },
-    lookup: lookupV4,
     connectionTimeout: 30000,
     greetingTimeout: 30000,
     socketTimeout: 30000
