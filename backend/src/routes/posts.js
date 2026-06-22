@@ -865,41 +865,72 @@ const createPostsRouter = () => {
       }
       if (error || !data) return res.status(500).json({ error: 'Failed to add comment' });
 
-      // Send response first
       res.json(data);
 
-      // Notify post author (if not self) asynchronously
+      // Post-response notifications (async, non-blocking)
       (async () => {
         try {
+          const { notifyUser } = await import('../lib/notify.js');
+          const { sendEmail } = await import('../lib/email.js');
+          const frUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
+
+          // Notify post author of new comment
           if (postRes && postRes.user_id && postRes.user_id !== req.user.id) {
-            const { notifyUser } = await import('../lib/notify.js');
+            const { data: postAuthor } = await supabase
+              .from('users')
+              .select('email')
+              .eq('id', postRes.user_id)
+              .single();
+
             await notifyUser(postRes.user_id, {
               type: 'comment',
               message: `New comment on your post: "${postRes.title}"`,
               link: `/post/${req.params.id}`
             });
+
+            if (postAuthor?.email) {
+              await sendEmail({
+                to: postAuthor.email,
+                subject: `New comment on "${postRes.title}"`,
+                html: `<p>Someone commented on your post.</p><p><a href="${frUrl}/post/${req.params.id}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">View Comment</a></p>`
+              });
+            }
+          }
+
+          // Notify parent comment author of reply
+          if (parent_comment_id) {
+            const { data: parentComment } = await supabase
+              .from('comments')
+              .select('user_id')
+              .eq('id', parent_comment_id)
+              .single();
+
+            if (parentComment && parentComment.user_id && parentComment.user_id !== req.user.id) {
+              await notifyUser(parentComment.user_id, {
+                type: 'reply',
+                message: `${req.user.name || 'Someone'} replied to your comment on "${postRes.title}"`,
+                link: `/post/${req.params.id}`
+              });
+
+              const { data: replyTarget } = await supabase
+                .from('users')
+                .select('email')
+                .eq('id', parentComment.user_id)
+                .single();
+
+              if (replyTarget?.email) {
+                await sendEmail({
+                  to: replyTarget.email,
+                  subject: `Reply to your comment on "${postRes.title}"`,
+                  html: `<p>${req.user.name || 'Someone'} replied to your comment.</p><p><a href="${frUrl}/post/${req.params.id}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">View Reply</a></p>`
+                });
+              }
+            }
           }
         } catch (notifyErr) {
           console.error('Notification error after comment creation:', notifyErr);
         }
       })();
-        // After creating a reply comment, send notification to parent comment author
-        // Notify parent comment author if this is a reply
-        if (parent_comment_id) {
-          // Fetch parent comment to get author
-          const parentComment = await db('comments').where({ id: parent_comment_id }).first();
-          if (parentComment && parentComment.user_id && parentComment.user_id !== req.user.id) {
-            // Create notification for parent comment author
-            await db('notifications').insert({
-              user_id: parentComment.user_id,
-              type: 'reply',
-              message: `${req.user.username || 'Someone'} replied to your comment.`,
-              link: `/post/${req.params.id}#comment-${parent_comment_id}`,
-              created_at: new Date().toISOString(),
-              read: false
-            });
-          }
-        }
     } catch (e) {
       res.status(500).json({ error: 'Failed to add comment' });
     }

@@ -187,12 +187,11 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
     }
   });
 
-  // Request password reset: generates a secure link and returns it
+  // Request password reset: sends email with reset link
   router.post('/request-password-reset', async (req, res) => {
     const { email } = req.body || {};
     if (!email) return res.status(400).json({ error: 'Email is required' });
     try {
-      // Find user by email
       const { data: user, error } = await supabase
         .from('users')
         .select('id, email')
@@ -200,29 +199,24 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
         .single();
       if (error || !user) return res.status(404).json({ error: 'User not found' });
 
-      // Generate secure token
       const token = crypto.randomBytes(32).toString('hex');
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 23); // 23 minutes
-
-      // Store token in DB
+      const expiresAt = new Date(Date.now() + 1000 * 60 * 23);
       const { error: insertError } = await supabase
         .from('password_reset_tokens')
-        .insert([
-          {
-            user_id: user.id,
-            token,
-            expires_at: expiresAt.toISOString(),
-            used: false
-          }
-        ]);
+        .insert([{ user_id: user.id, token, expires_at: expiresAt.toISOString(), used: false }]);
       if (insertError) return res.status(500).json({ error: 'Failed to create reset token' });
 
-      // Build reset link (adjust base URL as needed)
-      const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const baseUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
       const resetLink = `${baseUrl}/reset-password?token=${token}`;
 
-      // Return the link to the frontend (for display)
-      return res.json({ resetLink });
+      const { sendEmail } = await import('../lib/email.js');
+      await sendEmail({
+        to: user.email,
+        subject: 'Reset your St. Hyacinth\'s Forum password',
+        html: `<p>You requested a password reset.</p><p>Click below to reset your password (expires in 23 minutes):</p><p><a href="${resetLink}" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`
+      });
+
+      res.json({ ok: true, message: 'If an account with that email exists, a reset link has been sent.' });
     } catch (e) {
       return res.status(500).json({ error: 'Failed to process request', details: e && e.message ? e.message : e });
     }
@@ -684,13 +678,23 @@ router.delete('/users/:userId/warnings/:warningId', requireAuth, isAdmin, async 
         return res.status(500).json({ error: 'Failed to create user', details: userError.message || userError });
       }
       if (!userData) return res.status(500).json({ error: 'No user data returned' });
-      // Update signup request status
       const { error: updateError } = await supabase
         .from('signup_requests')
         .update({ status: 'approved' })
         .eq('id', id);
       if (updateError) return res.status(500).json({ error: 'Failed to update request status' });
       const token = jwt.sign({ id: userData.id, role: userData.role, name: userData.name }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+      const frUrl = process.env.FRONTEND_URL || 'https://studentforum.onrender.com';
+      try {
+        const { sendEmail } = await import('../lib/email.js');
+        await sendEmail({
+          to: userData.email,
+          subject: 'Your St. Hyacinth\'s Forum account is approved!',
+          html: `<p>Hi ${userData.name},</p><p>Your signup request has been approved! You can now log in and join the community.</p><p><a href="${frUrl}/auth" style="display:inline-block;background:#6366f1;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none">Log In</a></p>`
+        });
+      } catch {}
+
       res.json({ approved: true, token, user: userData });
     } catch (e) {
       res.status(500).json({ error: 'Failed to approve request' });

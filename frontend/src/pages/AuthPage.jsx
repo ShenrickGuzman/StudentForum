@@ -24,8 +24,6 @@ export default function AuthPage() {
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotMessage, setForgotMessage] = useState('');
   const [forgotLoading, setForgotLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [resetLink, setResetLink] = useState('');
 
   const validateEmail = (value) => {
     if (!value) return 'Email is required';
@@ -86,13 +84,8 @@ export default function AuthPage() {
       return;
     }
     try {
-      const r = await api.post('/auth/request-password-reset', { email: forgotEmail });
-      if (r.data && r.data.resetLink) {
-        setResetLink(r.data.resetLink);
-        setForgotMessage('Copy this link to reset your password (valid 23 minutes):');
-      } else {
-        setForgotMessage('No reset link returned.');
-      }
+      await api.post('/auth/request-password-reset', { email: forgotEmail });
+      setForgotMessage('If an account with that email exists, a reset link has been sent. Please check your inbox (and spam folder).');
     } catch (err) {
       setForgotMessage(err?.response?.data?.error || 'Something went wrong.');
     } finally {
@@ -265,11 +258,6 @@ export default function AuthPage() {
                 {forgotLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
               {forgotMessage && <p className="text-xs text-muted text-center">{forgotMessage}</p>}
-              {resetLink && (
-                <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
-                  <p className="text-xs break-all select-all font-mono">{resetLink}</p>
-                </div>
-              )}
             </form>
           </motion.div>
         </div>
