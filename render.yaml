@@ -17,13 +17,9 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
-      - key: SMTP_HOST
+      - key: MAILJET_API_KEY
         sync: false
-      - key: SMTP_PORT
-        sync: false
-      - key: SMTP_USER
-        sync: false
-      - key: SMTP_PASS
+      - key: MAILJET_SECRET_KEY
         sync: false
       - key: FROM_EMAIL
         sync: false
