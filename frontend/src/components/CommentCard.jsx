@@ -132,12 +132,12 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
         <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto">
           <div className="flex flex-row gap-1.5 rounded-xl bg-gray-50 dark:bg-dark-bg px-2 py-1.5 w-fit md:w-fit items-center">
             {canEdit && (
-              <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center" onClick={() => { setEditText(typeof content === 'string' ? content : ''); setEditing(true); }} title="Edit comment" aria-label="Edit">✏️</button>
+              <button className="rounded-full w-10 h-10 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center" onClick={() => { setEditText(typeof content === 'string' ? content : ''); setEditing(true); }} title="Edit comment" aria-label="Edit">✏️</button>
             )}
             {canDelete && (
-              <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-error/5 hover:text-error hover:border-error/30 transition-all flex items-center justify-center" onClick={handleDeleteClick} title="Delete comment" aria-label="Delete">🗑️</button>
+              <button className="rounded-full w-10 h-10 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-error/5 hover:text-error hover:border-error/30 transition-all flex items-center justify-center" onClick={handleDeleteClick} title="Delete comment" aria-label="Delete">🗑️</button>
             )}
-            <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all flex items-center justify-center" onClick={handleReportClick} title="Report comment" aria-label="Report">🚩</button>
+            <button className="rounded-full w-10 h-10 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all flex items-center justify-center" onClick={handleReportClick} title="Report comment" aria-label="Report">🚩</button>
             <span className="flex items-center justify-center">{replyButton}</span>
           </div>
         </div>

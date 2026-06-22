@@ -313,12 +313,12 @@ function HomePage() {
           <button
             key={c.key}
             onClick={() => setCat(cat === c.key ? '' : c.key)}
-            className={`px-4 py-1.5 rounded-xl text-sm font-medium transition-all ${cat === c.key ? 'bg-primary text-white' : c.color}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${cat === c.key ? 'bg-primary text-white' : c.color}`}
           >
             {c.label}
           </button>
         ))}
-        {cat && <button className="px-4 py-1.5 rounded-xl text-sm font-medium text-muted dark:text-dark-muted hover:text-dark transition-colors" onClick={() => setCat('')}>Clear</button>}
+        {cat && <button className="px-4 py-2 rounded-xl text-sm font-medium text-muted dark:text-dark-muted hover:text-dark transition-colors" onClick={() => setCat('')}>Clear</button>}
       </div>
 
       {/* Search & Controls */}
@@ -335,7 +335,7 @@ function HomePage() {
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
             />
-            <button type="submit" className="btn-primary text-xs py-1.5 px-3">Search</button>
+            <button type="submit" className="btn-primary text-xs py-2 px-3">Search</button>
           </form>
         </div>
         <div className="flex-1">
@@ -350,7 +350,7 @@ function HomePage() {
               value={userSearchInput}
               onChange={e => setUserSearchInput(e.target.value)}
             />
-            <button type="submit" className="btn-primary text-xs py-1.5 px-3">Search</button>
+            <button type="submit" className="btn-primary text-xs py-2 px-3">Search</button>
           </form>
         </div>
         <button

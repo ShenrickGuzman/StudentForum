@@ -88,7 +88,7 @@ function RecursiveComment({ comment, depth }) {
   const isCommentAnonymous = comment.anonymous;
 
   return (
-    <div style={{ marginLeft: Math.min(depth * 20, 60) }} className="mt-3">
+    <div style={{ marginLeft: Math.min(depth * 14, 44) }} className="mt-3">
       <CommentCard
         key={comment.id}
         avatar={isCommentAnonymous ? (
@@ -491,7 +491,7 @@ export default function PostDetailPage() {
               type="button"
               disabled={!token || reacting}
               onClick={() => handleReact(rt.key)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${userReaction === rt.key ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-50 dark:bg-dark-bg text-muted dark:text-dark-muted border border-gray-100 hover:bg-gray-100'} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium transition-all ${userReaction === rt.key ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-50 dark:bg-dark-bg text-muted dark:text-dark-muted border border-gray-100 hover:bg-gray-100'} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span>{rt.icon}</span>
               <span>{reactions[rt.key] || 0}</span>

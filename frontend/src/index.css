@@ -130,3 +130,9 @@ body.dark {
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
+
+/* Audio player responsive */
+audio { max-width: 100%; }
+@media (max-width: 480px) {
+  audio { max-width: 180px; }
+}

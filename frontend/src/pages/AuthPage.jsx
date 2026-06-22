@@ -173,7 +173,7 @@ export default function AuthPage() {
               {mode === 'login' && (
                 <button
                   type="button"
-                  className="text-xs text-primary hover:underline mt-1"
+                  className="text-xs text-primary hover:underline py-2 mt-1"
                   onClick={() => { setShowForgot(true); setForgotMessage(''); setForgotEmail(''); }}
                 >
                   Forgot password?
