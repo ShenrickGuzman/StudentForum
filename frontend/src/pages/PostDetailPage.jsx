@@ -102,6 +102,7 @@ function RecursiveComment({ comment, depth }) {
         badges={isCommentAnonymous ? [] : badges}
         time={comment.created_at ? format(utcToZonedTime(new Date(comment.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }) : ''}
         content={comment.content}
+        commentId={comment.id}
         canEdit={user && (comment.user_id === user.id || user.role === 'admin')}
         onEdit={() => window.location.reload()}
         canDelete={user && (comment.user_id === user.id || user.role === 'admin')}
