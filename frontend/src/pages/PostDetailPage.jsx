@@ -20,6 +20,7 @@ const categories = [
 
 function RecursiveComment({ comment, depth }) {
   const { user } = useAuth();
+  const [commentRevealed, setCommentRevealed] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState('');
   const [replyLoading, setReplyLoading] = useState(false);
@@ -86,7 +87,8 @@ function RecursiveComment({ comment, depth }) {
 
   let badges = Array.isArray(comment.users?.badges) ? [...comment.users.badges] : [];
   if (comment.author_role === 'admin' && !badges.includes('ADMIN')) badges = [...badges, 'ADMIN'];
-  const isCommentAnonymous = comment.anonymous;
+  const isCommentAnonymous = comment.anonymous && !commentRevealed;
+  const canRevealComment = user && (user.role === 'admin' || user.role === 'teacher' || user.name === 'SHEN' || user.name === 'Ari');
 
   return (
     <div style={{ marginLeft: Math.min(depth * 14, 44) }} className="mt-3">
@@ -114,9 +116,16 @@ function RecursiveComment({ comment, depth }) {
         image_url={comment.image_url}
         replyButton={
           <>
+            <div className="flex items-center gap-2">
+            {comment.anonymous && canRevealComment && (
+              <button className="text-xs text-primary font-medium hover:underline" onClick={() => setCommentRevealed(v => !v)}>
+                {commentRevealed ? 'Hide Author' : 'Reveal Author'}
+              </button>
+            )}
             <button className="text-xs text-primary font-medium hover:underline" onClick={() => setShowReplyForm(v => !v)}>
               {showReplyForm ? 'Cancel' : 'Reply'}
             </button>
+            </div>
             {showReplyForm && (
               <form onSubmit={handleReplySubmit} className="mt-2">
                 <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" rows={2} disabled={replyLoading} />
@@ -348,7 +357,7 @@ export default function PostDetailPage() {
   const isAuthor = user && post.user_id === user.id;
   const isAdmin = user && (user.role === 'admin' || user.role === 'teacher');
   const statusLabel = post.status === 'pending' ? 'Pending Approval' : post.status === 'rejected' ? 'Rejected' : '';
-  const canReveal = user?.name === 'SHEN' || user?.name === 'Ari';
+  const canReveal = user?.role === 'admin' || user?.role === 'teacher' || user?.name === 'SHEN' || user?.name === 'Ari';
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
