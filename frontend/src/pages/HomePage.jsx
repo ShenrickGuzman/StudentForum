@@ -424,7 +424,7 @@ function HomePage() {
             <Link
               to={`/post/${p.id}`}
               key={p.id}
-              className="card p-5 hover:translate-y-[-2px] transition-all duration-200 group"
+              className={`card p-5 hover:translate-y-[-2px] transition-all duration-200 group flex flex-col ${!firstImage ? 'min-h-[260px]' : ''}`}
             >
               <div className="flex items-start gap-3 mb-3">
                 {p.anonymous ? (
@@ -462,7 +462,7 @@ function HomePage() {
                 </div>
               </div>
 
-              <h3 className={`font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-2 ${!firstImage ? 'text-xl' : 'text-base'}`}>
+              <h3 className={`font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-3 flex-1 flex items-center ${!firstImage ? 'text-2xl' : 'text-base'}`}>
                 {p.title}
               </h3>
 
