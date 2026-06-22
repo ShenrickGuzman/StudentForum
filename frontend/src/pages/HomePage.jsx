@@ -446,6 +446,7 @@ function HomePage() {
                       {p.anonymous ? 'Anonymous' : p.author_name}
                     </span>
                     {(() => {
+                      if (p.anonymous) return null;
                       let badges = Array.isArray(p.badges) ? [...p.badges] : [];
                       if (p.author_role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
                       return badges.slice(0, 2).map((badge, idx) => (

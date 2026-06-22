@@ -413,6 +413,7 @@ export default function PostDetailPage() {
                   {isAnonymous && !postAuthorRevealed ? 'Anonymous' : (post.users?.name || post.author_name)}
                 </span>
                 {(() => {
+                  if (isAnonymous && !postAuthorRevealed) return null;
                   let badges = Array.isArray(post.users?.badges) ? [...post.users.badges] : [];
                   if (post.users?.role === 'admin' && !badges.includes('ADMIN')) badges.push('ADMIN');
                   return badges.map((badge, idx) => (
