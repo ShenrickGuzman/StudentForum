@@ -90,12 +90,8 @@ function HomePage() {
     setUserSearchLoading(true);
     setUserSearchError('');
     try {
-      const token = user?.token;
-      const res = await fetch(`/api/auth/search-users?q=${encodeURIComponent(userSearchInput.trim())}`, {
-        headers: { 'Authorization': token ? `Bearer ${token}` : '' }
-      });
-      const data = await res.json();
-      setUserSearchResults(Array.isArray(data) ? data : []);
+      const res = await api.get('/auth/search-users', { params: { q: userSearchInput.trim() } });
+      setUserSearchResults(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       setUserSearchError('Failed to search users');
       setUserSearchResults([]);
