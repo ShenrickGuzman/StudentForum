@@ -117,22 +117,22 @@ export default function AuthPage() {
           >
             S
           </motion.div>
-          <h1 className="text-3xl font-bold text-dark">St. Hyacinth's Forum</h1>
+          <h1 className="text-3xl font-bold text-dark dark:text-dark-text">St. Hyacinth's Forum</h1>
           <p className="text-muted mt-1">
             {mode === 'login' ? 'Welcome back! Sign in to continue.' : 'Create your account to get started.'}
           </p>
         </div>
 
         <div className="card p-6">
-          <div className="flex mb-6 bg-gray-50 rounded-xl p-1">
+          <div className="flex mb-6 bg-gray-50 dark:bg-dark-bg rounded-xl p-1">
             <button
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'login' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'login' ? 'bg-white dark:bg-dark-surface text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
               onClick={() => setMode('login')}
             >
               Sign In
             </button>
             <button
-              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-white text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
+              className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${mode === 'signup' ? 'bg-white dark:bg-dark-surface text-primary shadow-sm' : 'text-muted hover:text-dark'}`}
               onClick={() => setMode('signup')}
             >
               Sign Up
@@ -141,9 +141,9 @@ export default function AuthPage() {
 
           <form onSubmit={submit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-dark mb-1">Username</label>
+              <label className="block text-sm font-medium text-dark dark:text-dark-text mb-1">Username</label>
               <input
-                className="w-full rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
+                className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
                 placeholder="Enter your username"
                 value={name}
                 onChange={e => setName(e.target.value)}
@@ -152,18 +152,18 @@ export default function AuthPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-dark mb-1">Password</label>
+              <label className="block text-sm font-medium text-dark dark:text-dark-text mb-1">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  className="w-full rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all pr-10"
+                  className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all pr-10"
                   placeholder="Enter your password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-dark text-sm"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted dark:text-dark-muted hover:text-dark text-sm"
                   onClick={() => setShowPassword(v => !v)}
                   tabIndex={-1}
                 >
@@ -183,10 +183,10 @@ export default function AuthPage() {
 
             {mode === 'signup' && (
               <div>
-                <label className="block text-sm font-medium text-dark mb-1">Gmail</label>
+                <label className="block text-sm font-medium text-dark dark:text-dark-text mb-1">Gmail</label>
                 <input
                   type="email"
-                  className={`w-full rounded-xl px-4 py-2.5 border bg-white text-sm focus:ring-2 outline-none transition-all ${emailError ? 'border-error focus:ring-error/10' : 'border-gray-200 focus:border-primary focus:ring-primary/10'}`}
+                  className={`w-full rounded-xl px-4 py-2.5 border bg-white dark:bg-dark-surface text-sm focus:ring-2 outline-none transition-all ${emailError ? 'border-error focus:ring-error/10' : 'border-gray-200 dark:border-dark-border focus:border-primary focus:ring-primary/10'}`}
                   placeholder="you@gmail.com"
                   value={email}
                   onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(''); }}
@@ -218,7 +218,7 @@ export default function AuthPage() {
             </button>
           </form>
 
-          <p className="text-center text-xs text-muted mt-6">
+          <p className="text-center text-xs text-muted dark:text-dark-muted mt-6">
             {mode === 'login' ? (
               <>Don't have an account? <button className="text-primary font-semibold hover:underline" onClick={() => setMode('signup')}>Sign up</button></>
             ) : (
@@ -227,24 +227,24 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <p className="text-center text-xs text-muted mt-6">Built with care for the Hyacinth community</p>
+        <p className="text-center text-xs text-muted dark:text-dark-muted mt-6">Built with care for the Hyacinth community</p>
       </motion.div>
 
       {showForgot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
           <motion.div
-            className="bg-white rounded-2xl shadow-elevated p-6 w-full max-w-sm mx-4"
+            className="bg-white dark:bg-dark-surface rounded-2xl shadow-elevated p-6 w-full max-w-sm mx-4"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-dark">Reset Password</h2>
+              <h2 className="text-lg font-semibold text-dark dark:text-dark-text">Reset Password</h2>
               <button className="text-muted hover:text-dark text-lg" onClick={() => setShowForgot(false)}>&times;</button>
             </div>
             <form onSubmit={handleForgotPassword} className="flex flex-col gap-3">
               <input
                 type="email"
-                className="rounded-xl px-4 py-2.5 border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
+                className="rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-surface text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none"
                 placeholder="Enter your email"
                 value={forgotEmail}
                 onChange={e => setForgotEmail(e.target.value)}
@@ -257,7 +257,7 @@ export default function AuthPage() {
               >
                 {forgotLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
-              {forgotMessage && <p className="text-xs text-muted text-center">{forgotMessage}</p>}
+              {forgotMessage && <p className="text-xs text-muted dark:text-dark-muted text-center">{forgotMessage}</p>}
             </form>
           </motion.div>
         </div>

@@ -11,6 +11,11 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.dark body,
+body.dark {
+  background: #0f172a;
+  color: #e2e8f0;
+}
 
 /* Modern scrollbar */
 ::-webkit-scrollbar {
@@ -23,8 +28,14 @@ body {
   background: #D1D5DB;
   border-radius: 8px;
 }
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
 ::-webkit-scrollbar-thumb:hover {
   background: #9CA3AF;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 /* Smooth focus ring */
@@ -41,8 +52,15 @@ body {
   box-shadow: 0 4px 24px rgba(108, 99, 255, 0.06);
   transition: box-shadow 0.2s, transform 0.2s;
 }
+.dark .card {
+  background: #1e293b;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
 .card:hover {
   box-shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
+}
+.dark .card:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 /* Button base */
@@ -71,8 +89,34 @@ body {
   padding: 0.625rem 1.5rem;
   transition: all 0.2s;
 }
+.dark .btn-secondary {
+  background: #334155;
+  color: #e2e8f0;
+}
 .btn-secondary:hover {
   background: #E5E7EB;
+}
+.dark .btn-secondary:hover {
+  background: #475569;
+}
+
+/* Inputs dark mode */
+.dark input:not([type="checkbox"]):not([type="file"]),
+.dark textarea,
+.dark select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+.dark input:focus:not([type="checkbox"]):not([type="file"]),
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #6C63FF;
+  box-shadow: 0 0 0 2px rgba(108, 99, 255, 0.15);
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b;
 }
 
 /* Badge base */

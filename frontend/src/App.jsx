@@ -16,7 +16,7 @@ import RequireAdminAuth from './components/RequireAdminAuth';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import NotificationBell from './components/NotificationBell';
 
-function NavBar() {
+function NavBar({ darkMode, toggleDarkMode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -33,7 +33,7 @@ function NavBar() {
   }, [profileMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-20 bg-white/80 backdrop-blur-lg border-b border-gray-100">
+    <header className="sticky top-0 z-20 bg-white/80 dark:bg-dark-surface/80 backdrop-blur-lg border-b border-gray-100 dark:border-dark-border">
       <div className="max-w-6xl mx-auto flex items-center gap-4 py-3 px-4">
         <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity">
           <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm">S</span>
@@ -44,10 +44,17 @@ function NavBar() {
             + New Post
           </Link>
           {user && <NotificationBell />}
+          <button onClick={toggleDarkMode} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-dark-surface text-muted dark:text-dark-muted transition-colors" aria-label="Toggle dark mode">
+            {darkMode ? (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+            )}
+          </button>
           {user && (
             <div className="relative">
               <button
-                className="profile-menu-trigger flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 hover:bg-gray-100 text-dark font-medium text-sm transition-colors border border-gray-200"
+                className="profile-menu-trigger flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-50 dark:bg-dark-bg hover:bg-gray-100 dark:hover:bg-dark-surface text-dark dark:text-dark-text font-medium text-sm transition-colors border border-gray-200 dark:border-dark-border"
                 onClick={() => setProfileMenuOpen((open) => !open)}
                 aria-haspopup="true"
                 aria-expanded={profileMenuOpen}
@@ -62,14 +69,14 @@ function NavBar() {
                 <svg className="w-3.5 h-3.5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
               </button>
               {profileMenuOpen && (
-                <div className="profile-menu-dropdown absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-elevated border border-gray-100 py-1.5 z-50 animate-scale-in">
-                  <button className="w-full text-left px-4 py-2 text-sm text-dark hover:bg-gray-50 transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/profile'); }}>View Profile</button>
-                  <button className="w-full text-left px-4 py-2 text-sm text-dark hover:bg-gray-50 transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/settings'); }}>Settings</button>
+                <div className="profile-menu-dropdown absolute right-0 mt-2 w-48 bg-white dark:bg-dark-surface rounded-xl shadow-elevated border border-gray-100 dark:border-dark-border py-1.5 z-50 animate-scale-in">
+                  <button className="w-full text-left px-4 py-2 text-sm text-dark dark:text-dark-text hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/profile'); }}>View Profile</button>
+                  <button className="w-full text-left px-4 py-2 text-sm text-dark dark:text-dark-text hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/settings'); }}>Settings</button>
                   {user.role === 'admin' && (
-                    <button className="w-full text-left px-4 py-2 text-sm text-dark hover:bg-gray-50 transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/admin'); }}>Admin Panel</button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-dark dark:text-dark-text hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors" onClick={() => { setProfileMenuOpen(false); navigate('/admin'); }}>Admin Panel</button>
                   )}
-                  <hr className="my-1 border-gray-100" />
-                  <button className="w-full text-left px-4 py-2 text-sm text-error hover:bg-gray-50 transition-colors" onClick={() => { setProfileMenuOpen(false); logout(); }}>Log out</button>
+                  <hr className="my-1 border-gray-100 dark:border-dark-border" />
+                  <button className="w-full text-left px-4 py-2 text-sm text-error hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors" onClick={() => { setProfileMenuOpen(false); logout(); }}>Log out</button>
                 </div>
               )}
             </div>
@@ -84,9 +91,15 @@ function NavBar() {
 }
 
 function AppShell() {
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('mf_dark') === 'true');
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', darkMode);
+    localStorage.setItem('mf_dark', darkMode);
+  }, [darkMode]);
+  const toggleDarkMode = () => setDarkMode(v => !v);
   return (
-    <div className="min-h-screen bg-background">
-      <NavBar />
+    <div className="min-h-screen bg-background dark:bg-dark-bg text-dark dark:text-dark-text transition-colors">
+      <NavBar darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
       <main>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />

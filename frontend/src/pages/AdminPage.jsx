@@ -269,7 +269,7 @@ export default function AdminPage() {
         <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <motion.div className="card p-6 max-w-sm w-full text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
             <div className="text-4xl mb-3">🗑️</div>
-            <h3 className="text-lg font-bold text-dark mb-4">{title}</h3>
+            <h3 className="text-lg font-bold text-dark dark:text-dark-text mb-4">{title}</h3>
             {children}
             <div className="flex gap-3 justify-center mt-4">
               <button className="btn-secondary text-sm" onClick={onClose}>Cancel</button>
@@ -284,14 +284,14 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-dark mb-6 flex items-center gap-2">🛠️ Admin Panel</h1>
+        <h1 className="text-2xl font-bold text-dark dark:text-dark-text mb-6 flex items-center gap-2">🛠️ Admin Panel</h1>
 
         {/* Auto Approve Toggle */}
         <div className="card p-4 flex items-center gap-3 mb-6">
           <span className="text-xl">⚡</span>
           <div className="flex-1">
-            <h2 className="text-sm font-bold text-dark">Auto Approve Posts</h2>
-            <p className="text-xs text-muted">When enabled, all pending posts are automatically approved.</p>
+            <h2 className="text-sm font-bold text-dark dark:text-dark-text">Auto Approve Posts</h2>
+            <p className="text-xs text-muted dark:text-dark-muted">When enabled, all pending posts are automatically approved.</p>
             {autoApproveError && <p className="text-xs text-error mt-1">{autoApproveError}</p>}
           </div>
           <button className={`text-sm font-semibold rounded-lg px-4 py-2 transition ${autoApprove ? 'bg-success/10 text-success' : 'bg-gray-100 text-muted'}`} onClick={handleToggleAutoApprove} disabled={autoApproveLoading}>
@@ -300,7 +300,7 @@ export default function AdminPage() {
         </div>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-1 mb-6 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+        <div className="flex flex-wrap gap-1 mb-6 bg-white dark:bg-dark-surface rounded-xl p-1 shadow-sm border border-gray-100">
           {TABS.map(tab => (
             <button key={tab.key} className={`px-4 py-2 text-sm font-medium rounded-lg transition ${activeTab === tab.key ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-dark hover:bg-gray-50'}`} onClick={() => setActiveTab(tab.key)}>
               {tab.icon} {tab.label}
@@ -314,25 +314,25 @@ export default function AdminPage() {
           {activeTab === 'pending' && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-base font-bold text-dark">Pending Posts</h2>
+                <h2 className="text-base font-bold text-dark dark:text-dark-text">Pending Posts</h2>
                 <button className="ml-auto text-xs btn-secondary px-3 py-1" onClick={loadPendingPosts}>Refresh</button>
               </div>
-              {pendingPostsLoading && <p className="text-sm text-muted">Loading...</p>}
+              {pendingPostsLoading && <p className="text-sm text-muted dark:text-dark-muted">Loading...</p>}
               {pendingPostsError && <p className="text-sm text-error">{pendingPostsError}</p>}
               {pendingActionMsg && <p className="text-sm text-success mb-2">{pendingActionMsg}</p>}
-              {!pendingPostsLoading && pendingPosts.length === 0 && <p className="text-sm text-muted">No pending posts.</p>}
+              {!pendingPostsLoading && pendingPosts.length === 0 && <p className="text-sm text-muted dark:text-dark-muted">No pending posts.</p>}
               <div className="flex flex-col gap-3">
                 {pendingPosts.map(p => (
-                  <div key={p.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={p.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg border border-gray-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
-                      <span className="font-semibold text-dark">{p.author_name}</span>
+                      <span className="font-semibold text-dark dark:text-dark-text">{p.author_name}</span>
                       <span className="text-muted">{p.category}</span>
-                      <span className="text-xs text-muted">{new Date(p.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-muted dark:text-dark-muted">{new Date(p.created_at).toLocaleString()}</span>
                       <span className="font-semibold text-primary ml-1">{p.title}</span>
                     </div>
                     <div className="flex gap-2">
                       {p.status === 'pending' && <><button className="btn-primary text-xs px-3 py-1" onClick={() => handleApprovePost(p.id)}>Approve</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleRejectPost(p.id)}>Reject</button></>}
-                      {p.status === 'rejected' && p.user_id === user?.id && <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleDeleteRejectedPost(p.id)}>Delete</button>}
+                      {p.status === 'rejected' && p.user_id === user?.id && <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleDeleteRejectedPost(p.id)}>Delete</button>}
                     </div>
                   </div>
                 ))}
@@ -344,26 +344,26 @@ export default function AdminPage() {
           {activeTab === 'reports' && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-base font-bold text-dark">Reported Posts & Comments</h2>
+                <h2 className="text-base font-bold text-dark dark:text-dark-text">Reported Posts & Comments</h2>
                 <button className="ml-auto text-xs btn-secondary px-3 py-1" onClick={loadReports}>Refresh</button>
               </div>
-              {reportsLoading && <p className="text-sm text-muted">Loading...</p>}
+              {reportsLoading && <p className="text-sm text-muted dark:text-dark-muted">Loading...</p>}
               {reportsError && <p className="text-sm text-error">{reportsError}</p>}
               {reportActionMsg && <p className="text-sm text-success mb-2">{reportActionMsg}</p>}
-              {!reportsLoading && reports.length === 0 && <p className="text-sm text-muted">No reports.</p>}
+              {!reportsLoading && reports.length === 0 && <p className="text-sm text-muted dark:text-dark-muted">No reports.</p>}
               <div className="flex flex-col gap-3">
                 {reports.map(r => (
-                  <div key={r.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={r.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg border border-gray-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
                       <span className="text-muted">Reporter: {r.reported_by_username || r.reported_by}</span>
-                      <span className="text-xs text-muted">{new Date(r.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-muted dark:text-dark-muted">{new Date(r.created_at).toLocaleString()}</span>
                       <span className="text-error font-medium">Reason: {r.reason}</span>
-                      <span className="text-xs text-muted">Type: {r.target_type}</span>
+                      <span className="text-xs text-muted dark:text-dark-muted">Type: {r.target_type}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {r.target_type === 'post' && <><button className="text-xs px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => openPostDetail(r.target_id)}>View</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setReportLogDeleteModal({ open: true, id: r.target_id })}>Remove Post</button></>}
                       {r.target_type === 'comment' && <><button className="text-xs px-3 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => handleViewReportedComment(r.target_id)}>View Comment</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleRemoveReportedComment(r.target_id)}>Remove Comment</button></>}
-                      <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleDeleteReportLog(r.id)}>Delete Log</button>
+                      <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleDeleteReportLog(r.id)}>Delete Log</button>
                     </div>
                   </div>
                 ))}
@@ -375,29 +375,29 @@ export default function AdminPage() {
           {activeTab === 'users' && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-base font-bold text-dark">User Management</h2>
+                <h2 className="text-base font-bold text-dark dark:text-dark-text">User Management</h2>
                 <button className="ml-auto text-xs btn-secondary px-3 py-1" onClick={loadUsers}>Refresh</button>
               </div>
-              {usersLoading && <p className="text-sm text-muted">Loading...</p>}
+              {usersLoading && <p className="text-sm text-muted dark:text-dark-muted">Loading...</p>}
               {usersError && <p className="text-sm text-error">{usersError}</p>}
               {userActionMsg && <p className="text-sm text-success mb-2">{userActionMsg}</p>}
               {adminActionMsg && <p className="text-sm text-success mb-2">{adminActionMsg}</p>}
 
               {/* Make Admin */}
-              <form onSubmit={handleMakeAdmin} className="flex gap-3 items-center mb-6 p-3 rounded-xl bg-gray-50">
-                <input className="flex-1 rounded-lg px-3 py-2 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Username to promote to admin" value={makeAdminName} onChange={e => setMakeAdminName(e.target.value)} />
+              <form onSubmit={handleMakeAdmin} className="flex gap-3 items-center mb-6 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg">
+                <input className="flex-1 rounded-lg px-3 py-2 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Username to promote to admin" value={makeAdminName} onChange={e => setMakeAdminName(e.target.value)} />
                 <button className="btn-primary text-sm" type="submit">Promote</button>
                 {makeAdminMsg && <span className="text-xs text-success">{makeAdminMsg}</span>}
               </form>
 
               {/* Admin Users */}
-              <h3 className="text-sm font-bold text-dark mb-2">Admins</h3>
+              <h3 className="text-sm font-bold text-dark dark:text-dark-text mb-2">Admins</h3>
               <div className="flex flex-col gap-3 mb-6">
-                {users.filter(u => u.role === 'admin').length === 0 && !usersLoading && <p className="text-sm text-muted">No admin users.</p>}
+                {users.filter(u => u.role === 'admin').length === 0 && !usersLoading && <p className="text-sm text-muted dark:text-dark-muted">No admin users.</p>}
                 {users.filter(u => u.role === 'admin').map(u => (
                   <div key={u.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-purple-50 border border-purple-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
-                      <span className="font-semibold text-dark">{u.name}</span>
+                      <span className="font-semibold text-dark dark:text-dark-text">{u.name}</span>
                       <span className="text-muted">{u.email}</span>
                       {Array.isArray(u.badges) && u.badges.length > 0 && u.badges.map((badge, idx) => (
                         <span key={idx} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold uppercase">
@@ -408,7 +408,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex gap-2 items-center flex-wrap">
                       {user?.role === 'admin' && u.role === 'admin' && <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleRemoveAdmin(u.id)}>Remove Admin</button>}
-                      <input className="rounded-lg px-2 py-1 border border-gray-200 w-24 text-xs focus:border-primary outline-none" placeholder="Badge..." value={badgeEdit[u.id] ?? ''} onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))} disabled={badgeLoading[u.id]} />
+                      <input className="rounded-lg px-2 py-1 border border-gray-200 dark:border-dark-border w-24 text-xs focus:border-primary outline-none" placeholder="Badge..." value={badgeEdit[u.id] ?? ''} onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))} disabled={badgeLoading[u.id]} />
                       <button className="text-xs px-2 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => handleSetBadge(u.id)} disabled={badgeLoading[u.id]}>{badgeLoading[u.id] ? '...' : 'Add'}</button>
                       <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete</button>
                     </div>
@@ -417,17 +417,17 @@ export default function AdminPage() {
               </div>
 
               {/* All Users */}
-              <h3 className="text-sm font-bold text-dark mb-2">All Registered Users</h3>
+              <h3 className="text-sm font-bold text-dark dark:text-dark-text mb-2">All Registered Users</h3>
               <div className="flex flex-col gap-3">
-                {users.length === 0 && !usersLoading && <p className="text-sm text-muted">No users.</p>}
+                {users.length === 0 && !usersLoading && <p className="text-sm text-muted dark:text-dark-muted">No users.</p>}
                 {users.map(u => (
-                  <div key={u.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={u.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg border border-gray-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
-                      <span className="font-semibold text-dark">{u.name}</span>
+                      <span className="font-semibold text-dark dark:text-dark-text">{u.name}</span>
                       <span className="text-muted">{u.email}</span>
                       <span className="text-error font-medium text-xs">Warnings: {u.warningCount}</span>
                       {Array.isArray(u.warnings) && u.warnings.length > 0 && u.warnings.map(w => (
-                        <div key={w.id} className="flex items-center gap-1.5 text-xs text-muted bg-red-50 rounded px-2 py-0.5">
+                        <div key={w.id} className="flex items-center gap-1.5 text-xs text-muted dark:text-dark-muted bg-red-50 rounded px-2 py-0.5">
                           <span>{w.reason}</span>
                           <span className="text-gray-400">{new Date(w.created_at).toLocaleString()}</span>
                           <button className="text-error hover:text-error/70 font-bold" onClick={async () => { try { await api.delete(`/auth/users/${u.id}/warnings/${w.id}`); loadUsers(); } catch {} }}>Remove</button>
@@ -442,7 +442,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex gap-2 items-center flex-wrap">
                       {user?.role === 'admin' && u.role === 'admin' && <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleRemoveAdmin(u.id)}>Remove Admin</button>}
-                      <input className="rounded-lg px-2 py-1 border border-gray-200 w-24 text-xs focus:border-primary outline-none" placeholder="Badge..." value={badgeEdit[u.id] ?? ''} onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))} disabled={badgeLoading[u.id]} />
+                      <input className="rounded-lg px-2 py-1 border border-gray-200 dark:border-dark-border w-24 text-xs focus:border-primary outline-none" placeholder="Badge..." value={badgeEdit[u.id] ?? ''} onChange={e => setBadgeEdit(b => ({ ...b, [u.id]: e.target.value }))} disabled={badgeLoading[u.id]} />
                       <button className="text-xs px-2 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => handleSetBadge(u.id)} disabled={badgeLoading[u.id]}>{badgeLoading[u.id] ? '...' : 'Add'}</button>
                       <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setDeleteUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Delete</button>
                       <button className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 font-semibold hover:bg-amber-100 transition border border-amber-200" onClick={() => setWarnUserModal({ open: true, id: u.id, name: u.name, email: u.email })}>Warn</button>
@@ -457,26 +457,26 @@ export default function AdminPage() {
           {activeTab === 'signups' && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-base font-bold text-dark">Sign Up Requests</h2>
+                <h2 className="text-base font-bold text-dark dark:text-dark-text">Sign Up Requests</h2>
                 <button className="ml-auto text-xs btn-secondary px-3 py-1" onClick={loadRequests}>Refresh</button>
               </div>
-              {reqLoading && <p className="text-sm text-muted">Loading...</p>}
+              {reqLoading && <p className="text-sm text-muted dark:text-dark-muted">Loading...</p>}
               {reqError && <p className="text-sm text-error">{reqError}</p>}
               {actionMsg && <p className="text-sm text-success mb-2">{actionMsg}</p>}
-              {!reqLoading && requests.length === 0 && <p className="text-sm text-muted">No pending requests.</p>}
+              {!reqLoading && requests.length === 0 && <p className="text-sm text-muted dark:text-dark-muted">No pending requests.</p>}
               <div className="flex flex-col gap-3">
                 {requests.map(r => (
-                  <div key={r.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={r.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg border border-gray-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
-                      <span className="font-semibold text-dark">{r.name}</span>
+                      <span className="font-semibold text-dark dark:text-dark-text">{r.name}</span>
                       <span className="text-muted">{r.email}</span>
-                      <span className="text-xs text-muted">{new Date(r.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-muted dark:text-dark-muted">{new Date(r.created_at).toLocaleString()}</span>
                       {r.status === 'approved' && <span className="text-xs px-2 py-0.5 rounded-full bg-success/10 text-success font-semibold">Approved</span>}
                       {r.status === 'declined' && <span className="text-xs px-2 py-0.5 rounded-full bg-error/10 text-error font-semibold">Declined</span>}
                     </div>
                     <div className="flex gap-2">
                       {r.status === 'pending' && <><button className="btn-primary text-xs px-3 py-1" onClick={() => handleApprove(r.id)}>Approve</button><button className="text-xs px-3 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => handleDecline(r.id)}>Decline</button></>}
-                      <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted font-semibold hover:bg-gray-200 transition" onClick={() => setDeleteModal({ open: true, id: r.id, name: r.name, email: r.email })}>Delete</button>
+                      <button className="text-xs px-3 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => setDeleteModal({ open: true, id: r.id, name: r.name, email: r.email })}>Delete</button>
                     </div>
                   </div>
                 ))}
@@ -488,28 +488,28 @@ export default function AdminPage() {
           {activeTab === 'posts' && (
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-base font-bold text-dark">All Posts</h2>
+                <h2 className="text-base font-bold text-dark dark:text-dark-text">All Posts</h2>
                 <button className="ml-auto text-xs btn-secondary px-3 py-1" onClick={loadPosts}>Refresh</button>
               </div>
-              {postsLoading && <p className="text-sm text-muted">Loading...</p>}
+              {postsLoading && <p className="text-sm text-muted dark:text-dark-muted">Loading...</p>}
               {postsError && <p className="text-sm text-error">{postsError}</p>}
               {postActionMsg && <p className="text-sm text-success mb-2">{postActionMsg}</p>}
-              {!postsLoading && posts.length === 0 && <p className="text-sm text-muted">No posts.</p>}
+              {!postsLoading && posts.length === 0 && <p className="text-sm text-muted dark:text-dark-muted">No posts.</p>}
               <div className="flex flex-col gap-3">
                 {posts.map(p => (
-                  <div key={p.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
+                  <div key={p.id} className="flex flex-col md:flex-row items-start md:items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-dark-bg border border-gray-100">
                     <div className="flex-1 flex flex-col md:flex-row md:items-center gap-1.5 text-sm">
                       {p.pinned && <span className="text-accent font-bold">📌</span>}
                       {p.locked && <span className="text-error font-bold">🔒</span>}
-                      <span className="font-semibold text-dark">{p.author_name}</span>
+                      <span className="font-semibold text-dark dark:text-dark-text">{p.author_name}</span>
                       <span className="text-muted">{p.category}</span>
-                      <span className="text-xs text-muted">{new Date(p.created_at).toLocaleString()}</span>
+                      <span className="text-xs text-muted dark:text-dark-muted">{new Date(p.created_at).toLocaleString()}</span>
                       <span className="font-semibold text-primary">{p.title}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       <button className="text-xs px-2 py-1 rounded-lg bg-primary/10 text-primary font-semibold hover:bg-primary/20 transition" onClick={() => openPostDetail(p.id)}>Open</button>
                       {p.locked ? <button className="text-xs px-2 py-1 rounded-lg bg-success/10 text-success font-semibold hover:bg-success/20 transition" onClick={() => handleUnlock(p.id)}>Unlock</button> : <button className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 font-semibold hover:bg-amber-100 transition border border-amber-200" onClick={() => handleLock(p.id)}>Lock</button>}
-                      {p.pinned ? <button className="text-xs px-2 py-1 rounded-lg bg-gray-100 text-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleUnpin(p.id)}>Unpin</button> : <button className="text-xs px-2 py-1 rounded-lg bg-accent/10 text-accent font-semibold hover:bg-accent/20 transition" onClick={() => handlePin(p.id)}>Pin</button>}
+                      {p.pinned ? <button className="text-xs px-2 py-1 rounded-lg bg-gray-100 text-muted dark:text-dark-muted font-semibold hover:bg-gray-200 transition" onClick={() => handleUnpin(p.id)}>Unpin</button> : <button className="text-xs px-2 py-1 rounded-lg bg-accent/10 text-accent font-semibold hover:bg-accent/20 transition" onClick={() => handlePin(p.id)}>Pin</button>}
                       <button className="text-xs px-2 py-1 rounded-lg bg-error/10 text-error font-semibold hover:bg-error/20 transition" onClick={() => setDeletePostModal({ open: true, id: p.id })}>Delete</button>
                       <button className="text-xs px-2 py-1 rounded-lg bg-amber-50 text-amber-700 font-semibold hover:bg-amber-100 transition border border-amber-200" onClick={() => { setReportPostModal({ open: true, id: p.id }); setReportReason(''); setReportMsg(''); }}>Report</button>
                     </div>
@@ -523,12 +523,12 @@ export default function AdminPage() {
 
       {/* Delete User Modal */}
       <ConfirmModal open={deleteUserModal.open} title="Delete this account permanently?" onClose={() => setDeleteUserModal({ open: false, id: null, name: '', email: '' })} onConfirm={() => handleDeleteUser(deleteUserModal.id)}>
-        <p className="text-sm text-muted">{deleteUserModal.name} ({deleteUserModal.email})</p>
+        <p className="text-sm text-muted dark:text-dark-muted">{deleteUserModal.name} ({deleteUserModal.email})</p>
       </ConfirmModal>
 
       {/* Delete Request Modal */}
       <ConfirmModal open={deleteModal.open} title="Delete this request permanently?" onClose={() => setDeleteModal({ open: false, id: null, name: '', email: '' })} onConfirm={() => handleDelete(deleteModal.id)}>
-        <p className="text-sm text-muted">{deleteModal.name} ({deleteModal.email})</p>
+        <p className="text-sm text-muted dark:text-dark-muted">{deleteModal.name} ({deleteModal.email})</p>
       </ConfirmModal>
 
       {/* Delete Post Modal */}
@@ -542,8 +542,8 @@ export default function AdminPage() {
         {warnUserModal.open && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="card p-6 max-w-sm w-full text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-              <h3 className="text-lg font-bold text-dark mb-3">Send Warning to {warnUserModal.name}</h3>
-              <input className="w-full rounded-lg px-3 py-2 border border-gray-200 text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason for warning" value={warnReason} onChange={e => setWarnReason(e.target.value)} disabled={warnLoading} />
+              <h3 className="text-lg font-bold text-dark dark:text-dark-text mb-3">Send Warning to {warnUserModal.name}</h3>
+              <input className="w-full rounded-lg px-3 py-2 border border-gray-200 dark:border-dark-border text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason for warning" value={warnReason} onChange={e => setWarnReason(e.target.value)} disabled={warnLoading} />
               {warnMsg && <p className="text-xs text-error mb-2">{warnMsg}</p>}
               <div className="flex gap-3 justify-center">
                 <button className="btn-primary text-sm" onClick={handleWarnUser} disabled={warnLoading}>{warnLoading ? 'Sending...' : 'Send Warning'}</button>
@@ -559,8 +559,8 @@ export default function AdminPage() {
         {reportPostModal.open && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="card p-6 max-w-sm w-full text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-              <h3 className="text-lg font-bold text-dark mb-3">Report Post</h3>
-              <input className="w-full rounded-lg px-3 py-2 border border-gray-200 text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
+              <h3 className="text-lg font-bold text-dark dark:text-dark-text mb-3">Report Post</h3>
+              <input className="w-full rounded-lg px-3 py-2 border border-gray-200 dark:border-dark-border text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
               {reportMsg && <p className="text-xs text-error mb-2">{reportMsg}</p>}
               <div className="flex gap-3 justify-center">
                 <button className="btn-primary text-sm" onClick={() => handleReportPost(reportPostModal.id)} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
@@ -576,8 +576,8 @@ export default function AdminPage() {
         {detailPostId && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="card p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto relative" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}>
-              <button className="absolute top-3 right-3 text-lg text-muted hover:text-dark transition" onClick={closePostDetail}>✕</button>
-              {detailLoading && <p className="text-sm text-muted text-center py-8">Loading post...</p>}
+              <button className="absolute top-3 right-3 text-lg text-muted dark:text-dark-muted hover:text-dark transition" onClick={closePostDetail}>✕</button>
+              {detailLoading && <p className="text-sm text-muted dark:text-dark-muted text-center py-8">Loading post...</p>}
               {detailData && detailData.error && <p className="text-sm text-error text-center py-8">{detailData.error}</p>}
               {detailData && !detailData.error && (
                 <>
@@ -586,27 +586,27 @@ export default function AdminPage() {
                     {detailData.locked && <span className="text-error font-bold text-sm flex items-center gap-1">🔒 Locked</span>}
                     <span className={`text-xs px-2 py-0.5 rounded-full text-white font-semibold ${detailData.category === 'Academics' ? 'bg-blue-500' : detailData.category === 'Class Life' ? 'bg-green-500' : detailData.category === 'Ideas' ? 'bg-yellow-500' : 'bg-primary'}`}>{detailData.category}</span>
                   </div>
-                  <h2 className="text-xl font-bold text-dark text-center mb-2">{detailData.title}</h2>
-                  <p className="text-xs text-muted text-center mb-4">By <span className="font-semibold">{detailData.author_name}</span>{detailData.created_at && <> • {new Date(detailData.created_at).toLocaleString()}</>}</p>
+                  <h2 className="text-xl font-bold text-dark dark:text-dark-text text-center mb-2">{detailData.title}</h2>
+                  <p className="text-xs text-muted dark:text-dark-muted text-center mb-4">By <span className="font-semibold">{detailData.author_name}</span>{detailData.created_at && <> • {new Date(detailData.created_at).toLocaleString()}</>}</p>
                   {detailData.image_url && <img alt="" className="rounded-xl max-h-48 object-contain mx-auto mb-3" src={getAssetUrl(detailData.image_url)} />}
-                  <p className="text-sm text-dark whitespace-pre-wrap text-center mb-3">{detailData.content}</p>
+                  <p className="text-sm text-dark dark:text-dark-text whitespace-pre-wrap text-center mb-3">{detailData.content}</p>
                   {detailData.link_url && <a className="text-primary underline text-sm font-medium" href={detailData.link_url} target="_blank" rel="noreferrer">Visit link</a>}
                   {/* Comments */}
                   <div className="mt-4 pt-4 border-t border-gray-100">
-                    <h3 className="text-sm font-bold text-dark mb-3">💬 Comments {detailData.locked && <span className="text-error text-xs">(Locked)</span>}</h3>
+                    <h3 className="text-sm font-bold text-dark dark:text-dark-text mb-3">💬 Comments {detailData.locked && <span className="text-error text-xs">(Locked)</span>}</h3>
                     <div className="space-y-2 max-h-48 overflow-y-auto mb-3">
-                      {detailCommentsLoading && <p className="text-xs text-muted">Loading comments...</p>}
-                      {!detailCommentsLoading && detailComments.length === 0 && <p className="text-xs text-muted">No comments yet.</p>}
+                      {detailCommentsLoading && <p className="text-xs text-muted dark:text-dark-muted">Loading comments...</p>}
+                      {!detailCommentsLoading && detailComments.length === 0 && <p className="text-xs text-muted dark:text-dark-muted">No comments yet.</p>}
                       {detailComments.map(c => (
-                        <div key={c.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-gray-50">
+                        <div key={c.id} className="flex items-start gap-2 p-2.5 rounded-lg bg-gray-50 dark:bg-dark-bg">
                           <span className="text-sm">🗨️</span>
-                          <div className="flex-1"><p className="text-sm text-dark">{c.content}</p><p className="text-[10px] text-muted">- {c.author_name}</p></div>
+                          <div className="flex-1"><p className="text-sm text-dark dark:text-dark-text">{c.content}</p><p className="text-[10px] text-muted dark:text-dark-muted">- {c.author_name}</p></div>
                         </div>
                       ))}
                     </div>
                     {token && !detailData.locked && (
                       <div className="flex gap-2">
-                        <input className="flex-1 rounded-lg px-3 py-2 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={detailComment} onChange={e => setDetailComment(e.target.value)} placeholder="Write a comment..." />
+                        <input className="flex-1 rounded-lg px-3 py-2 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={detailComment} onChange={e => setDetailComment(e.target.value)} placeholder="Write a comment..." />
                         <button className="btn-primary text-sm" onClick={sendDetailComment}>Send</button>
                       </div>
                     )}

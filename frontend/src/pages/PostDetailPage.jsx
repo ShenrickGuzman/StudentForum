@@ -93,7 +93,7 @@ function RecursiveComment({ comment, depth }) {
         key={comment.id}
         avatar={isCommentAnonymous ? (
           <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-            <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <svg className="w-5 h-5 text-muted dark:text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
           </div>
         ) : (
           <img src={comment.users?.avatar && comment.users.avatar.trim() ? comment.users.avatar : '/Cute-Cat.png'} alt="" className="w-10 h-10 rounded-full object-cover border-2 border-gray-100 flex-shrink-0" onError={e => { e.target.src = '/Cute-Cat.png'; }} />
@@ -117,17 +117,17 @@ function RecursiveComment({ comment, depth }) {
             </button>
             {showReplyForm && (
               <form onSubmit={handleReplySubmit} className="mt-2">
-                <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." className="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" rows={2} disabled={replyLoading} />
+                <textarea value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." className="w-full p-2.5 rounded-xl border border-gray-200 dark:border-dark-border bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" rows={2} disabled={replyLoading} />
                 <div className="flex items-center gap-2 mt-2">
-                  <label className="cursor-pointer text-xs text-muted hover:text-dark">
+                  <label className="cursor-pointer text-xs text-muted dark:text-dark-muted hover:text-dark">
                     <input type="file" accept="image/*" className="hidden" onChange={e => { const file = e.target.files[0]; setReplyImageFile(file); if (file) { const reader = new FileReader(); reader.onload = ev => setReplyImageUrl(ev.target.result); reader.readAsDataURL(file); } else setReplyImageUrl(''); }} disabled={replyLoading} />
                     Attach image
                   </label>
-                  <button type="button" className={`text-xs text-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={replyAudioUploading}>
+                  <button type="button" className={`text-xs text-muted dark:text-dark-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={replyAudioUploading}>
                     {recording ? 'Stop recording' : 'Voice'}
                   </button>
                 </div>
-                {replyImageUrl && <img src={replyImageUrl} alt="" className="rounded-lg max-h-20 mt-2 border border-gray-200" />}
+                {replyImageUrl && <img src={replyImageUrl} alt="" className="rounded-lg max-h-20 mt-2 border border-gray-200 dark:border-dark-border" />}
                 {replyAudioUrl && <audio controls src={replyAudioUrl} className="mt-2 h-8" />}
                 <button type="submit" className="btn-primary text-xs mt-2 py-1.5 px-3" disabled={replyLoading}>Send Reply</button>
               </form>
@@ -143,7 +143,7 @@ function RecursiveComment({ comment, depth }) {
             </button>
           ) : (
             <>
-              <button className="text-xs text-muted hover:text-dark font-medium mb-2" onClick={() => setShowReplies(false)}>Hide replies</button>
+              <button className="text-xs text-muted dark:text-dark-muted hover:text-dark font-medium mb-2" onClick={() => setShowReplies(false)}>Hide replies</button>
               {comment.replies.map(reply => (
                 <RecursiveComment key={reply.id} comment={reply} depth={depth + 1} />
               ))}
@@ -362,9 +362,9 @@ export default function PostDetailPage() {
         {showReportModal && (
           <motion.div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="bg-white rounded-2xl shadow-elevated p-6 max-w-sm w-full mx-4" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
-              <h3 className="text-lg font-semibold text-dark mb-3">Report Post</h3>
-              <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" placeholder="Reason for reporting" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
-              {reportMsg && <p className="text-xs text-muted mt-2">{reportMsg}</p>}
+              <h3 className="text-lg font-semibold text-dark dark:text-dark-text mb-3">Report Post</h3>
+              <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" placeholder="Reason for reporting" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
+              {reportMsg && <p className="text-xs text-muted dark:text-dark-muted mt-2">{reportMsg}</p>}
               <div className="flex gap-3 mt-4">
                 <button className="btn-primary text-sm flex-1" onClick={handleReportPost} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
                 <button className="btn-secondary text-sm flex-1" onClick={() => setShowReportModal(false)}>Cancel</button>
@@ -391,14 +391,14 @@ export default function PostDetailPage() {
           <div className="flex items-center gap-3">
             {isAnonymous && !postAuthorRevealed ? (
               <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <svg className="w-6 h-6 text-muted dark:text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               </div>
             ) : (
               <img src={post.users?.avatar && post.users.avatar.trim() ? post.users.avatar : '/Cute-Cat.png'} alt="" className="w-12 h-12 rounded-full object-cover border-2 border-gray-100 flex-shrink-0 cursor-pointer" onError={e => { e.target.src = '/Cute-Cat.png'; }} onClick={() => navigate(`/profile/${post.user_id}`)} />
             )}
               <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-dark cursor-pointer hover:underline" onClick={() => navigate(`/profile/${post.user_id}`)}>
+                <span className="font-semibold text-dark dark:text-dark-text cursor-pointer hover:underline" onClick={() => navigate(`/profile/${post.user_id}`)}>
                   {isAnonymous && !postAuthorRevealed ? 'Anonymous' : (post.users?.name || post.author_name)}
                 </span>
                 {(() => {
@@ -409,7 +409,7 @@ export default function PostDetailPage() {
                   ));
                 })()}
               </div>
-              <p className="text-xs text-muted mt-0.5">
+              <p className="text-xs text-muted dark:text-dark-muted mt-0.5">
                 {post.created_at && format(utcToZonedTime(new Date(post.created_at + 'Z'), 'Asia/Manila'), 'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' })}
               </p>
               {isAnonymous && canReveal && (
@@ -426,12 +426,12 @@ export default function PostDetailPage() {
 
         {editingPost ? (
           <div className="flex flex-col gap-4 mb-4">
-            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-xl font-bold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" />
-            <select className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none bg-white" value={editCategory} onChange={e => setEditCategory(e.target.value)}>
+            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border text-xl font-bold focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editTitle} onChange={e => setEditTitle(e.target.value)} placeholder="Title" />
+            <select className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none bg-white" value={editCategory} onChange={e => setEditCategory(e.target.value)}>
               {categories.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
             </select>
-            <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[120px]" value={editContent} onChange={e => setEditContent(e.target.value)} placeholder="Content" rows={5} />
-            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editLinkUrl} onChange={e => setEditLinkUrl(e.target.value)} placeholder="Link URL (optional)" />
+            <textarea className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[120px]" value={editContent} onChange={e => setEditContent(e.target.value)} placeholder="Content" rows={5} />
+            <input className="w-full rounded-xl px-4 py-2.5 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={editLinkUrl} onChange={e => setEditLinkUrl(e.target.value)} placeholder="Link URL (optional)" />
             <div className="flex gap-3">
               <button className="btn-primary text-sm" disabled={editSaving} onClick={async () => {
                 if (!editTitle.trim() || !editContent.trim()) return;
@@ -449,9 +449,9 @@ export default function PostDetailPage() {
           </div>
         ) : (
           <>
-            <h1 className="text-2xl font-bold text-dark mb-2 break-words">
+            <h1 className="text-2xl font-bold text-dark dark:text-dark-text mb-2 break-words">
               {post.title}
-              {post.locked && <span className="ml-2 text-muted">🔒</span>}
+              {post.locked && <span className="ml-2 text-muted dark:text-dark-muted">🔒</span>}
             </h1>
 
             {statusLabel && isAuthor && (
@@ -460,10 +460,10 @@ export default function PostDetailPage() {
               </div>
             )}
 
-            {post.pinned && <p className="text-xs text-muted mb-3">📌 Pinned by admin</p>}
-            {post.locked && <p className="text-xs text-muted mb-3">🔒 Locked by admin</p>}
+            {post.pinned && <p className="text-xs text-muted dark:text-dark-muted mb-3">📌 Pinned by admin</p>}
+            {post.locked && <p className="text-xs text-muted dark:text-dark-muted mb-3">🔒 Locked by admin</p>}
 
-            <div className="prose prose-sm max-w-none text-dark mb-4">
+            <div className="prose prose-sm max-w-none text-dark dark:text-dark-text mb-4">
               <p className="whitespace-pre-wrap break-words">{post.content}</p>
             </div>
 
@@ -491,13 +491,13 @@ export default function PostDetailPage() {
               type="button"
               disabled={!token || reacting}
               onClick={() => handleReact(rt.key)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${userReaction === rt.key ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-50 text-muted border border-gray-100 hover:bg-gray-100'} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-medium transition-all ${userReaction === rt.key ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-gray-50 dark:bg-dark-bg text-muted dark:text-dark-muted border border-gray-100 hover:bg-gray-100'} ${(!token || reacting) ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <span>{rt.icon}</span>
               <span>{reactions[rt.key] || 0}</span>
             </button>
           ))}
-          <button className="ml-auto text-xs text-muted hover:text-dark font-medium flex items-center gap-1" onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}>
+          <button className="ml-auto text-xs text-muted dark:text-dark-muted hover:text-dark font-medium flex items-center gap-1" onClick={() => { setShowReportModal(true); setReportReason(''); setReportMsg(''); }}>
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" /></svg>
             Report
           </button>
@@ -525,35 +525,35 @@ export default function PostDetailPage() {
 
       {/* Comments Section */}
       <motion.div className="card p-6 mt-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <h3 className="font-semibold text-dark mb-4 flex items-center gap-2">
-          <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+        <h3 className="font-semibold text-dark dark:text-dark-text mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-muted dark:text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
           Comments ({comments.length})
         </h3>
 
         {(post.status === 'approved' || isAuthor) ? (
           <>
             <div className="mb-6">
-              {comments.length === 0 && <p className="text-sm text-muted text-center py-4">No comments yet. Be the first!</p>}
+              {comments.length === 0 && <p className="text-sm text-muted dark:text-dark-muted text-center py-4">No comments yet. Be the first!</p>}
               {buildCommentTree(comments).map(comment => (
                 <RecursiveComment key={comment.id} comment={comment} depth={0} />
               ))}
             </div>
 
             {post.locked ? (
-              <div className="bg-gray-50 rounded-xl p-4 text-center text-sm text-muted">🔒 This post is locked. Comments are disabled.</div>
+              <div className="bg-gray-50 dark:bg-dark-bg rounded-xl p-4 text-center text-sm text-muted dark:text-dark-muted">🔒 This post is locked. Comments are disabled.</div>
             ) : (
               <form onSubmit={handleCommentSubmit}>
-                <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Write a comment..." className="w-full p-3 rounded-xl border border-gray-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" rows={2} disabled={commentLoading} />
+                <textarea value={newComment} onChange={e => setNewComment(e.target.value)} placeholder="Write a comment..." className="w-full p-3 rounded-xl border border-gray-200 dark:border-dark-border bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[80px]" rows={2} disabled={commentLoading} />
                 <div className="flex items-center gap-3 mt-2 flex-wrap">
-                  <label className="flex items-center gap-1.5 text-xs text-muted cursor-pointer hover:text-dark">
+                  <label className="flex items-center gap-1.5 text-xs text-muted dark:text-dark-muted cursor-pointer hover:text-dark">
                     <input type="checkbox" checked={commentAnonymous} onChange={e => setCommentAnonymous(e.target.checked)} className="rounded" />
                     Comment anonymously
                   </label>
-                  <label className="text-xs text-muted cursor-pointer hover:text-dark">
+                  <label className="text-xs text-muted dark:text-dark-muted cursor-pointer hover:text-dark">
                     <input type="file" accept="image/*" multiple className="hidden" onChange={e => { if (e.target.files) setCommentImageFiles(Array.from(e.target.files)); }} disabled={commentLoading} />
                     Attach images
                   </label>
-                  <button type="button" className={`text-xs text-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={audioUploading}>
+                  <button type="button" className={`text-xs text-muted dark:text-dark-muted hover:text-dark ${recording ? 'text-error' : ''}`} onClick={recording ? stopRecording : startRecording} disabled={audioUploading}>
                     {recording ? 'Stop recording' : 'Record voice'}
                   </button>
                   {audioUrl && <audio controls src={audioUrl} className="h-8" />}
@@ -565,7 +565,7 @@ export default function PostDetailPage() {
                 {commentImageFiles.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {commentImageFiles.map((file, idx) => (
-                      <img key={idx} src={URL.createObjectURL(file)} alt="" className="rounded-lg max-h-16 border border-gray-200" />
+                      <img key={idx} src={URL.createObjectURL(file)} alt="" className="rounded-lg max-h-16 border border-gray-200 dark:border-dark-border" />
                     ))}
                   </div>
                 )}
@@ -573,7 +573,7 @@ export default function PostDetailPage() {
             )}
           </>
         ) : (
-          <p className="text-sm text-muted text-center py-4">Comments will be available after admin approval.</p>
+          <p className="text-sm text-muted dark:text-dark-muted text-center py-4">Comments will be available after admin approval.</p>
         )}
       </motion.div>
     </div>

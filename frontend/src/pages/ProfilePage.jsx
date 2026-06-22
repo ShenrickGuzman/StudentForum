@@ -155,7 +155,7 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto mb-3" /><p className="text-sm text-muted">Loading profile...</p></div></div>;
+    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto mb-3" /><p className="text-sm text-muted dark:text-dark-muted">Loading profile...</p></div></div>;
   }
   if (profileError) {
     return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><p className="text-sm text-error">{profileError}</p></div></div>;
@@ -170,12 +170,12 @@ export default function ProfilePage() {
         {/* Hero Header */}
         <div className="relative rounded-2xl bg-gradient-to-r from-primary via-primary/80 to-secondary/80 px-6 sm:px-10 py-10 sm:py-14 flex flex-col items-center text-center mb-6 overflow-hidden">
           <div className="absolute inset-0 opacity-10">
-            <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-white" />
-            <div className="absolute -bottom-10 -right-10 w-60 h-60 rounded-full bg-white" />
+            <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-white dark:bg-dark-surface" />
+            <div className="absolute -bottom-10 -right-10 w-60 h-60 rounded-full bg-white dark:bg-dark-surface" />
           </div>
           <div className="relative">
             <div className="relative inline-block mb-3">
-              <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white/80 shadow-xl object-cover bg-white" />
+              <img src={editing ? avatarPreview : profile.avatar} alt="avatar" className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white/80 shadow-xl object-cover bg-white dark:bg-dark-surface" />
               {editing && isOwnProfile && (
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 flex gap-2 mt-1">
                   <label className="bg-white/90 hover:bg-white text-primary rounded-full w-8 h-8 flex items-center justify-center cursor-pointer shadow text-sm transition">
@@ -223,17 +223,17 @@ export default function ProfilePage() {
         {/* About Me & Interests */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="card p-6">
-            <h3 className="text-base font-bold text-dark mb-3 flex items-center gap-2"><span>👤</span> About Me</h3>
+            <h3 className="text-base font-bold text-dark dark:text-dark-text mb-3 flex items-center gap-2"><span>👤</span> About Me</h3>
             {editing && isOwnProfile ? (
-              <textarea className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none min-h-[100px]" value={aboutMe} onChange={e => setAboutMe(e.target.value)} rows={4} />
+              <textarea className="w-full p-3 rounded-xl border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none min-h-[100px]" value={aboutMe} onChange={e => setAboutMe(e.target.value)} rows={4} />
             ) : (
-              <div className="text-sm text-muted leading-relaxed min-h-[60px]">{profile.about}</div>
+              <div className="text-sm text-muted dark:text-dark-muted leading-relaxed min-h-[60px]">{profile.about}</div>
             )}
           </div>
           <div className="card p-6">
-            <h3 className="text-base font-bold text-dark mb-3 flex items-center gap-2"><span>💚</span> Interests & Hobbies</h3>
+            <h3 className="text-base font-bold text-dark dark:text-dark-text mb-3 flex items-center gap-2"><span>💚</span> Interests & Hobbies</h3>
             {editing && isOwnProfile ? (
-              <input className="w-full p-3 rounded-xl border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={hobbies} onChange={e => setHobbies(e.target.value)} placeholder="Comma separated interests" />
+              <input className="w-full p-3 rounded-xl border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" value={hobbies} onChange={e => setHobbies(e.target.value)} placeholder="Comma separated interests" />
             ) : (
               <div className="flex flex-wrap gap-2 min-h-[40px]">
                 {(Array.isArray(profile.interests) ? profile.interests : []).map((interest, idx) => (
@@ -253,14 +253,14 @@ export default function ProfilePage() {
 
         {/* Posts */}
         <div className="mt-8">
-          <h3 className="text-lg font-bold text-dark mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
+          <h3 className="text-lg font-bold text-dark dark:text-dark-text mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 text-muted dark:text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" /></svg>
             Posts ({userPosts.length})
           </h3>
           {postsLoading ? (
             <div className="flex items-center justify-center py-8"><div className="w-5 h-5 rounded-full border-2 border-primary/30 border-t-primary animate-spin" /></div>
           ) : userPosts.length === 0 ? (
-            <p className="text-sm text-muted text-center py-8">No posts yet.</p>
+            <p className="text-sm text-muted dark:text-dark-muted text-center py-8">No posts yet.</p>
           ) : (
             <div className="space-y-3">
               {userPosts.map(post => (
@@ -272,8 +272,8 @@ export default function ProfilePage() {
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${post.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600'}`}>{post.status}</span>
                     )}
                   </div>
-                  <h4 className="font-semibold text-dark text-sm leading-snug mb-1 line-clamp-2">{post.title}</h4>
-                  <p className="text-xs text-muted">{new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                  <h4 className="font-semibold text-dark dark:text-dark-text text-sm leading-snug mb-1 line-clamp-2">{post.title}</h4>
+                  <p className="text-xs text-muted dark:text-dark-muted">{new Date(post.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                 </div>
               ))}
             </div>

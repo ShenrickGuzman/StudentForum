@@ -165,16 +165,16 @@ function HomePage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl shadow-elevated p-8 max-w-sm w-full mx-4 text-center"
+              className="bg-white dark:bg-dark-surface rounded-2xl shadow-elevated p-8 max-w-sm w-full mx-4 text-center"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl mx-auto mb-4">🗺️</div>
-              <h3 className="text-xl font-bold text-dark mb-2">{tourSteps[tourStep].title}</h3>
+              <h3 className="text-xl font-bold text-dark dark:text-dark-text mb-2">{tourSteps[tourStep].title}</h3>
               <p className="text-muted mb-6">{tourSteps[tourStep].desc}</p>
               <div className="flex gap-3 justify-center">
                 <button className="btn-secondary text-sm" onClick={handleTourPrev} disabled={tourStep === 0}>Back</button>
                 <button className="btn-primary text-sm" onClick={handleTourNext}>{tourStep === tourSteps.length - 1 ? 'Finish' : 'Next'}</button>
-                <button className="px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-dark transition-colors" onClick={handleTourSkip}>Skip</button>
+                <button className="px-4 py-2 rounded-xl text-sm font-medium text-muted dark:text-dark-muted hover:text-dark transition-colors" onClick={handleTourSkip}>Skip</button>
               </div>
             </motion.div>
           </motion.div>
@@ -195,18 +195,18 @@ function HomePage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl shadow-elevated p-8 max-w-lg w-full mx-4"
+              className="bg-white dark:bg-dark-surface rounded-2xl shadow-elevated p-8 max-w-lg w-full mx-4"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               style={{ maxHeight: '85vh', overflow: 'hidden' }}
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-dark">Forum Guide & FAQ</h2>
+                <h2 className="text-xl font-bold text-dark dark:text-dark-text">Forum Guide & FAQ</h2>
                 <button className="text-muted hover:text-dark text-lg" onClick={() => setShowFAQ(false)}>&times;</button>
               </div>
               <div className="flex flex-col gap-3 overflow-y-auto" style={{ maxHeight: '55vh' }}>
                 {faqList.map((item, idx) => (
-                  <div key={idx} className="bg-gray-50 rounded-xl p-4">
-                    <p className="font-semibold text-dark text-sm mb-1">{item.q}</p>
+                  <div key={idx} className="bg-gray-50 dark:bg-dark-bg rounded-xl p-4">
+                    <p className="font-semibold text-dark dark:text-dark-text text-sm mb-1">{item.q}</p>
                     <p className="text-muted text-sm">{item.a}</p>
                   </div>
                 ))}
@@ -226,13 +226,13 @@ function HomePage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl shadow-elevated p-8 max-w-sm w-full mx-4 text-center"
+              className="bg-white dark:bg-dark-surface rounded-2xl shadow-elevated p-8 max-w-sm w-full mx-4 text-center"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-2xl mx-auto mb-4">👋</div>
-              <h3 className="text-xl font-bold text-dark mb-2">Welcome to St. Hyacinth's Forum!</h3>
+              <h3 className="text-xl font-bold text-dark dark:text-dark-text mb-2">Welcome to St. Hyacinth's Forum!</h3>
               <p className="text-muted text-sm mb-6">Ask questions, share ideas, and connect with classmates.</p>
-              <label className="flex items-center justify-center gap-2 mb-4 text-sm text-muted">
+              <label className="flex items-center justify-center gap-2 mb-4 text-sm text-muted dark:text-dark-muted">
                 <input type="checkbox" checked={dontShowAgain} onChange={e => setDontShowAgain(e.target.checked)} className="rounded" />
                 Don't show again
               </label>
@@ -251,17 +251,17 @@ function HomePage() {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white rounded-2xl shadow-elevated p-8 max-w-md w-full mx-4 text-center"
+              className="bg-white dark:bg-dark-surface rounded-2xl shadow-elevated p-8 max-w-md w-full mx-4 text-center"
               initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
             >
               <div className="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center text-2xl mx-auto mb-4">⚠️</div>
               <h3 className="text-xl font-bold text-error mb-2">You have received a warning</h3>
-              <p className="text-sm text-muted mb-4">Current warnings: {warnings.length}/3</p>
+              <p className="text-sm text-muted dark:text-dark-muted mb-4">Current warnings: {warnings.length}/3</p>
               <p className="text-sm text-error mb-4">If your account reaches 3 warnings, it will be permanently deleted.</p>
               {warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => (
                 <div key={w.id} className="bg-error/5 rounded-xl p-3 mb-3 text-sm text-error text-left">
                   <p className="font-medium">{w.reason}</p>
-                  <p className="text-xs text-muted mt-1">
+                  <p className="text-xs text-muted dark:text-dark-muted mt-1">
                     {format(
                       utcToZonedTime(w.created_at.endsWith('Z') ? new Date(w.created_at) : new Date(w.created_at + 'Z'), 'Asia/Manila'),
                       'dd MMM yyyy, hh:mm a', { timeZone: 'Asia/Manila' }
@@ -275,7 +275,7 @@ function HomePage() {
                 </div>
               )}
               <div className="flex flex-col items-center gap-3">
-                <label className="flex items-center gap-2 text-sm text-muted">
+                <label className="flex items-center gap-2 text-sm text-muted dark:text-dark-muted">
                   <input type="checkbox" className="rounded" onChange={e => {
                     if (e.target.checked) {
                       const newIds = [...doNotShowWarningAgainIds, ...warnings.filter(w => !doNotShowWarningAgainIds.includes(w.id)).map(w => w.id)];
@@ -299,7 +299,7 @@ function HomePage() {
 
       {/* Hero Section */}
       <div className="text-center mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-dark mb-2">
+        <h1 className="text-3xl md:text-4xl font-bold text-dark dark:text-dark-text mb-2">
           Welcome to St. Hyacinth's Forum
         </h1>
         <p className="text-muted max-w-xl mx-auto">
@@ -318,19 +318,19 @@ function HomePage() {
             {c.label}
           </button>
         ))}
-        {cat && <button className="px-4 py-1.5 rounded-xl text-sm font-medium text-muted hover:text-dark transition-colors" onClick={() => setCat('')}>Clear</button>}
+        {cat && <button className="px-4 py-1.5 rounded-xl text-sm font-medium text-muted dark:text-dark-muted hover:text-dark transition-colors" onClick={() => setCat('')}>Clear</button>}
       </div>
 
       {/* Search & Controls */}
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="flex-1">
           <form
-            className="flex items-center bg-white rounded-xl border border-gray-200 px-4 py-2.5 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all"
+            className="flex items-center bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border px-4 py-2.5 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all"
             onSubmit={e => { e.preventDefault(); setQ(searchInput); }}
           >
-            <svg className="w-5 h-5 text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <svg className="w-5 h-5 text-muted dark:text-dark-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             <input
-              className="flex-1 bg-transparent outline-none text-sm text-dark placeholder:text-muted"
+              className="flex-1 bg-transparent outline-none text-sm text-dark dark:text-dark-text placeholder:text-muted"
               placeholder="Search forum posts..."
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
@@ -340,12 +340,12 @@ function HomePage() {
         </div>
         <div className="flex-1">
           <form
-            className="flex items-center bg-white rounded-xl border border-gray-200 px-4 py-2.5 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all"
+            className="flex items-center bg-white dark:bg-dark-surface rounded-xl border border-gray-200 dark:border-dark-border px-4 py-2.5 shadow-sm focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all"
             onSubmit={handleUserSearch}
           >
-            <svg className="w-5 h-5 text-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            <svg className="w-5 h-5 text-muted dark:text-dark-muted mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
             <input
-              className="flex-1 bg-transparent outline-none text-sm text-dark placeholder:text-muted"
+              className="flex-1 bg-transparent outline-none text-sm text-dark dark:text-dark-text placeholder:text-muted"
               placeholder="Search users by name..."
               value={userSearchInput}
               onChange={e => setUserSearchInput(e.target.value)}
@@ -364,16 +364,16 @@ function HomePage() {
       </div>
 
       {/* User Search Results */}
-      {userSearchLoading && <p className="text-center text-sm text-muted mb-4">Searching users...</p>}
+      {userSearchLoading && <p className="text-center text-sm text-muted dark:text-dark-muted mb-4">Searching users...</p>}
       {userSearchError && <p className="text-center text-sm text-error mb-4">{userSearchError}</p>}
       {userSearchResults.length > 0 && (
         <div className="card p-4 mb-8">
-          <h3 className="font-semibold text-dark mb-3 text-sm">Users Found</h3>
+          <h3 className="font-semibold text-dark dark:text-dark-text mb-3 text-sm">Users Found</h3>
           <div className="flex flex-col gap-2">
             {userSearchResults.map(u => (
               <div key={u.id} className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0">
-                <img src={u.avatar || '/Cute-Cat.png'} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
-                <span className="text-sm font-medium text-dark">{u.name}</span>
+                <img src={u.avatar || '/Cute-Cat.png'} alt={u.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-dark-border" />
+                <span className="text-sm font-medium text-dark dark:text-dark-text">{u.name}</span>
                 <Link to={`/profile/${u.id}`} className="ml-auto text-xs text-primary font-medium hover:underline">View Profile</Link>
               </div>
             ))}
@@ -381,13 +381,13 @@ function HomePage() {
         </div>
       )}
       {userSearchTriggered && !userSearchLoading && !userSearchError && userSearchInput.trim() && userSearchResults.length === 0 && (
-        <p className="text-center text-sm text-muted mb-4">No users found</p>
+        <p className="text-center text-sm text-muted dark:text-dark-muted mb-4">No users found</p>
       )}
 
       {/* Posts Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {posts.length === 0 && (
-          <div className="col-span-full text-center py-12 text-muted">
+          <div className="col-span-full text-center py-12 text-muted dark:text-dark-muted">
             <p className="text-lg font-medium">No posts yet.</p>
             <p className="text-sm mt-1">Be the first to start a conversation!</p>
           </div>
@@ -411,21 +411,21 @@ function HomePage() {
             >
               <div className="flex items-start gap-3 mb-3">
                 {p.anonymous ? (
-                  <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm flex-shrink-0">
-                    <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                  <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-dark-bg flex items-center justify-center text-sm flex-shrink-0">
+                    <svg className="w-4 h-4 text-muted dark:text-dark-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                   </div>
                 ) : (
                   <img
                     src={p.avatar && p.avatar.trim() ? getAssetUrl(p.avatar) : '/Cute-Cat.png'}
                     alt={p.author_name}
-                    className="w-8 h-8 rounded-full object-cover border border-gray-200 flex-shrink-0 cursor-pointer"
+                    className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-dark-border flex-shrink-0 cursor-pointer"
                     onError={e => { e.target.src = '/Cute-Cat.png'; }}
                     onClick={e => { e.preventDefault(); e.stopPropagation(); navigate(`/profile/${p.user_id}`); }}
                   />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-dark truncate cursor-pointer hover:underline" onClick={e => { if (!p.anonymous) { e.preventDefault(); e.stopPropagation(); navigate(`/profile/${p.user_id}`); } }}>
+                    <span className="text-sm font-medium text-dark dark:text-dark-text truncate cursor-pointer hover:underline" onClick={e => { if (!p.anonymous) { e.preventDefault(); e.stopPropagation(); navigate(`/profile/${p.user_id}`); } }}>
                       {p.anonymous ? 'Anonymous' : p.author_name}
                     </span>
                     {(() => {
@@ -437,15 +437,15 @@ function HomePage() {
                     })()}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`badge text-xs ${categories.find(c => c.key === p.category)?.color || 'bg-gray-100 text-gray-600'}`}>
+                    <span className={`badge text-xs ${categories.find(c => c.key === p.category)?.color || 'bg-gray-100 dark:bg-dark-bg text-gray-600'}`}>
                       {p.category}
                     </span>
-                    {p.pinned && <span className="text-xs text-muted">📌</span>}
+                    {p.pinned && <span className="text-xs text-muted dark:text-dark-muted">📌</span>}
                   </div>
                 </div>
               </div>
 
-              <h3 className="font-semibold text-dark group-hover:text-primary transition-colors mb-1.5 line-clamp-2">
+              <h3 className="font-semibold text-dark dark:text-dark-text group-hover:text-primary transition-colors mb-1.5 line-clamp-2">
                 {p.title}
               </h3>
 
@@ -460,7 +460,7 @@ function HomePage() {
                 </div>
               )}
 
-              <div className="flex items-center gap-3 text-xs text-muted">
+              <div className="flex items-center gap-3 text-xs text-muted dark:text-dark-muted">
                 <span>{p.status === 'approved' ? '' : p.status === 'pending' ? '⏳ Pending' : '❌ Rejected'}</span>
               </div>
 

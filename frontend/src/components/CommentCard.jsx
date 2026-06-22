@@ -71,7 +71,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
   };
 
   return (
-    <div className="bg-white rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm relative comment-card-mobile">
+    <div className="bg-white dark:bg-dark-surface rounded-2xl p-4 mb-3 border border-gray-100 shadow-sm relative comment-card-mobile">
       <div className="flex items-center gap-3 pb-2 mb-3">
         <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-secondary/10 text-base font-bold overflow-hidden">
           {React.isValidElement(avatar) ? (
@@ -81,7 +81,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
           )}
         </div>
         <div className="flex flex-col">
-          <span className="font-bold text-sm text-dark cursor-pointer hover:underline" onClick={() => userId && navigate(`/profile/${userId}`)}>{username}</span>
+          <span className="font-bold text-sm text-dark dark:text-dark-text cursor-pointer hover:underline" onClick={() => userId && navigate(`/profile/${userId}`)}>{username}</span>
           <div className="flex gap-1 mt-0.5">
             {Array.isArray(badges) && badges.length > 0 && badges.map((badge, idx) => (
               <span key={idx} className="px-1.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold uppercase tracking-wide">{badge}</span>
@@ -92,7 +92,7 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
       <div className="pb-2">
         {editing ? (
           <div className="flex flex-col gap-2 mb-2">
-            <textarea className="w-full rounded-xl px-3 py-2 border border-gray-200 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" value={editText} onChange={e => setEditText(e.target.value)} rows={3} disabled={editSaving} />
+            <textarea className="w-full rounded-xl px-3 py-2 border border-gray-200 dark:border-dark-border text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none resize-none min-h-[60px]" value={editText} onChange={e => setEditText(e.target.value)} rows={3} disabled={editSaving} />
             <div className="flex gap-2">
               <button className="btn-primary text-xs py-1.5 px-3" disabled={editSaving} onClick={async () => {
                 if (!editText.trim()) return;
@@ -108,46 +108,46 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
             </div>
           </div>
         ) : (
-          <div className="text-sm text-dark leading-relaxed mb-2 break-words whitespace-pre-line">{content}</div>
+          <div className="text-sm text-dark dark:text-dark-text leading-relaxed mb-2 break-words whitespace-pre-line">{content}</div>
         )}
         {audio_url && (
           <div className="mb-2">
-            <label className="block mb-1 font-semibold text-xs text-muted">Voice Message</label>
+            <label className="block mb-1 font-semibold text-xs text-muted dark:text-dark-muted">Voice Message</label>
             <VoiceMessagePlayer src={audio_url} />
           </div>
         )}
         {Array.isArray(image_url) && image_url.length > 0 ? (
           <div className="flex flex-wrap justify-center mt-2 gap-2">
             {image_url.map((url, idx) => (
-              <img key={idx} src={url} alt={`Comment ${idx + 1}`} className="rounded-xl max-h-44 border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity bg-white" onClick={() => { setModalImageUrl(url); setShowImageModal(true); }} />
+              <img key={idx} src={url} alt={`Comment ${idx + 1}`} className="rounded-xl max-h-44 border border-gray-200 dark:border-dark-border cursor-pointer hover:opacity-90 transition-opacity bg-white dark:bg-dark-surface" onClick={() => { setModalImageUrl(url); setShowImageModal(true); }} />
             ))}
           </div>
         ) : (typeof image_url === 'string' && image_url) ? (
           <div className="flex justify-center mt-2">
-            <img src={image_url} alt="Comment" className="rounded-xl max-h-44 border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity bg-white" onClick={() => { setModalImageUrl(image_url); setShowImageModal(true); }} />
+            <img src={image_url} alt="Comment" className="rounded-xl max-h-44 border border-gray-200 dark:border-dark-border cursor-pointer hover:opacity-90 transition-opacity bg-white dark:bg-dark-surface" onClick={() => { setModalImageUrl(image_url); setShowImageModal(true); }} />
           </div>
         ) : null}
       </div>
       <div className="flex flex-col md:flex-row md:items-center items-start pt-2 mt-2 w-full">
         <div className="flex flex-col md:flex-row items-start md:items-center w-full md:w-auto">
-          <div className="flex flex-row gap-1.5 rounded-xl bg-gray-50 px-2 py-1.5 w-fit md:w-fit items-center">
+          <div className="flex flex-row gap-1.5 rounded-xl bg-gray-50 dark:bg-dark-bg px-2 py-1.5 w-fit md:w-fit items-center">
             {canEdit && (
-              <button className="rounded-full w-8 h-8 bg-white border border-gray-200 text-muted text-sm hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center" onClick={() => { setEditText(typeof content === 'string' ? content : ''); setEditing(true); }} title="Edit comment" aria-label="Edit">✏️</button>
+              <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-primary/5 hover:text-primary hover:border-primary/30 transition-all flex items-center justify-center" onClick={() => { setEditText(typeof content === 'string' ? content : ''); setEditing(true); }} title="Edit comment" aria-label="Edit">✏️</button>
             )}
             {canDelete && (
-              <button className="rounded-full w-8 h-8 bg-white border border-gray-200 text-muted text-sm hover:bg-error/5 hover:text-error hover:border-error/30 transition-all flex items-center justify-center" onClick={handleDeleteClick} title="Delete comment" aria-label="Delete">🗑️</button>
+              <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-error/5 hover:text-error hover:border-error/30 transition-all flex items-center justify-center" onClick={handleDeleteClick} title="Delete comment" aria-label="Delete">🗑️</button>
             )}
-            <button className="rounded-full w-8 h-8 bg-white border border-gray-200 text-muted text-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all flex items-center justify-center" onClick={handleReportClick} title="Report comment" aria-label="Report">🚩</button>
+            <button className="rounded-full w-8 h-8 bg-white dark:bg-dark-surface border border-gray-200 dark:border-dark-border text-muted dark:text-dark-muted text-sm hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all flex items-center justify-center" onClick={handleReportClick} title="Report comment" aria-label="Report">🚩</button>
             <span className="flex items-center justify-center">{replyButton}</span>
           </div>
         </div>
-        <span className="text-xs text-muted mt-2 md:mt-0 md:ml-auto">{time}</span>
+        <span className="text-xs text-muted dark:text-dark-muted mt-2 md:mt-0 md:ml-auto">{time}</span>
       </div>
       {showImageModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80" onClick={() => setShowImageModal(false)}>
           <div className="relative w-full h-full flex items-center justify-center" onClick={e => e.stopPropagation()}>
-            <img src={modalImageUrl} alt="Preview" className="rounded-2xl object-contain max-w-[100vw] max-h-[90vh] bg-white" />
-            <button className="absolute top-3 right-3 bg-white/90 text-dark rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-white transition text-lg" onClick={() => setShowImageModal(false)} aria-label="Close">✕</button>
+            <img src={modalImageUrl} alt="Preview" className="rounded-2xl object-contain max-w-[100vw] max-h-[90vh] bg-white dark:bg-dark-surface" />
+            <button className="absolute top-3 right-3 bg-white/90 text-dark dark:text-dark-text rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-white transition text-lg" onClick={() => setShowImageModal(false)} aria-label="Close">✕</button>
           </div>
         </div>
       )}
@@ -158,8 +158,8 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
       `}</style>
       {showConfirm && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10 rounded-2xl">
-          <div className="bg-white rounded-xl shadow-lg p-5 flex flex-col items-center">
-            <div className="font-bold text-sm text-dark mb-3">Delete this comment?</div>
+          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-5 flex flex-col items-center">
+            <div className="font-bold text-sm text-dark dark:text-dark-text mb-3">Delete this comment?</div>
             <div className="flex gap-3">
               <button className="btn-primary text-xs px-4 py-1.5" onClick={handleConfirm}>Yes</button>
               <button className="btn-secondary text-xs px-4 py-1.5" onClick={handleCancel}>No</button>
@@ -169,9 +169,9 @@ export default function CommentCard({ avatar, username, badges = [], time, conte
       )}
       {showReport && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-20 rounded-2xl">
-          <div className="bg-white rounded-xl shadow-lg p-5 flex flex-col items-center w-72">
-            <div className="font-bold text-sm text-dark mb-3">Report Comment</div>
-            <input className="w-full rounded-lg px-3 py-2 border border-gray-200 text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason for reporting" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
+          <div className="bg-white dark:bg-dark-surface rounded-xl shadow-lg p-5 flex flex-col items-center w-72">
+            <div className="font-bold text-sm text-dark dark:text-dark-text mb-3">Report Comment</div>
+            <input className="w-full rounded-lg px-3 py-2 border border-gray-200 dark:border-dark-border text-sm mb-2 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none" placeholder="Reason for reporting" value={reportReason} onChange={e => setReportReason(e.target.value)} disabled={reportLoading} />
             {reportMsg && <p className="text-xs text-error mb-2">{reportMsg}</p>}
             <div className="flex gap-3 mt-1">
               <button className="btn-primary text-xs px-4 py-1.5" onClick={handleReportSubmit} disabled={reportLoading}>{reportLoading ? 'Reporting...' : 'Report'}</button>
