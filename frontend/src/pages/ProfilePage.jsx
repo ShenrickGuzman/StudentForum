@@ -155,14 +155,14 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto mb-3" /><p className="text-sm text-muted dark:text-dark-muted">Loading profile...</p></div></div>;
+    return <div className="flex items-center justify-center min-h-screen bg-background dark:bg-dark-bg"><div className="card px-8 py-6 text-center"><div className="w-6 h-6 rounded-full border-2 border-primary/30 border-t-primary animate-spin mx-auto mb-3" /><p className="text-sm text-muted dark:text-dark-muted">Loading profile...</p></div></div>;
   }
   if (profileError) {
-    return <div className="flex items-center justify-center min-h-screen bg-background"><div className="card px-8 py-6 text-center"><p className="text-sm text-error">{profileError}</p></div></div>;
+    return <div className="flex items-center justify-center min-h-screen bg-background dark:bg-dark-bg"><div className="card px-8 py-6 text-center"><p className="text-sm text-error">{profileError}</p></div></div>;
   }
   const isOwnProfile = user && profile && String(user.id) === String(profile.id);
   return (
-    <div className="min-h-screen bg-background px-4 py-8">
+    <div className="min-h-screen bg-background dark:bg-dark-bg px-4 py-8">
       {successMsg && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-success text-white text-sm font-bold px-5 py-2 rounded-full shadow-lg z-50 animate-fadeIn">{successMsg}</div>
       )}

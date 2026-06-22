@@ -282,7 +282,7 @@ export default function AdminPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-dark-bg">
       <div className="max-w-5xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-dark dark:text-dark-text mb-6 flex items-center gap-2">🛠️ Admin Panel</h1>
 
