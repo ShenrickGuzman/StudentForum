@@ -109,14 +109,14 @@ export default function AuthPage() {
         transition={{ duration: 0.4 }}
       >
         <div className="text-center mb-8">
-          <motion.div
-            className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4"
+          <motion.img
+            src="/St_Hyacinth.jpg"
+            alt="St. Hyacinth's Forum"
+            className="w-14 h-14 rounded-2xl object-cover mx-auto mb-4"
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
-          >
-            S
-          </motion.div>
+          />
           <h1 className="text-3xl font-bold text-dark dark:text-dark-text">St. Hyacinth's Forum</h1>
           <p className="text-muted mt-1">
             {mode === 'login' ? 'Welcome back! Sign in to continue.' : 'Create your account to get started.'}
