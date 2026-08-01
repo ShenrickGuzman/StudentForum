@@ -94,7 +94,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-background dark:bg-dark-bg">
       <RulesPopup
         open={showRules}
         onAgree={() => { setShowRules(false); if (pendingNav) { setPendingNav(false); navigate('/'); } }}
