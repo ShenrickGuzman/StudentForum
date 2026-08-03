@@ -268,7 +268,8 @@ const createPostsRouter = () => {
       const { count, error } = await supabase
         .from('posts')
         .select('id', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('anonymous', false);
       if (error) return res.status(500).json({ error: 'Failed to fetch post count' });
       res.json({ count: typeof count === 'number' ? count : 0 });
     } catch (e) {
@@ -645,7 +646,7 @@ const createPostsRouter = () => {
       query = query.eq('category', category);
     }
     if (user_id) {
-      query = query.eq('user_id', parseInt(user_id, 10));
+      query = query.eq('user_id', parseInt(user_id, 10)).eq('anonymous', false);
     }
     try {
       query = query.range(pageOffset, pageOffset + pageLimit - 1);
